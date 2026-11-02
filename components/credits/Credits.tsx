@@ -23,7 +23,7 @@ import EndCard from "./EndCard";
 import styles from "./Credits.module.css";
 
 const BIO =
-  "Ahmedabad engineer Siddhant Kotak works both ends of the web. By day he builds the systems hospitals and traders lean on: row-level security, publish/subscribe pipelines, model ensembles. The rest of the time goes into interfaces like this one, where the type, the motion and the sound are all part of the build.";
+  "I'm a designer and developer based in Ahmedabad. I take products from the first sketch to production: the interface, the systems behind it, the AI inside it and the cloud it runs on. I care about the details people feel, like type, motion and sound, and the ones they never see but rely on: speed, security and systems that stay calm under load.";
 
 /** The lit pillar edge in the photograph (image uv, y down): the camera's pivot and the key light's mark. */
 const EDGE = { u: 0.15, v: 0.42 };

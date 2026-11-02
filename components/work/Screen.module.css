@@ -1,0 +1,365 @@
+/*
+ * The screen. Geometry comes from the reel: --fw (frame width), --bar (toolbar height),
+ * --fh (frame height). --cq is chapters played (0..6), --fold the hero folding flat (0..1).
+ */
+.group {
+  position: relative;
+  width: var(--fw);
+  transform-origin: 0% 50%;
+}
+
+.screen {
+  position: relative;
+  width: var(--fw);
+  height: var(--fh);
+}
+
+/* ---------- The practical light: the screen glows onto the set in its own colours ---------- */
+/*
+ * A 64px copy of the chapter, blurred and saturated ahead of time (public/img/work/glow), at 115%
+ * of the screen: the look of blur(40px) with no filter to run while scrolling. The light falls
+ * around and above the screen, never under its subtitle or across the copy.
+ */
+.glow {
+  position: absolute;
+  inset: -24.75% -21.875%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: clamp(0, calc((var(--fold) - 0.55) * 2.2), 1);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 65%, transparent 82%), linear-gradient(to right, transparent 0%, #000 22%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to bottom, #000 0%, #000 65%, transparent 82%), linear-gradient(to right, transparent 0%, #000 22%);
+  mask-composite: intersect;
+}
+
+.glowImg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  opacity: 0;
+  transition: opacity 0.45s var(--ease);
+}
+
+.glowImg[data-on="1"] {
+  opacity: 0.32;
+}
+
+/* A chapter that mounts already up (a jump, or the key frame on a push) still fades in. */
+@starting-style {
+  .glowImg[data-on="1"] {
+    opacity: 0;
+  }
+  .shot[data-state="on"] {
+    opacity: 0;
+    translate: 0 2.5%;
+  }
+}
+
+/* ---------- The frame: lifts under the cursor, leans in on click ---------- */
+.lift {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  transition:
+    translate 0.35s var(--ease),
+    scale 0.25s cubic-bezier(0.3, 0.6, 0.2, 1);
+}
+
+.screen:hover .lift {
+  translate: 0 -4px;
+}
+
+.group[data-pushing="1"] .lift {
+  scale: 1.03;
+}
+
+.bezel {
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  background: #1c1a17;
+  box-shadow:
+    0 0 0 1px rgba(236, 231, 222, 0.12),
+    inset 0 1px 0 rgba(236, 231, 222, 0.06),
+    0 30px 70px -34px rgba(0, 0, 0, 0.9);
+  opacity: clamp(0, calc((var(--fold) - 0.6) * 2.5), 1);
+  transition: box-shadow 0.35s var(--ease);
+}
+
+.screen:hover .bezel {
+  box-shadow:
+    0 0 0 1px rgba(236, 231, 222, 0.16),
+    inset 0 1px 0 rgba(236, 231, 222, 0.06),
+    0 46px 90px -30px rgba(0, 0, 0, 0.95);
+}
+
+/* The picture sits under the toolbar; the hero's layers fold into exactly this rect. */
+.picture,
+.stack {
+  position: absolute;
+  top: var(--bar);
+  left: 0;
+  width: var(--fw);
+  height: calc(var(--fw) * 0.625);
+}
+
+.picture {
+  z-index: 2;
+  overflow: hidden;
+  border-radius: 0 0 10px 10px;
+}
+
+.shot {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  translate: 0 2.5%;
+  /* A slow push in while the chapter holds, from the top so the site's nav stays in frame. */
+  scale: calc(1 + 0.045 * clamp(0, var(--cq) - var(--k), 1));
+  transform-origin: 50% 0;
+  transition:
+    opacity 0.42s var(--ease),
+    translate 0.42s var(--ease);
+}
+
+.shot[data-state="before"] {
+  translate: 0 -2.5%;
+}
+
+.shot[data-state="on"] {
+  z-index: 1;
+  opacity: 1;
+  translate: 0 0;
+}
+
+.group[data-pushing="1"] .shot {
+  transition-duration: 0.18s;
+}
+
+.img {
+  object-fit: cover;
+  object-position: 50% 0;
+}
+
+/* ---------- The exploded hero ---------- */
+.stack {
+  z-index: 1;
+  font-size: calc(var(--fw) / 100);
+  pointer-events: none;
+  transition: opacity 0.18s;
+}
+
+.group[data-landed="1"] .stack {
+  visibility: hidden;
+  transition: visibility 0s 0.5s;
+}
+
+.group[data-pushing="1"] .stack {
+  opacity: 0;
+}
+
+.plane {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100em;
+  height: 62.5em;
+  transform-origin: 50% 50%;
+  will-change: transform;
+  /* Glass while apart, nothing once flat, so the stack lands on exactly the screenshot. */
+  background-color: rgba(236, 231, 222, calc(0.035 * (1 - var(--fold))));
+  box-shadow: 0 0 0 0.22em rgba(236, 231, 222, calc(0.3 * (1 - var(--fold))));
+}
+
+.plane[data-ground="1"] {
+  box-shadow:
+    0 0 0 0.22em rgba(236, 231, 222, calc(0.3 * (1 - var(--fold)))),
+    0 3em 8em rgba(0, 0, 0, calc(0.5 * (1 - var(--fold))));
+}
+
+.planeImg {
+  object-fit: cover;
+}
+
+.leaders,
+.callout {
+  opacity: clamp(0, calc(1 - var(--fold) * 3.4), 1);
+}
+
+.leaders {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.leaders line {
+  stroke: rgba(236, 231, 222, 0.42);
+  stroke-width: 1;
+}
+
+.leaders circle {
+  fill: var(--bone);
+  stroke: var(--black);
+  stroke-width: 0.25;
+}
+
+/* Positioned in plane units (em); the type inside is in px. */
+.callout {
+  position: absolute;
+  width: 31em;
+  margin: -9px 0 0;
+  display: grid;
+  gap: 2px;
+}
+
+.calloutName {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 18px;
+  color: var(--bone);
+}
+
+.calloutName b {
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ember);
+}
+
+.calloutDetail {
+  padding-left: 22px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--smoke);
+}
+
+/* On the narrowest desktop screens the figure is small: name the layers, leave the detail to the case study. */
+@media (max-width: 1199px) {
+  .calloutDetail {
+    display: none;
+  }
+}
+
+/* ---------- The whole screen is the way in ---------- */
+.hit {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.chip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 16px;
+  margin: 14px 0 0 14px;
+  border-radius: 999px;
+  background: var(--ember);
+  color: #121110;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  transition: opacity 0.2s var(--ease);
+}
+
+.hit:hover .chip {
+  opacity: 1;
+}
+
+.group[data-pushing="1"] .chip {
+  opacity: 0;
+}
+
+@media (hover: none) {
+  .chip {
+    display: none;
+  }
+}
+
+/* ---------- Under the frame: the subtitle and the reel's progress ---------- */
+.under {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.caption {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  min-height: 20px;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--bone);
+  animation: caption-in 0.42s var(--ease);
+}
+
+.captionText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@keyframes caption-in {
+  from {
+    opacity: 0;
+    translate: 0 4px;
+  }
+}
+
+.progress {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.progress li {
+  position: relative;
+  height: 2px;
+  overflow: hidden;
+  background: rgba(236, 231, 222, 0.16);
+}
+
+.progress i {
+  position: absolute;
+  inset: 0;
+  background: var(--ember);
+  transform-origin: 0 50%;
+  transform: scaleX(clamp(0, calc(var(--cq) - var(--k)), 1));
+}
+
+.progress li[data-done="1"] i {
+  background: rgba(236, 231, 222, 0.5);
+}
+
+/* ---------- The phones' beat ---------- */
+.phone {
+  width: var(--pw);
+}
+
+.phone[data-j="1"] {
+  margin-bottom: 7%;
+}

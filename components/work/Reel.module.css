@@ -1,0 +1,353 @@
+/* ---------- The title card ---------- */
+.titleTrack {
+  position: relative;
+  z-index: 0;
+}
+
+.titleStage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  background: var(--black);
+}
+
+/* Hung off the pillar line, like SC.02's card. */
+.titleCard {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 var(--margin) 0 calc(100vw / 6 + clamp(12px, 1.4vw, 24px));
+  transform-origin: 50% 0;
+}
+
+.lyric {
+  margin: 0;
+  gap: 0 0.22em;
+  font-size: clamp(56px, 9.2vw, 168px);
+  font-weight: 800;
+  line-height: 0.86;
+  letter-spacing: -0.045em;
+  color: var(--bone);
+}
+
+/* Two lines, broken after "make it,". */
+.lyric > :nth-child(-n + 4) {
+  order: 1;
+}
+
+.lyric::after {
+  content: "";
+  flex-basis: 100%;
+  order: 2;
+}
+
+.lyric > :nth-child(n + 5) {
+  order: 3;
+}
+
+/* The sung word stretches wide, then settles back. */
+.lyric > span {
+  font-stretch: 62%;
+  transition:
+    opacity 0.35s var(--ease),
+    filter 0.35s var(--ease),
+    font-stretch 0.6s var(--ease);
+}
+
+.lyric > span[data-current="1"] {
+  font-stretch: 125%;
+}
+
+.titleSlate {
+  position: absolute;
+  left: calc(100vw / 6 + clamp(12px, 1.4vw, 24px));
+  bottom: 22px;
+}
+
+/* A stage being covered steps back into the dark. */
+.shade {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: var(--black);
+  pointer-events: none;
+}
+
+/* ---------- The reel: shared geometry for every stage and the index above them ---------- */
+.reel {
+  --colw: clamp(300px, 29vw, 420px);
+  --gap: clamp(32px, 3.2vw, 64px);
+  --bar: 34px;
+  --under: 64px;
+  /* The frame: as wide as the right column allows, short enough to leave room for its subtitle. */
+  --fw: min(1120px, calc(100vw - var(--margin) * 2 - var(--colw) - var(--gap)), calc((100svh - var(--bar) - var(--under) - 150px) * 1.6));
+  --fh: calc(var(--fw) * 0.625 + var(--bar));
+  --top: max(84px, calc((100svh - var(--fh) - var(--under)) / 2 + 16px));
+  --bottom: calc(var(--top) + var(--fh) + var(--under));
+  --index-h: 124px;
+  --pw: min(300px, calc((100svh - 260px) * 0.462));
+  position: relative;
+  z-index: 1;
+}
+
+.track {
+  position: relative;
+}
+
+/* A card in the stack: a hairline top edge and a shadow thrown up onto the stage it covers. */
+.stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  border-radius: 22px 22px 0 0;
+  background: var(--black);
+  box-shadow:
+    inset 0 1px 0 rgba(236, 231, 222, 0.1),
+    0 -30px 80px rgba(0, 0, 0, 0.6);
+}
+
+.card {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 0;
+}
+
+.slate {
+  position: absolute;
+  left: var(--margin);
+  top: max(58px, calc(var(--top) - 44px));
+}
+
+/* ---------- The index: above every stage ---------- */
+/* A full-height sticky layer, so it lets go exactly when the last stage does (the first track overlaps it). */
+.indexLayer {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  height: 100svh;
+  pointer-events: none;
+}
+
+.index {
+  position: absolute;
+  top: var(--top);
+  left: var(--margin);
+  width: var(--colw);
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  pointer-events: auto;
+}
+
+.item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 0 0 0 14px;
+  text-align: left;
+  color: var(--smoke);
+  transition: color 0.3s var(--ease);
+}
+
+/* The active marker: an ember bar at the row's edge. */
+.item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--ember);
+  transform: scaleY(0);
+  transition: transform 0.4s var(--ease);
+}
+
+.item[data-active="1"] {
+  color: var(--bone);
+}
+
+.item[data-active="1"]::before {
+  transform: scaleY(1);
+}
+
+.item:hover {
+  color: var(--bone);
+}
+
+.thumb {
+  position: relative;
+  display: block;
+  width: 72px;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--stone);
+  box-shadow: 0 0 0 1px rgba(236, 231, 222, 0.14);
+  opacity: 0.55;
+  transition:
+    opacity 0.3s var(--ease),
+    box-shadow 0.3s var(--ease);
+}
+
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 0;
+}
+
+.item[data-active="1"] .thumb,
+.item:hover .thumb {
+  opacity: 1;
+}
+
+.item[data-active="1"] .thumb {
+  box-shadow: 0 0 0 1px rgba(236, 231, 222, 0.4);
+}
+
+.itemText {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  column-gap: 10px;
+  row-gap: 7px;
+}
+
+.itemCode {
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.item[data-active="1"] .itemCode {
+  color: var(--ember);
+}
+
+.itemTitle {
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Six chapter ticks, filling as the active project plays. */
+.ticks {
+  grid-column: 2;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.3s var(--ease);
+}
+
+.item[data-active="1"] .ticks {
+  opacity: 1;
+}
+
+.ticks i {
+  position: relative;
+  width: 16px;
+  height: 2px;
+  overflow: hidden;
+  background: rgba(236, 231, 222, 0.18);
+}
+
+.ticks i::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--ember);
+  transform-origin: 0 50%;
+  transform: scaleX(clamp(0, calc(var(--cq) - var(--k)), 1));
+}
+
+.item:focus-visible {
+  outline: 2px solid var(--bone);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+/* ---------- The left column: copy and the way out ---------- */
+.copyCol {
+  position: absolute;
+  z-index: 2;
+  left: var(--margin);
+  width: var(--colw);
+  top: calc(var(--top) + var(--index-h) + 24px);
+  bottom: calc(100svh - var(--bottom));
+  display: flex;
+  flex-direction: column;
+  justify-content: safe flex-end;
+  gap: 26px;
+}
+
+/* At 420px the pair can't sit side by side at 16px, so it stacks as one block of equal pills. */
+.copyCol .ctas {
+  display: grid;
+  justify-content: start;
+  margin-top: 4px;
+}
+
+.hint {
+  margin: -10px 0 0;
+  max-width: 34ch;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--smoke);
+}
+
+/* ---------- The screen, centred in the right column ---------- */
+.screenCol {
+  position: absolute;
+  z-index: 1;
+  top: var(--top);
+  left: calc(var(--margin) + var(--colw) + var(--gap) + (100vw - var(--margin) * 2 - var(--colw) - var(--gap) - var(--fw)) / 2);
+}
+
+/* The phones rise in on the right for the last beat. */
+.phones {
+  position: absolute;
+  z-index: 3;
+  right: var(--margin);
+  top: calc(var(--top) + var(--fh) / 2);
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(16px, 1.6vw, 28px);
+  translate: 0 -50%;
+  pointer-events: none;
+}
+
+/* ---------- Shorter screens: tighter, then without the hint ---------- */
+@media (max-height: 820px) {
+  .reel {
+    --index-h: 112px;
+  }
+  .copyCol {
+    gap: 20px;
+  }
+  .copyCol > :first-child {
+    --copy-gap: 14px;
+    --title-size: clamp(40px, min(4.4vw, 7.4svh), 76px);
+  }
+}
+
+@media (max-height: 720px) {
+  .hint {
+    display: none;
+  }
+  .copyCol > :first-child {
+    --logline-size: 16px;
+  }
+}

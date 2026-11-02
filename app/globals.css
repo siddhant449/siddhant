@@ -1,0 +1,958 @@
+/* Palette taken from the ledge photograph: black stone, mist, bone, and the
+   ember light running down the pillar edge. The page is a washed, grainy grey-black
+   (as on Ascension), not pure black; deep shadows inside pictures still go to black. */
+:root {
+  --black: #121110;
+  --stone: #15140f;
+  --ash: #34312c;
+  --smoke: #8e8a83;
+  --bone: #ece7de;
+  --ember: #d6a06a;
+
+  --font: var(--font-archivo), "Helvetica Neue", Arial, sans-serif;
+  --gutter: 10px;
+  /* The scene rail's gutter at the left edge; content margins clear it. */
+  --rail: 48px;
+  --margin: calc(var(--rail) + 10px);
+  --col: calc((100vw - var(--margin) * 2 - var(--gutter) * 11) / 12);
+  --span: calc(var(--col) + var(--gutter));
+
+  --t-small: 13px;
+  --t-body: 16px;
+  --t-meta: clamp(17px, 1.95vw, 30px);
+  --t-big: clamp(26px, 3.1vw, 48px);
+  --t-huge: clamp(44px, 8.4vw, 150px);
+
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  color-scheme: dark;
+}
+
+@media (max-width: 800px) {
+  :root {
+    --rail: 0px;
+    --margin: 16px;
+    --gutter: 8px;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--black);
+}
+
+body {
+  margin: 0;
+  background: var(--black);
+  color: var(--smoke);
+  font-family: var(--font);
+  font-size: var(--t-body);
+  line-height: 1.4;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+sup {
+  font-size: 0.38em;
+  vertical-align: top;
+  position: relative;
+  top: 0.35em;
+  margin: 0 0.12em;
+  letter-spacing: 0;
+  font-weight: 700;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ember);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+::selection {
+  background: var(--ember);
+  color: var(--black);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Everything behind the gate; it adds no box of its own. */
+.behind {
+  display: contents;
+}
+
+/*
+ * Phones: body text scrolling up under the fixed nav fades out instead of colliding with it. A
+ * sibling of the nav, since the nav's difference blend would cancel a scrim inside it.
+ */
+.topfade {
+  display: none;
+}
+
+@media (max-width: 800px) {
+  .topfade {
+    display: block;
+    position: fixed;
+    inset: 0 0 auto;
+    /* Under the scene rail (70) and the nav (80), over every scene. */
+    z-index: 69;
+    height: 64px;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(18, 17, 16, 0.95) 0, rgba(18, 17, 16, 0.85) 55%, rgba(18, 17, 16, 0) 100%);
+  }
+}
+
+/* ---------- Grain ---------- */
+.grain {
+  position: fixed;
+  inset: -50%;
+  z-index: 110;
+  pointer-events: none;
+  opacity: 0.17;
+  mix-blend-mode: screen;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.4 -0.35'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain 0.9s steps(6) infinite;
+}
+
+@keyframes grain {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-3%, 2%); }
+  40% { transform: translate(2%, -4%); }
+  60% { transform: translate(-4%, -1%); }
+  80% { transform: translate(3%, 3%); }
+  100% { transform: translate(-1%, 4%); }
+}
+
+/* ---------- Shared type ---------- */
+.label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 18px;
+  font-size: var(--t-small);
+  font-weight: 700;
+  font-stretch: 100%;
+  color: var(--smoke);
+  letter-spacing: 0;
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+.big {
+  margin: 0;
+  font-size: var(--t-big);
+  font-weight: 700;
+  line-height: 0.99;
+  letter-spacing: -0.034em;
+  color: var(--smoke);
+  max-width: 34ch;
+}
+
+.big--indent {
+  max-width: none;
+  text-indent: calc(var(--span) * 5);
+}
+
+/* ---------- Gate: the album ---------- */
+.gate {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 22px;
+  /*
+   * The first screen only: deep brown-black concrete, lit around the record and falling off in a soft
+   * vignette (a Gaussian, in stops), with a little of the light from above on the top of the wall.
+   */
+  background:
+    radial-gradient(ellipse 11% 20% at 54.5% 0%, rgba(62, 50, 38, 0.16), rgba(62, 50, 38, 0) 100%),
+    radial-gradient(
+      ellipse 76% 80% at 46% 40%,
+      rgba(3, 2, 1, 0) 0%,
+      rgba(3, 2, 1, 0.08) 25%,
+      rgba(3, 2, 1, 0.22) 37.5%,
+      rgba(3, 2, 1, 0.42) 50%,
+      rgba(3, 2, 1, 0.62) 62.5%,
+      rgba(3, 2, 1, 0.8) 75%,
+      rgba(3, 2, 1, 0.91) 87.5%,
+      rgba(3, 2, 1, 0.97) 100%
+    ),
+    #0c0a08 url("/img/gate-wall-warm.webp") center / cover no-repeat;
+}
+
+.gate__record {
+  --size: min(54vh, 560px, 64vw);
+  position: relative;
+  width: var(--size);
+  height: var(--size);
+}
+
+/* The sleeve's shadow on the wall just under it. */
+.gate__record::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  left: 2%;
+  right: 2%;
+  top: 99%;
+  height: 14%;
+  pointer-events: none;
+  background: radial-gradient(ellipse 54% 100% at 50% 0%, rgba(0, 0, 0, 0.66) 0%, rgba(0, 0, 0, 0.4) 40%, rgba(0, 0, 0, 0) 100%);
+}
+
+/*
+ * The pillar of light in the cover art, carried on up the wall to the top of the screen. It sits behind
+ * the sleeve, which covers its foot, so the light reads as the cover's own spilling out.
+ */
+.gate__beam {
+  position: absolute;
+  /* Over the record's shadow, under the sleeve. */
+  z-index: 2;
+  /* The pillar's centre in the art: 226.5 of 900px. */
+  left: 25.17%;
+  bottom: 97%;
+  width: calc(var(--size) * 0.5);
+  /* The sleeve's top is never more than half the screen down, so this always reaches the top edge. */
+  height: calc(50vh + var(--size) * 0.03);
+  translate: -50% 0;
+  pointer-events: none;
+  /* Brightest where it meets the sleeve, dimmer toward the top of the screen. */
+  -webkit-mask-image: linear-gradient(0deg, #000 0, rgba(0, 0, 0, 0.96) calc(var(--size) * 0.1), rgba(0, 0, 0, 0.64) calc(var(--size) * 0.33), rgba(0, 0, 0, 0.36) calc(var(--size) * 1.1));
+  mask-image: linear-gradient(0deg, #000 0, rgba(0, 0, 0, 0.96) calc(var(--size) * 0.1), rgba(0, 0, 0, 0.64) calc(var(--size) * 0.33), rgba(0, 0, 0, 0.36) calc(var(--size) * 1.1));
+  animation: gate-beam 8s ease-in-out infinite alternate;
+}
+
+/* A thin bright core in a soft warm glow. */
+.gate__beam::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  z-index: 1;
+  width: max(2px, calc(var(--size) * 0.012));
+  translate: -50% 0;
+  border-radius: 2px;
+  background: #e0cab2;
+  box-shadow:
+    0 0 calc(var(--size) * 0.016) calc(var(--size) * 0.002) rgba(240, 212, 180, 0.55),
+    0 0 calc(var(--size) * 0.05) calc(var(--size) * 0.006) rgba(220, 170, 122, 0.56);
+}
+
+/* Its wide, faint spill on the wall (a Gaussian, in stops), fading faster toward the top than the core. */
+.gate__beam::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(220, 170, 122, 0.005) 0%,
+    rgba(220, 170, 122, 0.016) 10%,
+    rgba(220, 170, 122, 0.039) 20%,
+    rgba(220, 170, 122, 0.073) 30%,
+    rgba(220, 170, 122, 0.106) 40%,
+    rgba(220, 170, 122, 0.12) 50%,
+    rgba(220, 170, 122, 0.106) 60%,
+    rgba(220, 170, 122, 0.073) 70%,
+    rgba(220, 170, 122, 0.039) 80%,
+    rgba(220, 170, 122, 0.016) 90%,
+    rgba(220, 170, 122, 0.005) 100%
+  );
+  -webkit-mask-image: linear-gradient(0deg, #000 0, rgba(0, 0, 0, 0.7) calc(var(--size) * 0.33), rgba(0, 0, 0, 0.45) calc(var(--size) * 1.1));
+  mask-image: linear-gradient(0deg, #000 0, rgba(0, 0, 0, 0.7) calc(var(--size) * 0.33), rgba(0, 0, 0, 0.45) calc(var(--size) * 1.1));
+}
+
+/* The light only breathes, slowly; it never flashes. */
+@keyframes gate-beam {
+  from { opacity: 0.92; }
+  to { opacity: 1; }
+}
+
+/* The sleeve: a frame of the hero, printed square. */
+.gate__sleeve {
+  position: relative;
+  z-index: 3;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 2px;
+  box-shadow:
+    0 0 0 1px rgba(236, 231, 222, 0.12),
+    0 2px 4px rgba(0, 0, 0, 0.5),
+    0 30px 60px -12px rgba(0, 0, 0, 0.85);
+}
+
+.gate__sleeve img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Gloss on the printed card, catching the key from the left, and its lit top edge. */
+.gate__sheen {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background:
+    linear-gradient(180deg, rgba(255, 236, 214, 0.16) 0, rgba(255, 236, 214, 0) 2px),
+    linear-gradient(115deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 32%, rgba(255, 255, 255, 0) 70%, rgba(255, 255, 255, 0.05) 100%);
+}
+
+/*
+ * The record sits in the sleeve and slides out of its right edge. Its own right edge rests at 97% of the
+ * sleeve, so idle it shows 13% of the sleeve's width, ready 24%, and playing, all the way out, 46%.
+ */
+.gate__disc {
+  position: absolute;
+  z-index: 1;
+  top: 3%;
+  left: 3%;
+  width: 94%;
+  height: 94%;
+  border-radius: 50%;
+  transform: translateX(calc(var(--size) * 0.16));
+  filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.6));
+  transition: transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.gate__record[data-state="ready"] .gate__disc {
+  transform: translateX(calc(var(--size) * 0.27));
+}
+
+.gate__record[data-state="playing"] .gate__disc {
+  transform: translateX(calc(var(--size) * 0.49));
+}
+
+/*
+ * Black vinyl: fine grooves, with a smooth lead-in at the rim, two track gaps, and a smooth run-out
+ * by the label. It turns, though only the label shows it.
+ */
+.gate__face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle closest-side,
+      transparent 0 36%,
+      rgba(7, 7, 6, 0.92) 36.2% 39.4%,
+      transparent 39.8% 57.4%,
+      rgba(5, 5, 5, 0.8) 57.7% 58.5%,
+      transparent 58.8% 76.2%,
+      rgba(5, 5, 5, 0.8) 76.5% 77.3%,
+      transparent 77.6% 98.4%,
+      rgba(4, 4, 4, 0.9) 98.6% 99.3%,
+      rgba(30, 29, 27, 0.7) 99.6%,
+      rgba(10, 10, 9, 0.9) 100%
+    ),
+    repeating-radial-gradient(circle at 50% 50%, #000 0 1.2px, #050504 1.2px 2.1px, #0f0e0d 2.1px 3px);
+}
+
+/* The centre label: the cover art, printed round. */
+.gate__label {
+  position: absolute;
+  left: 32%;
+  top: 32%;
+  width: 36%;
+  height: 36%;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
+}
+
+/* The spindle hole. */
+.gate__face::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 3.2%;
+  height: 3.2%;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: #0b0908;
+  box-shadow: 0 0 0 1px rgba(236, 231, 222, 0.18);
+}
+
+/* Specular light: fixed to the room, so it stays put while the record turns under it. */
+.gate__shine {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background:
+    conic-gradient(
+      from 0deg,
+      rgba(255, 244, 230, 0) 0deg,
+      rgba(255, 244, 230, 0.07) 30deg,
+      rgba(255, 244, 230, 0) 62deg,
+      rgba(255, 244, 230, 0) 118deg,
+      rgba(255, 244, 230, 0.13) 150deg,
+      rgba(255, 244, 230, 0) 182deg,
+      rgba(255, 244, 230, 0) 210deg,
+      rgba(255, 244, 230, 0.07) 240deg,
+      rgba(255, 244, 230, 0) 272deg,
+      rgba(255, 244, 230, 0) 298deg,
+      rgba(255, 244, 230, 0.13) 330deg,
+      rgba(255, 244, 230, 0) 360deg
+    );
+  -webkit-mask-image: radial-gradient(circle closest-side, transparent 0 37%, #000 40% 96%, transparent 99%);
+  mask-image: radial-gradient(circle closest-side, transparent 0 37%, #000 40% 96%, transparent 99%);
+}
+
+/* What's playing, under the record while it's out. Never on the closed sleeve. Over the record's shadow. */
+.gate__now {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  top: calc(100% + 16px);
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(236, 231, 222, 0.75);
+  opacity: 0;
+  /* Centred on the record with transform alone: the CSS pipeline drops `translate` beside `transform`. */
+  transform: translate(-50%, -4px);
+  transition: opacity 0.4s, transform 0.4s var(--ease);
+}
+
+.gate__record:not([data-state="idle"]) .gate__now {
+  opacity: 1;
+  transform: translateX(-50%);
+}
+
+/* The play mark beside the song while it waits for the click. */
+.gate__play {
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 5px 0 5px 8px;
+  border-color: transparent transparent transparent var(--ember);
+}
+
+.gate__bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+}
+
+.gate__bars i {
+  width: 2px;
+  height: 100%;
+  background: var(--ember);
+  transform-origin: bottom;
+  transform: scaleY(0.25);
+}
+
+.gate__record[data-state="playing"] .gate__bars i {
+  animation: gate-eq 0.9s ease-in-out infinite alternate;
+}
+
+.gate__bars i:nth-child(2) {
+  animation-delay: -0.3s !important;
+}
+
+.gate__bars i:nth-child(3) {
+  animation-delay: -0.6s !important;
+}
+
+.gate__bars i:nth-child(4) {
+  animation-delay: -0.15s !important;
+}
+
+@keyframes gate-eq {
+  from { transform: scaleY(0.25); }
+  to { transform: scaleY(1); }
+}
+
+/* Wide, spaced capitals; the source stays in sentence case. */
+.gate__hint {
+  margin: 28px -0.26em 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  font-stretch: 125%;
+  letter-spacing: 0.26em;
+  line-height: 1.4;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--bone);
+}
+
+.gate__quiet {
+  padding: 4px 0 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: rgba(236, 231, 222, 0.75);
+  text-decoration: underline;
+  text-decoration-color: rgba(236, 231, 222, 0.35);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 6px;
+  transition: color 0.3s, text-decoration-color 0.3s;
+}
+
+.gate__quiet:hover {
+  color: var(--bone);
+  text-decoration-color: rgba(236, 231, 222, 0.7);
+}
+
+/* Short screens (a phone on its side): a smaller record and tighter spacing keep both ways in on screen. */
+@media (max-height: 560px) {
+  .gate {
+    gap: 10px;
+    overflow-y: auto;
+  }
+  .gate__record {
+    --size: min(44vh, 64vw);
+  }
+  .gate__hint {
+    margin-top: 30px;
+  }
+  .gate__quiet {
+    margin-top: -4px;
+  }
+}
+
+/* Touch screens have no hover: the record waits half out of the sleeve, and a tap plays and enters. */
+@media (hover: none) {
+  .gate__disc {
+    transform: translateX(calc(var(--size) * 0.27));
+  }
+  .gate__now {
+    opacity: 1;
+    transform: translateX(-50%);
+  }
+}
+
+/*
+ * Narrow screens: the hint shrinks to stay on one line, and the record comes out to the left of centre
+ * so all of it stays on screen, while the song under it stays centred.
+ */
+@media (max-width: 600px) {
+  .gate__hint {
+    margin-right: -0.2em;
+    font-size: min(13px, calc((100vw - 40px) / 29.6));
+    letter-spacing: 0.2em;
+  }
+  .gate__record {
+    transition: translate 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .gate__now {
+    transition: opacity 0.4s, transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .gate__record[data-state="playing"] {
+    translate: calc(var(--size) * -0.22) 0;
+  }
+  .gate__record[data-state="playing"] .gate__now {
+    transform: translateX(calc(-50% + var(--size) * 0.22));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gate__record,
+  .gate__disc,
+  .gate__now,
+  .gate__quiet {
+    transition: none;
+  }
+  .gate__beam,
+  .gate__bars i {
+    animation: none !important;
+  }
+}
+
+/* ---------- Nav ---------- */
+.nav {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 80;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: var(--gutter);
+  align-items: baseline;
+  padding: 10px var(--margin);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--bone);
+  mix-blend-mode: difference;
+}
+
+.nav__mark {
+  grid-column: 1 / span 2;
+  font-stretch: 125%;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+}
+
+.nav__mark sup {
+  font-size: 0.55em;
+  top: 0.1em;
+}
+
+.nav__links {
+  grid-column: 3 / span 6;
+  display: flex;
+  gap: calc(var(--span) * 0.6);
+}
+
+.nav__links a,
+.nav__cta {
+  opacity: 0.72;
+  transition: opacity 0.2s;
+}
+
+.nav__links a:hover,
+.nav__cta:hover {
+  opacity: 1;
+}
+
+.nav__cta {
+  grid-column: 12;
+  justify-self: end;
+}
+
+@media (max-width: 800px) {
+  .nav {
+    grid-template-columns: 1fr auto;
+  }
+  .nav__mark {
+    grid-column: 1;
+  }
+  .nav__links {
+    display: none;
+  }
+  .nav__cta {
+    grid-column: 2;
+  }
+}
+
+/* ---------- Hero ---------- */
+/*
+ * 100svh of stage plus 85svh of exit (components/hero/timing.ts). SC.02 lies under the last
+ * 100svh, so the hero's track is only its exit: its last frame is the frame SC.02 pins on.
+ */
+.hero {
+  position: relative;
+  height: 185svh;
+  margin-bottom: -100svh;
+}
+
+.hero__stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+}
+
+.hero__canvas {
+  position: absolute;
+  inset: 0;
+}
+
+/*
+ * The pillar's light leaving the hero: a soft full-height blade at the exact place and width of
+ * SC.02's slit (components/scenes/Switch.module.css .slit), which it narrows to, with the same
+ * hairline over it.
+ */
+.hero__blade,
+.hero__hair {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  height: 100%;
+  translate: calc(100vw / 6 - 50%) 0;
+  pointer-events: none;
+  opacity: 0;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 4%, #000 26%, #000 74%, transparent 96%);
+  mask-image: linear-gradient(to bottom, transparent 4%, #000 26%, #000 74%, transparent 96%);
+}
+
+.hero__blade {
+  width: clamp(160px, 22vw, 440px);
+  background: linear-gradient(
+    90deg,
+    rgba(214, 160, 106, 0),
+    rgba(214, 160, 106, 0.05) 20%,
+    rgba(214, 160, 106, 0.13) 40%,
+    rgba(236, 231, 222, 0.18) 50%,
+    rgba(214, 160, 106, 0.13) 60%,
+    rgba(214, 160, 106, 0.05) 80%,
+    rgba(214, 160, 106, 0)
+  );
+}
+
+.hero__hair {
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent 10%,
+    rgba(236, 231, 222, 0.5) 40%,
+    rgba(214, 160, 106, 0.55) 70%,
+    transparent 92%
+  );
+}
+
+.hero__overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  color: var(--bone);
+}
+
+.hero__overlay a {
+  pointer-events: auto;
+}
+
+.hero__meta {
+  position: absolute;
+  bottom: 64px;
+  left: calc(var(--margin) + var(--span) * 7);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--t-meta);
+  font-weight: 700;
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+}
+
+.hero__meta li[data-indent="1"] {
+  padding-left: calc(var(--span) * 0.5);
+}
+
+.hero__meta li[data-kind="label"] {
+  margin-bottom: 0.5em;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: var(--smoke);
+}
+
+.hero__meta li[data-kind="line"] {
+  max-width: 30ch;
+  margin-top: 0.7em;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.005em;
+  color: rgba(236, 231, 222, 0.82);
+}
+
+.hero__meta li[data-indent="2"] {
+  padding-left: var(--span);
+}
+
+.hero__side {
+  position: absolute;
+  top: 50%;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+.hero__side--l {
+  left: var(--margin);
+}
+
+.hero__side--r {
+  right: var(--margin);
+}
+
+.hero__corner {
+  position: absolute;
+  left: var(--margin);
+  bottom: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+.hero__corner:hover {
+  opacity: 1;
+}
+
+.hero__slate {
+  position: absolute;
+  left: var(--margin);
+  bottom: 40px;
+}
+
+@media (max-width: 800px) {
+  .hero__meta {
+    bottom: 60px;
+    left: var(--margin);
+    font-size: 19px;
+  }
+  .hero__side {
+    display: none;
+  }
+  /* On phones SC.02's slit stands on the margin, where its type starts. */
+  .hero__blade,
+  .hero__hair {
+    translate: calc(var(--margin) - 50%) 0;
+  }
+}
+
+/* ---------- View transitions ---------- */
+/* The work screen → case-study screen: one picture moving, softened mid-flight to hide resampling. */
+::view-transition-group(.morph) {
+  animation-duration: 600ms;
+  animation-timing-function: cubic-bezier(0.7, 0, 0.2, 1);
+}
+
+::view-transition-image-pair(.morph) {
+  animation-name: morph-soften;
+}
+
+@keyframes morph-soften {
+  35% {
+    filter: blur(4px) brightness(0.85);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 1ms !important;
+  }
+}
+
+/* ---------- Player ---------- */
+.player {
+  position: fixed;
+  right: var(--margin);
+  bottom: 10px;
+  z-index: 85;
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+  color: var(--bone);
+}
+
+.player__bar {
+  display: flex;
+  height: 36px;
+  border-radius: 4px;
+  background: rgba(21, 20, 15, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: inset 0 0 0 1px rgba(236, 231, 222, 0.08);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.player__play {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  border-right: 1px solid rgba(236, 231, 222, 0.08);
+}
+
+.player__label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px 0 12px;
+  white-space: nowrap;
+  max-width: min(320px, 70vw);
+}
+
+.player__label span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+}
+
+.bars i {
+  width: 2px;
+  height: 100%;
+  background: currentColor;
+  transform-origin: bottom;
+  transform: scaleY(0.2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grain {
+    animation: none;
+  }
+  /* No pin: the hero is one frame tall, SC.02 follows it directly, and the two crossfade (200ms). */
+  .hero {
+    height: 100svh;
+    margin-bottom: 0;
+  }
+  .hero__stage {
+    position: relative;
+    transition: opacity 200ms linear !important;
+  }
+  .hero__stage[data-gone="1"] {
+    opacity: 0;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+  }
+}

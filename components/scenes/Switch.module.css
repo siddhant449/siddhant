@@ -1,0 +1,316 @@
+/*
+ * SC.02, the pitch. 100svh of stage pinned over 250svh of scroll. The hero overlaps the top of
+ * the section and the A-side its last 100svh, so the section has no background of its own: until
+ * its stage pins, the hero's last frames show through. It sits above the A-side (z-index) so the
+ * title card pins unseen underneath, and the stage cuts to it type to type.
+ */
+.scene {
+  position: relative;
+  z-index: 1;
+  height: 350svh;
+  margin-bottom: -100svh;
+}
+
+.stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--black);
+  pointer-events: none;
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+/*
+ * The opening frame: the hero's slit and its hairline, the same as .hero__blade and .hero__hair
+ * in app/globals.css (same place, width, light and scale), so the cut into this scene is unseen.
+ */
+.slit,
+.hair {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  height: 100%;
+  translate: calc(100vw / 6 - 50%) 0;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 4%, #000 26%, #000 74%, transparent 96%);
+  mask-image: linear-gradient(to bottom, transparent 4%, #000 26%, #000 74%, transparent 96%);
+}
+
+.slit {
+  width: clamp(160px, 22vw, 440px);
+  background: linear-gradient(
+    90deg,
+    rgba(214, 160, 106, 0),
+    rgba(214, 160, 106, 0.05) 20%,
+    rgba(214, 160, 106, 0.13) 40%,
+    rgba(236, 231, 222, 0.18) 50%,
+    rgba(214, 160, 106, 0.13) 60%,
+    rgba(214, 160, 106, 0.05) 80%,
+    rgba(214, 160, 106, 0)
+  );
+}
+
+.hair {
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent 10%,
+    rgba(236, 231, 222, 0.5) 40%,
+    rgba(214, 160, 106, 0.55) 70%,
+    transparent 92%
+  );
+}
+
+/* Every beat on the same stage, between the page margins. */
+.beats {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+}
+
+.beat {
+  position: absolute;
+  left: var(--margin);
+  right: var(--margin);
+}
+
+/*
+ * The words the dots draw. They are the real, accessible text, and the layout the field samples:
+ * set transparent here, since the dots draw them (reduced motion shows them as they are).
+ */
+.word {
+  margin: 0;
+  font-size: clamp(56px, 8.4vw, 168px);
+  font-weight: 800;
+  font-stretch: 75%;
+  line-height: 0.9;
+  letter-spacing: -0.035em;
+  color: var(--bone);
+  opacity: 0;
+}
+
+.big {
+  font-size: clamp(110px, 17vw, 320px);
+  line-height: 0.84;
+}
+
+/* Each word its own box, for the field to measure. */
+.w {
+  display: inline-block;
+}
+
+.opener,
+.handoff {
+  top: 34svh;
+}
+
+.eyebrow {
+  margin: 0 0 clamp(14px, 2.4svh, 26px);
+  color: var(--smoke);
+}
+
+.layer {
+  top: 18svh;
+}
+
+.proofWrap {
+  margin-top: clamp(18px, 3.4svh, 40px);
+}
+
+.proof {
+  max-width: 60ch;
+}
+
+.layerLabel {
+  display: flex;
+  gap: 10px;
+  margin: 0 0 10px;
+  font-size: var(--t-small);
+  font-weight: 700;
+  color: var(--smoke);
+}
+
+.num {
+  color: var(--ember);
+  font-variant-numeric: tabular-nums;
+}
+
+.line {
+  margin: 0 0 6px;
+  font-size: clamp(17px, 1.45vw, 25px);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--bone);
+}
+
+/* The pitch, in the page's own type, over the field. */
+.pitch {
+  top: 26svh;
+}
+
+.pitchLine {
+  max-width: 15.5ch;
+  margin: 0;
+  font-size: clamp(40px, 5.4vw, 104px);
+  font-weight: 800;
+  font-stretch: 75%;
+  line-height: 0.92;
+  letter-spacing: -0.035em;
+  color: var(--bone);
+}
+
+/* As in the footer: an on-air status, then the two ways in, as pill buttons. */
+.ctas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 22px;
+  margin-top: clamp(24px, 4svh, 44px);
+  pointer-events: auto;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 8px 0 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--bone);
+}
+
+.live {
+  position: relative;
+  color: var(--ember);
+}
+
+.live::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: currentColor;
+  animation: on-air 2.8s var(--ease) infinite;
+}
+
+@keyframes on-air {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  70%,
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+.cta {
+  display: inline-grid;
+  place-items: center;
+  min-height: 44px;
+  padding: 0 20px;
+  border: 1px solid var(--smoke);
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--bone);
+  transition:
+    border-color 0.2s var(--ease),
+    color 0.2s var(--ease);
+}
+
+.cta:hover {
+  border-color: var(--ember);
+  color: var(--ember);
+}
+
+.cta:focus-visible {
+  outline: 2px solid var(--bone);
+  outline-offset: 3px;
+}
+
+.slate {
+  position: absolute;
+  z-index: 5;
+  left: var(--margin);
+  bottom: 20px;
+}
+
+/* Phones: the words sized to the width, the proof under each, the slit on the margin. */
+@media (max-width: 800px) {
+  .slit,
+  .hair {
+    translate: calc(var(--margin) - 50%) 0;
+  }
+  .word {
+    font-size: clamp(44px, 12.5vw, 80px);
+  }
+  .big {
+    font-size: clamp(60px, 19vw, 120px);
+  }
+  .opener,
+  .handoff {
+    top: 30svh;
+  }
+  .layer {
+    top: 16svh;
+  }
+  .line {
+    font-size: 15px;
+  }
+  .pitch {
+    top: 22svh;
+  }
+  .pitchLine {
+    font-size: clamp(34px, 10.4vw, 60px);
+  }
+}
+
+/* Reduced motion: no pin and no dots. The pitch as plain type, each beat in turn, fading in (200ms). */
+@media (prefers-reduced-motion: reduce) {
+  .scene {
+    z-index: auto;
+    height: auto;
+    margin-bottom: 0;
+  }
+  .stage {
+    position: relative;
+    height: auto;
+    min-height: 100svh;
+    pointer-events: auto;
+    transition: opacity 200ms linear !important;
+  }
+  .canvas,
+  .slit,
+  .hair {
+    display: none;
+  }
+  .beats {
+    position: relative;
+    inset: auto;
+    display: grid;
+    gap: clamp(64px, 12svh, 140px);
+    padding: clamp(110px, 16svh, 180px) var(--margin) clamp(90px, 14svh, 160px);
+  }
+  .beat {
+    position: relative;
+    inset: auto;
+  }
+  .word {
+    opacity: 1;
+  }
+  .live::after {
+    animation: none;
+  }
+}

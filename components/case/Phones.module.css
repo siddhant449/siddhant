@@ -1,0 +1,165 @@
+.section {
+  padding: 180px var(--margin) 0;
+}
+
+.row {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  gap: clamp(48px, 10vw, 180px);
+  margin-top: 40px;
+}
+
+/* The floor under both phones, catching the key's spill from camera-left. */
+.row::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 39px;
+  height: clamp(90px, 12vw, 180px);
+  translate: 0 50%;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 46% 50% at 40% 50%,
+    rgba(214, 160, 106, 0.14),
+    rgba(214, 160, 106, 0.04) 55%,
+    rgba(214, 160, 106, 0) 80%
+  );
+}
+
+.phone {
+  position: relative;
+  width: clamp(150px, 21vw, 300px);
+  margin: 0;
+}
+
+/* Each camera sits toward the gap between the phones, so both read as one two-point view. */
+.stand {
+  position: relative;
+  perspective: 1400px;
+}
+
+.phone[data-side="toward"] .stand {
+  perspective-origin: 120% 40%;
+}
+
+.phone[data-side="away"] .stand {
+  perspective-origin: -20% 40%;
+}
+
+.device {
+  position: relative;
+  z-index: 1;
+  padding: 3.2%;
+  border-radius: 15% / 7%;
+  background: #0c0c0b;
+  box-shadow:
+    0 0 0 1px rgba(236, 231, 222, 0.16),
+    inset 0 0 0 1px rgba(236, 231, 222, 0.05);
+}
+
+/* Inner edges come forward: the corner of the two-point view. */
+.phone[data-side="toward"] .device {
+  transform: rotateY(-12deg);
+}
+
+.phone[data-side="away"] .device {
+  transform: rotateY(12deg);
+}
+
+.device::before {
+  content: "";
+  position: absolute;
+  top: 2.6%;
+  left: 50%;
+  z-index: 2;
+  width: 28%;
+  height: 2.3%;
+  border-radius: 99px;
+  translate: -50% 0;
+  background: var(--black);
+}
+
+/* Light on the face: warm where it turns to the key, shadowed where it turns away. */
+.device::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.phone[data-side="toward"] .device::after {
+  background: linear-gradient(90deg, rgba(214, 160, 106, 0.12), rgba(0, 0, 0, 0) 45%, rgba(0, 0, 0, 0.12));
+  box-shadow: inset 1.5px 0 0 rgba(214, 160, 106, 0.5);
+}
+
+.phone[data-side="away"] .device::after {
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.44));
+}
+
+.screen {
+  position: relative;
+  aspect-ratio: 390 / 844;
+  overflow: hidden;
+  border-radius: 12% / 5.6%;
+  background: var(--black);
+}
+
+.img {
+  object-fit: cover;
+  object-position: 50% 0;
+}
+
+/* Cast shadow on the floor, thrown to the right, away from the light. */
+.cast {
+  position: absolute;
+  left: 10%;
+  right: -26%;
+  bottom: -3%;
+  height: 7%;
+  border-radius: 50%;
+  background: var(--black);
+  filter: blur(14px);
+}
+
+.caption {
+  display: flex;
+  gap: 8px;
+  margin-top: 22px;
+  font-size: 12px;
+  font-weight: 600;
+  font-stretch: 75%;
+  font-variant-numeric: tabular-nums;
+  color: var(--smoke);
+}
+
+.n {
+  color: var(--ember);
+}
+
+@media (max-width: 800px) {
+  .section {
+    padding-top: 130px;
+  }
+
+  .row {
+    gap: calc(var(--gutter) * 2);
+  }
+
+  .phone {
+    width: min(220px, calc((100% - var(--gutter) * 2) / 2));
+  }
+
+  .phone[data-side] .device {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .phone[data-side] .device {
+    transform: none;
+  }
+}

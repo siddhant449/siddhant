@@ -1,0 +1,27 @@
+.line {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 0.24em;
+}
+
+/* Lost and found edges: an unlit word is still there, just in shadow. */
+.word {
+  display: inline-block;
+  color: var(--bone);
+  opacity: 0.12;
+  filter: blur(0.04em);
+  transition: opacity 0.35s var(--ease), filter 0.35s var(--ease);
+}
+
+.word[data-lit="1"] {
+  opacity: 1;
+  filter: none;
+  transition-duration: 0.12s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .word {
+    filter: none;
+  }
+}

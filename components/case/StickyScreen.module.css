@@ -1,0 +1,264 @@
+/* Each frame gets about 42svh of scroll while the stage is pinned. */
+.screen {
+  position: relative;
+  height: calc(100svh + var(--frames, 6) * 42svh);
+  margin-top: 140px;
+}
+
+.stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  display: grid;
+  place-items: center;
+}
+
+.stage .heading {
+  position: absolute;
+  top: 64px;
+  left: var(--margin);
+  margin: 0;
+}
+
+/* One-point perspective: the camera sits a little left of centre, toward the light. */
+.rig {
+  position: relative;
+  width: min(76vw, (100svh - 250px) * 1.6, 1160px);
+  perspective: 1800px;
+  perspective-origin: 40% 45%;
+}
+
+/* The screen turns a few degrees toward the key light and leans back from the camera. */
+.browser {
+  position: relative;
+  transform: rotateX(4deg) rotateY(-8deg);
+  transform-origin: 50% 60%;
+  border-radius: 10px;
+  background: #0b0b0a;
+  box-shadow: 0 0 0 1px rgba(236, 231, 222, 0.09);
+}
+
+/* Rim light where the key catches the bezel's left edge. */
+.browser::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    inset 1.5px 0 0 rgba(214, 160, 106, 0.55),
+    inset 0 1px 0 rgba(214, 160, 106, 0.14);
+}
+
+.bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  border-radius: 10px 10px 0 0;
+  background: #191814;
+  border-bottom: 1px solid rgba(236, 231, 222, 0.06);
+}
+
+.lights {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  display: flex;
+  gap: 6px;
+  translate: 0 -50%;
+}
+
+.lights i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ash);
+}
+
+.host {
+  padding: 3px 14px;
+  border-radius: 99px;
+  background: rgba(0, 0, 0, 0.35);
+  font-size: 12px;
+  font-weight: 600;
+  font-stretch: 75%;
+  line-height: 1.2;
+  color: var(--smoke);
+}
+
+.viewport {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: 0 0 10px 10px;
+  background: var(--black);
+}
+
+.column {
+  will-change: transform;
+}
+
+.page {
+  position: relative;
+  aspect-ratio: 16 / 10;
+}
+
+.page + .page {
+  border-top: 1px solid rgba(0, 0, 0, 0.6);
+}
+
+.img {
+  object-fit: cover;
+  object-position: 50% 0;
+}
+
+/* Raking light: the screen falls into shadow away from the key... */
+.shade {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    96deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0) 26%,
+    rgba(0, 0, 0, 0.28) 60%,
+    rgba(0, 0, 0, 0.56) 100%
+  );
+}
+
+/* ...and warms where the key strikes it. */
+.warm {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background: linear-gradient(
+    96deg,
+    rgba(214, 160, 106, 0.2) 0%,
+    rgba(214, 160, 106, 0.07) 22%,
+    rgba(214, 160, 106, 0) 44%
+  );
+}
+
+/* The implied floor in front of the screen: a pool of the key's spill, receding to the same
+   vanishing point, with the screen's cast shadow falling away from the light. */
+.floor {
+  position: absolute;
+  top: 100%;
+  left: -35%;
+  right: -35%;
+  height: 70%;
+  transform: rotateX(80deg);
+  transform-origin: 50% 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 42% 62% at 34% 0%,
+    rgba(214, 160, 106, 0.17),
+    rgba(214, 160, 106, 0.05) 50%,
+    rgba(214, 160, 106, 0) 78%
+  );
+}
+
+.cast {
+  position: absolute;
+  top: 0;
+  left: 38%;
+  width: 46%;
+  height: 46%;
+  border-radius: 50%;
+  background: var(--black);
+  filter: blur(18px);
+  opacity: 0.92;
+}
+
+.caption {
+  position: absolute;
+  left: var(--margin);
+  bottom: 18px;
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  font-stretch: 75%;
+  font-variant-numeric: tabular-nums;
+  color: var(--smoke);
+}
+
+.n {
+  color: var(--ember);
+}
+
+@media (max-width: 800px) {
+  .screen {
+    height: calc(100svh + var(--frames, 6) * 32svh);
+    margin-top: 100px;
+  }
+
+  .rig {
+    width: calc(100vw - var(--margin) * 2);
+    perspective: 1100px;
+  }
+
+  .browser {
+    transform: rotateX(3deg) rotateY(-5deg);
+  }
+
+  .bar {
+    height: 24px;
+  }
+
+  .lights {
+    display: none;
+  }
+
+  .host {
+    font-size: 11px;
+  }
+}
+
+/* No pin, no scrub: the frames stack in a flat browser frame. */
+@media (prefers-reduced-motion: reduce) {
+  .screen {
+    height: auto;
+    margin-top: 0;
+    padding: 180px var(--margin) 0;
+  }
+
+  .stage {
+    position: static;
+    height: auto;
+    display: block;
+  }
+
+  .stage .heading {
+    position: static;
+    margin-bottom: 18px;
+  }
+
+  .rig {
+    width: min(100%, 1160px);
+    margin: 0 auto;
+  }
+
+  .browser {
+    transform: none;
+  }
+
+  .viewport {
+    aspect-ratio: auto;
+  }
+
+  .column {
+    transform: none !important;
+  }
+
+  .floor,
+  .caption {
+    display: none;
+  }
+}

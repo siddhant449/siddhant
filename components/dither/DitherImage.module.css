@@ -1,0 +1,10 @@
+.box {
+  position: relative;
+  background: var(--black);
+  cursor: crosshair;
+}
+
+.box > div {
+  position: absolute !important;
+  inset: 0;
+}

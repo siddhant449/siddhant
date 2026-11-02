@@ -1,0 +1,150 @@
+.section {
+  padding: 180px var(--margin) 0;
+}
+
+/* The strip: stone film base, sprocket holes punched along both edges. */
+.sheet {
+  position: relative;
+  padding: 46px 28px 48px;
+  background: var(--stone);
+  border-radius: 2px;
+}
+
+.sheet::before,
+.sheet::after {
+  content: "";
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  height: 9px;
+  pointer-events: none;
+  background-image: radial-gradient(5px 3.6px at 50% 50%, var(--black) 0 88%, transparent 100%);
+  background-size: 21px 9px;
+  background-repeat: repeat-x;
+}
+
+.sheet::before {
+  top: 12px;
+}
+
+.sheet::after {
+  bottom: 12px;
+}
+
+/* Edge print, the way film stock carries its code along the rebate. */
+.edge {
+  position: absolute;
+  top: 25px;
+  left: 28px;
+  right: 28px;
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  font-size: 10px;
+  font-weight: 600;
+  font-stretch: 75%;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  color: var(--ember);
+  opacity: 0.75;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cell {
+  position: relative;
+}
+
+/* The circled frame and its pencil sit above their neighbours. */
+.cell[data-key] {
+  z-index: 2;
+}
+
+.frame {
+  margin: 0;
+}
+
+.box {
+  position: relative;
+  aspect-ratio: 16 / 10;
+}
+
+.print {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--black);
+  box-shadow: 0 0 0 1px rgba(236, 231, 222, 0.06);
+}
+
+.img {
+  object-fit: cover;
+  object-position: 50% 0;
+}
+
+.caption {
+  display: flex;
+  gap: 8px;
+  margin-top: 9px;
+  font-size: 12px;
+  font-weight: 600;
+  font-stretch: 75%;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.25;
+  color: var(--smoke);
+}
+
+.n {
+  flex: none;
+  color: var(--ember);
+}
+
+/* 116% of the frame's width, centred on it, so the loop runs just outside the print. */
+.pencil {
+  position: absolute;
+  top: 50%;
+  left: -8%;
+  width: 116%;
+  aspect-ratio: 200 / 134;
+  translate: 0 -50%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.stroke {
+  fill: none;
+  stroke: var(--ember);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (max-width: 800px) {
+  .section {
+    padding-top: 130px;
+  }
+
+  .sheet {
+    padding: 42px 14px 40px;
+  }
+
+  .edge {
+    left: 14px;
+    right: 14px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 10px;
+  }
+
+  .caption {
+    font-size: 11px;
+  }
+}

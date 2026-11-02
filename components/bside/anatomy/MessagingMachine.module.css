@@ -1,0 +1,1056 @@
+/*
+ * The messaging machine: an Anatomy-style plate. Faces take four tones by facing (lit from the
+ * upper left) and a lighter cap; hairlines draw silhouettes and creases; ember is the one accent,
+ * kept for messages in flight and live readouts.
+ */
+.root {
+  /* Face tones: four wall shades and a lighter cap, the darkest still well above the page (and any
+     concrete wash over it, which stays under #242220), so solids read clean; wells and holes go darker. */
+  --s0: #2a2825;
+  --s1: #2e2c28;
+  --s2: #312f2b;
+  --s3: #363430;
+  --top: #3d3b36;
+  --bench: #302e2a;
+  --well: #211f1c;
+  --cavity: #1a1917;
+  --glass: #262421;
+  /* Lines: silhouettes strong enough to hold the machine together when it draws small. */
+  --edge: #8c877e;
+  --crease: #56534d;
+  --faint: #47443f;
+  --glint: rgba(236, 231, 222, 0.46);
+  --hair: 0.9px;
+
+  container-type: inline-size;
+  position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto auto auto;
+  row-gap: 7px;
+  width: 100%;
+  height: 100%;
+  padding: 10px 12px 9px;
+  background: var(--black);
+  color: var(--smoke);
+  font-family: var(--font);
+  /* Hinting rounds the condensed face's advances at these sizes and opens gaps; this keeps them true. */
+  text-rendering: geometricPrecision;
+}
+
+/* ---------- The plate: the figure with its four corner labels ---------- */
+.card {
+  position: relative;
+  min-height: 0;
+  padding: 12px 6px 14px;
+  box-shadow: inset 0 0 0 1px var(--ash);
+}
+
+.svg {
+  --u: 0.8;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.fig,
+.title,
+.caption,
+.readout {
+  position: absolute;
+  z-index: 1;
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.15;
+  pointer-events: none;
+}
+
+.fig {
+  top: 8px;
+  left: 10px;
+  font-weight: 700;
+  font-stretch: 75%;
+  font-variant-numeric: tabular-nums;
+}
+
+.title {
+  top: 8px;
+  right: 10px;
+  font-weight: 700;
+  color: var(--bone);
+}
+
+.caption {
+  bottom: 8px;
+  left: 10px;
+  max-width: min(58%, 46ch);
+  font-weight: 600;
+}
+
+.captionName {
+  color: var(--bone);
+}
+
+.readout {
+  bottom: 8px;
+  right: 10px;
+  display: flex;
+  gap: 9px;
+  font-stretch: 75%;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.readout div {
+  display: flex;
+  gap: 3px;
+}
+
+.readout dt {
+  color: var(--smoke);
+  font-weight: 600;
+}
+
+.readout dd {
+  margin: 0;
+  color: var(--ember);
+}
+
+/* ---------- Controls: four keys and the guided run, then the log ---------- */
+.controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+/* A key on the machine's panel: an indicator lamp, the verb, and what pressing it will show. A lip
+   along its bottom edge, and it gives a pixel when pressed. */
+.cta,
+.playAll {
+  position: relative;
+  border-radius: 10px;
+  background: #1c1a17;
+  box-shadow:
+    inset 0 0 0 1px var(--ash),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.32);
+  color: var(--bone);
+  text-align: left;
+  /* Buttons reset this in the UA sheet. */
+  text-rendering: geometricPrecision;
+  transition:
+    box-shadow 0.2s,
+    background-color 0.2s,
+    transform 0.12s var(--ease);
+}
+
+.cta {
+  display: grid;
+  grid-template-columns: 7px minmax(0, 1fr);
+  align-content: start;
+  column-gap: 8px;
+  row-gap: 3px;
+  padding: 9px 10px 10px 9px;
+}
+
+.cta:hover,
+.playAll:hover {
+  background: #221f1c;
+  box-shadow:
+    inset 0 0 0 1px #5a564f,
+    inset 0 -2px 0 rgba(0, 0, 0, 0.32);
+}
+
+.cta:active,
+.playAll:active {
+  transform: translateY(1px);
+}
+
+.cta:focus-visible,
+.playAll:focus-visible {
+  outline: 2px solid var(--ember);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
+/* Lit while its scenario plays (or, for the tenant key, while switched); ringed while it waits its turn. */
+.lamp {
+  position: relative;
+  align-self: center;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ash);
+  transition: background-color 0.25s;
+}
+
+.lamp::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--ember);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.cta[data-active] .lamp::after,
+.cta[aria-pressed="true"] .lamp::after {
+  opacity: 1;
+}
+
+.cta[data-queued] .lamp {
+  background: none;
+  box-shadow: inset 0 0 0 1.5px var(--ember);
+}
+
+.verb {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.005em;
+}
+
+.then {
+  grid-column: 2;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--smoke);
+}
+
+/*
+ * The invitation: until the first press, the keys light in turn, one a beat at the song's tempo (--beat),
+ * a slow chase across the panel. Only an ember hairline and the lamp change, so the frame's brightness
+ * barely moves.
+ */
+.cta::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    inset 0 0 0 1px rgba(214, 160, 106, 0.62),
+    0 0 22px -8px rgba(214, 160, 106, 0.45);
+  opacity: 0;
+}
+
+.root[data-invite] .cta::after,
+.root[data-invite] .cta .lamp::after {
+  animation: invite calc(var(--beat) * 4) ease-out infinite;
+  animation-delay: calc(var(--i) * var(--beat));
+}
+
+@keyframes invite {
+  0% {
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  48%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* The guided run: a wide key with four step lamps, lit as each scenario plays. */
+.playAll {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 36px;
+  padding: 0 12px 0 11px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.playAll[aria-disabled="true"] {
+  cursor: default;
+}
+
+.playIcon {
+  width: 8px;
+  height: 9px;
+  background: currentColor;
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+
+.playAll[data-active] .playIcon {
+  background: var(--ember);
+}
+
+.steps {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.steps i {
+  width: 14px;
+  height: 3px;
+  border-radius: 1.5px;
+  background: var(--ash);
+  transition: background-color 0.25s;
+}
+
+.steps i[data-done] {
+  background: rgba(214, 160, 106, 0.42);
+}
+
+.steps i[data-now] {
+  background: var(--ember);
+}
+
+/* A console: monospaced, so a line's columns line up, and lit by kind so it reads at a glance. */
+.log {
+  --lines: 3;
+  --lh: 17px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  height: calc(var(--lines) * var(--lh));
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  line-height: var(--lh);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Kept as written: the model separates a line's columns with two spaces. */
+.log li {
+  flex: none;
+  overflow: hidden;
+  white-space: pre;
+  text-overflow: ellipsis;
+  color: #b3ada3;
+}
+
+/* Requests and responses read first, queries next, the bus behind them; faults take the accent.
+   The newest line is bone, marked at the left. Each run opens on its heading, under a hairline. */
+.log li[data-kind="http"] {
+  font-weight: 600;
+  color: #e2ddd4;
+}
+.log li[data-kind="sql"] {
+  color: #c9c3b9;
+}
+.log li[data-kind="fault"] {
+  color: var(--ember);
+}
+.log li[data-new] {
+  color: var(--bone);
+  box-shadow: inset 2px 0 0 var(--ember);
+  padding-left: 8px;
+}
+.log li[data-kind="play"] {
+  font-weight: 700;
+  color: var(--bone);
+  box-shadow: inset 0 1px 0 #4a463f;
+}
+.log li[data-kind="play"][data-new] {
+  box-shadow: inset 0 1px 0 #4a463f, inset 2px 0 0 var(--ember);
+}
+
+.note {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--smoke);
+}
+
+/* Drawn large: roomier corners and keys, and more of the log. */
+@container (min-width: 700px) {
+  .card {
+    padding: 14px 10px 16px;
+  }
+  .fig,
+  .title,
+  .caption,
+  .readout {
+    font-size: 12px;
+  }
+  .fig,
+  .title {
+    top: 10px;
+  }
+  .caption,
+  .readout {
+    bottom: 10px;
+  }
+  .fig,
+  .caption {
+    left: 12px;
+  }
+  .title,
+  .readout {
+    right: 12px;
+  }
+  .readout {
+    gap: 12px;
+  }
+  .verb {
+    font-size: 14px;
+  }
+  .then {
+    font-size: 12px;
+  }
+  .log {
+    --lines: 5;
+    --lh: 18px;
+    font-size: 12.5px;
+  }
+}
+
+/* ---------- Split: the copy and controls in a column beside the figure ---------- */
+/* The section around it is the frame, so the machine adds no padding or ground of its own. Below
+   1100px a column beside the figure would crush the keys, so it stacks: copy, figure, keys, log. */
+.root[data-layout="split"] {
+  height: auto;
+  grid-template-rows: none;
+  padding: 0;
+  background: none;
+}
+
+.lead {
+  min-width: 0;
+  padding-bottom: 18px;
+}
+
+/* Wider than a phone: the figure at its own proportions, large keys, and the log as a framed console. */
+@media (min-width: 801px) {
+  .root[data-layout="split"] {
+    row-gap: 12px;
+  }
+  .root[data-layout="split"] .card {
+    padding: 34px 14px 40px;
+  }
+  .root[data-layout="split"] .svg {
+    height: auto;
+    aspect-ratio: var(--ratio);
+  }
+  .root[data-layout="split"] .controls {
+    gap: 8px;
+  }
+  .root[data-layout="split"] .cta {
+    grid-template-columns: 8px minmax(0, 1fr);
+    column-gap: 10px;
+    row-gap: 4px;
+    min-height: 68px;
+    padding: 11px 14px 12px 12px;
+  }
+  .root[data-layout="split"] .lamp {
+    width: 8px;
+    height: 8px;
+  }
+  .root[data-layout="split"] .verb {
+    font-size: 16px;
+  }
+  .root[data-layout="split"] .then {
+    font-size: 13px;
+  }
+  .root[data-layout="split"] .playAll {
+    gap: 10px;
+    min-height: 46px;
+    padding: 0 16px 0 14px;
+    font-size: 14px;
+  }
+  /* Its top and bottom margins are transparent border, outside the scrolled area, so a line
+     scrolling off the top is cut at the frame's edge, never shown half under it. */
+  .root[data-layout="split"] .log {
+    --lines: 7;
+    --lh: 20px;
+    height: calc(var(--lines) * var(--lh) + 28px);
+    padding: 0 16px;
+    border-block: 14px solid transparent;
+    border-radius: 10px;
+    background: rgba(236, 231, 222, 0.035);
+    box-shadow: 0 0 0 1px #3d3a35;
+    font-size: 13px;
+  }
+}
+
+/* A landscape tablet: the four keys in one row, so they sit in view with the figure above them. */
+@media (min-width: 960px) and (max-width: 1099px) {
+  .root[data-layout="split"] .controls {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Wide: copy, keys and log in a column beside the figure. */
+@media (min-width: 1100px) {
+  .root[data-layout="split"] {
+    grid-template-columns: minmax(0, 0.84fr) minmax(0, 1.16fr);
+    grid-template-rows: auto auto auto auto minmax(0, 1fr);
+    grid-template-areas:
+      "lead card"
+      "controls card"
+      "log card"
+      "note card"
+      ". card";
+    column-gap: clamp(32px, 4.4vw, 84px);
+    row-gap: 0;
+  }
+  .root[data-layout="split"] .lead {
+    grid-area: lead;
+    padding-bottom: 22px;
+  }
+  /* As large as its column allows, centred on the column beside it. On a screen too short for that
+     column, it stays in view while the keys scroll up to it. */
+  .root[data-layout="split"] .card {
+    grid-area: card;
+    align-self: center;
+    position: sticky;
+    top: 72px;
+  }
+  .root[data-layout="split"] .controls {
+    grid-area: controls;
+  }
+  .root[data-layout="split"] .log {
+    grid-area: log;
+    margin-top: 10px;
+  }
+  .root[data-layout="split"] .note {
+    grid-area: note;
+    margin-top: 8px;
+  }
+}
+
+/* Short and wide: centred, the figure's foot would run under the fixed player, so it hangs from the top. */
+@media (min-width: 1100px) and (max-height: 820px) {
+  .root[data-layout="split"] .card {
+    align-self: start;
+  }
+}
+
+/* ---------- Phones: stacked, full width, and the figure simplified ---------- */
+@media (max-width: 800px) {
+  .svg .fine {
+    display: none;
+  }
+  .root {
+    height: auto;
+    grid-template-rows: auto;
+    padding: 10px 10px 12px;
+  }
+  .card {
+    aspect-ratio: 1.18;
+    padding: 26px 2px 38px;
+  }
+  .caption {
+    max-width: none;
+    right: 10px;
+    bottom: 22px;
+  }
+  .readout {
+    left: 10px;
+    right: auto;
+    bottom: 8px;
+  }
+  .controls {
+    gap: 8px;
+  }
+  .cta {
+    min-height: 68px;
+    padding: 11px 11px 12px 10px;
+  }
+  .verb {
+    font-size: 14px;
+  }
+  .then {
+    font-size: 12px;
+  }
+  .playAll {
+    min-height: 46px;
+    font-size: 14px;
+  }
+  .log {
+    --lines: 6;
+    height: auto;
+    max-height: calc(var(--lines) * var(--lh));
+  }
+  .log li {
+    white-space: pre-wrap;
+  }
+  /* The same framed console as wider screens, at the phone's size, and fixed, so nothing below it
+     moves as a run fills it. */
+  .root[data-layout="split"] .log {
+    --lh: 18px;
+    height: calc(var(--lines) * var(--lh) + 22px);
+    max-height: none;
+    padding: 0 12px;
+    border-block: 11px solid transparent;
+    border-radius: 10px;
+    background: rgba(236, 231, 222, 0.035);
+    box-shadow: 0 0 0 1px #3d3a35;
+  }
+}
+
+/* Touch screens tap rather than hover. */
+.touch {
+  display: none;
+}
+@media (hover: none) {
+  .mouse {
+    display: none;
+  }
+  .touch {
+    display: inline;
+  }
+}
+
+/* ---------- Figure paint ---------- */
+.s0,
+.s1,
+.s2,
+.s3,
+.top {
+  stroke-width: 0.3;
+  stroke-linejoin: round;
+}
+.s0 {
+  fill: var(--s0);
+  stroke: var(--s0);
+}
+.s1 {
+  fill: var(--s1);
+  stroke: var(--s1);
+}
+.s2 {
+  fill: var(--s2);
+  stroke: var(--s2);
+}
+.s3 {
+  fill: var(--s3);
+  stroke: var(--s3);
+}
+.top {
+  fill: var(--top);
+  stroke: var(--top);
+}
+
+.edge,
+.crease,
+.faint,
+.glint {
+  fill: none;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.edge {
+  stroke: var(--edge);
+  stroke-width: var(--hair);
+}
+.crease {
+  stroke: var(--crease);
+  stroke-width: 0.6px;
+}
+.faint {
+  stroke: var(--faint);
+  stroke-width: 0.6px;
+}
+.glint {
+  stroke: var(--glint);
+  stroke-width: 0.7px;
+  transition: stroke 0.3s;
+}
+
+.cavity {
+  fill: var(--cavity);
+}
+.well {
+  fill: var(--well);
+}
+.glass {
+  fill: var(--glass);
+}
+
+.screw circle {
+  fill: var(--smoke);
+  fill-opacity: 0.6;
+}
+
+/* Tone hierarchy: the bench sits low under the parts on it; the core of the stack is in shadow. */
+.base .top {
+  fill: var(--bench);
+  stroke: var(--bench);
+}
+.base .s3,
+.base .s2 {
+  fill: var(--s1);
+  stroke: var(--s1);
+}
+.core path:not(.edge) {
+  fill: var(--well);
+  stroke: var(--well);
+}
+
+/* Tubes: stroke widths are in figure units, set on each path. */
+.pipeEdge,
+.pipeBody,
+.pipeShine,
+.glow {
+  fill: none;
+  stroke-linejoin: round;
+}
+.pipeEdge {
+  stroke: var(--edge);
+}
+.pipeBody {
+  stroke: var(--s2);
+}
+.cable .pipeBody {
+  stroke: var(--s0);
+}
+.pipeShine {
+  stroke: rgba(236, 231, 222, 0.14);
+  stroke-linecap: round;
+}
+.glow {
+  stroke: var(--ember);
+  stroke-linecap: round;
+  opacity: 0;
+}
+
+/* Hover takes a part off the bench, Anatomy's take-apart; the bench drops away instead. */
+.part {
+  transition: transform 0.45s var(--ease);
+}
+.part[data-hover] {
+  transform: translateY(-5px);
+}
+.part[data-part="bench"][data-hover] {
+  transform: translateY(3px);
+}
+.part[data-hover] .glint {
+  stroke: rgba(236, 231, 222, 0.62);
+}
+.key {
+  cursor: pointer;
+}
+
+/* The soft shadow a lifted part leaves on the bench. */
+.shadow {
+  fill: #0b0a09;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.45s var(--ease), visibility 0s 0.45s;
+  pointer-events: none;
+}
+.shadow[data-on] {
+  opacity: 0.55;
+  visibility: visible;
+  transition: opacity 0.45s var(--ease);
+}
+
+/* ---------- Live marks ---------- */
+.bead {
+  fill: var(--ember);
+}
+.beads {
+  pointer-events: none;
+}
+
+.counter {
+  font-family: var(--font);
+  font-size: 5.6px;
+  font-weight: 700;
+  font-stretch: 75%;
+  font-variant-numeric: tabular-nums;
+  fill: var(--ember);
+}
+.counterLabel {
+  fill: #a39e96;
+  font-weight: 600;
+}
+
+/* The tenant locks: each latch shoots out of its table, top to bottom, when the other tenant reads. */
+.latch {
+  transition: transform 0.24s var(--ease);
+  transition-delay: calc(var(--i) * 12ms);
+}
+.latch path {
+  transition: fill 0.24s, stroke 0.24s;
+  transition-delay: inherit;
+}
+.latches[data-locked] .latch {
+  transform: translate(var(--tx), var(--ty));
+}
+.latches[data-locked] .latch path:not(.latchEdge) {
+  fill: #cfc9bf;
+  stroke: #cfc9bf;
+}
+.latchEdge {
+  fill: none;
+  stroke: var(--crease);
+  stroke-width: 0.5px;
+  vector-effect: non-scaling-stroke;
+}
+
+/* The ledger: a strip per row; the other tenant sees none of them. */
+.row,
+.rowSeq {
+  transition: fill-opacity 0.4s;
+}
+.row {
+  fill: rgba(236, 231, 222, 0.26);
+}
+.rowSeq {
+  fill: rgba(236, 231, 222, 0.5);
+}
+.rows[data-locked] .row,
+.rows[data-locked] .rowSeq {
+  fill-opacity: 0.08;
+}
+.rowGlow {
+  fill: var(--ember);
+  opacity: 0;
+}
+
+.keyGlow {
+  fill: var(--ember);
+  opacity: 0;
+}
+
+.screenLines {
+  fill: none;
+  stroke: rgba(236, 231, 222, 0.2);
+  stroke-width: 0.8px;
+  vector-effect: non-scaling-stroke;
+}
+.bubble {
+  fill: rgba(236, 231, 222, 0.32);
+}
+.tick,
+.cross,
+.lost {
+  fill: none;
+  stroke-width: 1.1px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.tick,
+.cross {
+  stroke: var(--bone);
+}
+.lost {
+  stroke: var(--ember);
+}
+.screen[data-state="ok"] .tick,
+.screen[data-state="lost"] .cross {
+  opacity: 0.8;
+}
+.wait {
+  fill: var(--ember);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.screen[data-state="waiting"] .wait {
+  opacity: 1;
+}
+
+.lever {
+  transition: transform 0.35s var(--ease);
+}
+.lever[data-tenant="b"] {
+  transform: translate(var(--tx), var(--ty));
+}
+
+.socketGlow {
+  fill: none;
+  stroke: var(--ember);
+  stroke-width: 1.2px;
+  vector-effect: non-scaling-stroke;
+  opacity: 0;
+}
+.deviceBubble {
+  fill: rgba(236, 231, 222, 0.26);
+}
+.bubbleGlow {
+  fill: var(--ember);
+  opacity: 0;
+}
+
+.pip {
+  fill: var(--well);
+  stroke: var(--crease);
+  stroke-width: 0.6px;
+  vector-effect: non-scaling-stroke;
+  transition: fill 0.25s;
+}
+.pip[data-on] {
+  fill: var(--ember);
+}
+.ackGlow {
+  fill: var(--ember);
+  opacity: 0;
+}
+.failGlow {
+  fill: var(--bone);
+  opacity: 0;
+}
+/* ---------- Callouts: the main assemblies named on the figure ---------- */
+/* Type stays 11-12px at any figure size: --u (figure units per CSS px) is measured by the component
+   and set on the svg; this is only its value before the first measure. */
+.leader {
+  stroke: var(--smoke);
+  stroke-width: 0.75px;
+  vector-effect: non-scaling-stroke;
+  transition: stroke 0.25s;
+}
+.calloutDot {
+  r: calc(var(--u) * 2.2px);
+  fill: var(--smoke);
+  stroke: var(--black);
+  stroke-width: 0.75px;
+  vector-effect: non-scaling-stroke;
+  transition: fill 0.25s;
+}
+/* Bone on a dark halo: at least 4.5:1 over whatever sits behind, line or face. */
+.label {
+  font-family: var(--font);
+  font-size: calc(var(--u) * 11px);
+  font-weight: 600;
+  font-stretch: 75%;
+  letter-spacing: 0.01em;
+  fill: #ddd7cd;
+  paint-order: stroke;
+  stroke: var(--black);
+  stroke-width: calc(var(--u) * 3.5px);
+  stroke-linejoin: round;
+  transition: fill 0.25s;
+}
+.labelName {
+  font-weight: 700;
+}
+.callout[data-on] .label,
+.callout[data-live] .label {
+  fill: var(--bone);
+}
+.callout[data-on] .leader,
+.callout[data-live] .leader {
+  stroke: var(--bone);
+}
+.callout[data-on] .calloutDot {
+  fill: var(--bone);
+}
+.callout[data-live] .calloutDot {
+  fill: var(--ember);
+}
+.marker {
+  display: none;
+}
+.marker circle {
+  r: calc(var(--u) * 7px);
+  fill: var(--black);
+  stroke: var(--bone);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+  transition: fill 0.25s, stroke 0.25s;
+}
+.marker text {
+  font-family: var(--font);
+  font-size: calc(var(--u) * 9.5px);
+  font-weight: 700;
+  font-stretch: 75%;
+  fill: var(--bone);
+}
+.callout[data-on] .marker circle {
+  fill: var(--bone);
+}
+.callout[data-on] .marker text {
+  fill: var(--black);
+}
+.callout[data-live] .marker circle {
+  stroke: var(--ember);
+}
+
+@container (min-width: 700px) {
+  .label {
+    font-size: calc(var(--u) * 12px);
+  }
+}
+
+/* The legend that stands in for the callouts on phones. */
+.legend {
+  display: none;
+}
+
+@media (max-width: 800px) {
+  .leader,
+  .calloutDot,
+  .label {
+    display: none;
+  }
+  .marker {
+    display: inline;
+  }
+  .legend {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px 12px;
+    margin: 0;
+    padding: 0 2px;
+    list-style: none;
+    font-size: 12px;
+    font-weight: 700;
+    font-stretch: 75%;
+    line-height: 1.25;
+    color: var(--bone);
+  }
+  .legend li {
+    display: grid;
+    grid-template-columns: 15px minmax(0, 1fr);
+    column-gap: 6px;
+    align-items: start;
+  }
+  .legendN {
+    display: grid;
+    place-items: center;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1px var(--bone);
+    font-size: 9.5px;
+    line-height: 1;
+  }
+  .legend li[data-on] .legendN {
+    background: var(--bone);
+    color: var(--black);
+  }
+  .legendDetail {
+    font-weight: 600;
+    color: var(--smoke);
+  }
+}
+
+/* The point on the cable where a dropped reply dies. */
+.breakRing {
+  fill: none;
+  stroke: var(--ember);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  pointer-events: none;
+}
+
+.tokenGlow {
+  fill: none;
+  stroke: var(--ember);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+  opacity: 0;
+}

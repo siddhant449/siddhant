@@ -1,0 +1,79 @@
+.section {
+  padding: 180px var(--margin) 0;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 96px var(--gutter);
+  margin-top: 10px;
+}
+
+/* A storyboard panel: the frame inside a thin ruled box. */
+.shot {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: var(--stone);
+  box-shadow: 0 0 0 1px var(--ash);
+}
+
+.img {
+  object-fit: cover;
+  object-position: 50% 0;
+}
+
+.text {
+  display: grid;
+  grid-template-columns: var(--span) minmax(0, 1fr);
+  margin-top: 16px;
+}
+
+.no {
+  margin: 0;
+  padding-top: 0.35em;
+  font-size: 12px;
+  font-weight: 600;
+  font-stretch: 75%;
+  font-variant-numeric: tabular-nums;
+  color: var(--smoke);
+  white-space: nowrap;
+}
+
+.no span {
+  color: var(--ember);
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(22px, 2.2vw, 34px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--bone);
+}
+
+.body {
+  margin: 12px 0 0;
+  max-width: 42ch;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.38;
+  color: var(--smoke);
+}
+
+@media (max-width: 800px) {
+  .section {
+    padding-top: 130px;
+  }
+
+  .board {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 64px;
+  }
+
+  .text {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 8px;
+  }
+}

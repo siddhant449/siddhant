@@ -1,0 +1,248 @@
+.section {
+  /* Portrait width: six columns, or less on a short screen so the sticky frame always fits. */
+  --pw: min(calc(var(--span) * 6 - var(--gutter)), calc((100svh - 110px) * 1.2));
+  position: relative;
+  isolation: isolate;
+  background: var(--black);
+  color: var(--smoke);
+}
+
+.reel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- The portrait: a viewport-sized layer, so the key veil maps straight onto it ---------- */
+.film {
+  position: sticky;
+  top: 0;
+  z-index: 0;
+  height: 100svh;
+  margin-bottom: -100svh;
+  /* The close-up overfills the frame; the film gate is the viewport. */
+  overflow: clip;
+}
+
+.frame {
+  position: absolute;
+  top: 50px;
+  left: var(--margin);
+  width: var(--pw);
+}
+
+.portrait {
+  width: 100%;
+  aspect-ratio: 1374 / 1145;
+}
+
+/* The camera: the portrait's canvas scales about its lit pillar edge (15% across, 42% down). */
+.zoom canvas {
+  transform: scale(var(--s, 1));
+  transform-origin: 15% 42%;
+  will-change: transform;
+}
+
+.zoom[data-zoomed="1"] {
+  pointer-events: none;
+}
+
+/* R3F clips its wrapper; the film (desktop) or the lens (phones) is the gate instead. */
+.zoom :global(div) {
+  overflow: visible !important;
+}
+
+/*
+ * A flag (a black card that keeps light off part of the set): while the close-up spills under
+ * the text column, the right of frame falls away to the page black. Past the medium framing it covers nothing.
+ */
+.flag {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent calc(var(--margin) + var(--span) * 6.2),
+    color-mix(in srgb, var(--black) 62%, transparent) calc(var(--margin) + var(--span) * 7.4),
+    color-mix(in srgb, var(--black) 78%, transparent)
+  );
+}
+
+/* Above the key veil, so it always reads. */
+.caption {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 10px 0 0;
+  font-size: var(--t-small);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--smoke);
+}
+
+.captionTitle {
+  color: var(--bone);
+}
+
+/* ---------- Bio, call sheet, timeline ---------- */
+.grid {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--gutter);
+  padding: 0 var(--margin) 34svh;
+  /* Let the pointer through to the portrait's lens; the text column takes it back. */
+  pointer-events: none;
+}
+
+/* The pinned close-up holds a beat, then pulls back while the bio rises into this space. */
+.lead {
+  grid-column: 1 / -1;
+  height: 100svh;
+}
+
+.text {
+  grid-column: 8 / span 5;
+  pointer-events: auto;
+}
+
+.slate {
+  margin-bottom: 26px;
+}
+
+.text .bio {
+  font-size: clamp(24px, 2.5vw, 40px);
+  text-indent: calc(var(--span) * 1.5);
+}
+
+.timelineBlock {
+  margin-top: 150px;
+}
+
+.timeline {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.timeline li {
+  display: grid;
+  grid-template-columns: 10.5em minmax(0, 1fr);
+  grid-template-areas: "when what" "when where";
+  column-gap: 10px;
+  border-top: 1px solid var(--ash);
+  padding: 8px 0 12px;
+}
+
+.when {
+  grid-area: when;
+  padding-top: 0.3em;
+  font-size: var(--t-small);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.what {
+  grid-area: what;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--bone);
+}
+
+.where {
+  grid-area: where;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* ---------- Iris out: a black matte over the whole frame, its opening closing on the pillar edge ---------- */
+.matte {
+  --iris-x: calc(var(--margin) + var(--pw) * 0.15);
+  --iris-y: calc(50px + var(--pw) / 1.2 * 0.42);
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: var(--black);
+}
+
+@media (max-width: 800px) {
+  .section {
+    --pw: calc(100vw - var(--margin) * 2 - 14px);
+  }
+  /* Full width above the text. */
+  .film {
+    position: relative;
+    height: auto;
+    margin-bottom: 0;
+    padding: 90px var(--margin) 0 calc(var(--margin) + 14px);
+  }
+  .frame {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 100%;
+  }
+  /* The film scrolls with the page here, so the close-up stays inside the frame. */
+  .lens {
+    overflow: hidden;
+  }
+  .caption {
+    opacity: 1 !important;
+  }
+  .lead,
+  .flag {
+    display: none;
+  }
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 64px var(--margin) 26svh calc(var(--margin) + 14px);
+  }
+  .text {
+    grid-column: 1;
+  }
+  .text .bio {
+    text-indent: calc(var(--span) * 3);
+  }
+  .timeline li {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "when" "what" "where";
+  }
+  /* By now the portrait has scrolled away; the iris closes on the middle of the screen. */
+  .matte {
+    --iris-x: 50%;
+    --iris-y: 45%;
+  }
+}
+
+/* No pin: the portrait sits beside the opening of the text and scrolls with it. */
+@media (prefers-reduced-motion: reduce) {
+  .film {
+    position: relative;
+    transform: none !important;
+  }
+  /* The medium framing, held: no pull-back, no iris. */
+  .zoom canvas {
+    transform: none;
+  }
+  .zoom[data-zoomed="1"] {
+    pointer-events: auto;
+  }
+  .caption {
+    opacity: 1 !important;
+  }
+  .matte {
+    display: none;
+  }
+  .lead {
+    display: none;
+  }
+  .grid {
+    padding-top: 50px;
+  }
+}

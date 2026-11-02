@@ -1,0 +1,400 @@
+/* ---------- The end card: the last line, held on black ---------- */
+/* Above the iris matte, so the card reads on the black it leaves. 100svh to rise into place, then
+   160svh pinned: the page lands on the line and holds there while it is sung. */
+.track {
+  position: relative;
+  z-index: 4;
+  height: 260svh;
+  pointer-events: none;
+}
+
+/* The line's frame: its top is where the page lands, 12svh into the pin, once the iris has closed. */
+.frame {
+  position: absolute;
+  top: 12svh;
+  left: 0;
+  width: 100%;
+  height: 100svh;
+}
+
+.card {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: 72px var(--margin) 64px;
+}
+
+.lyric {
+  justify-content: center;
+  text-align: center;
+  font-size: var(--t-huge);
+  font-weight: 800;
+  font-stretch: 112%;
+  line-height: 0.92;
+  letter-spacing: -0.045em;
+}
+
+/* ---------- The footer: end credits, then the ask ---------- */
+/* In normal flow after the card, above the matte. The last 64px stay clear for the mini player. */
+.footer {
+  position: relative;
+  z-index: 4;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--gutter);
+  padding: clamp(96px, 20svh, 220px) var(--margin) 64px;
+  color: var(--smoke);
+}
+
+/* The ask, on the pillar edge like the case studies' end cards. */
+.ask {
+  grid-column: 3 / -1;
+}
+
+.pitch {
+  margin-bottom: clamp(28px, 5svh, 56px);
+  text-indent: calc(var(--span) * 2);
+}
+
+/* The address, fitted to its column: one line on a wide screen, broken before the @ on a narrow
+   one. Archivo 800 at -0.04em sets it 14.69em wide (8.82em to the @). */
+.mailBox {
+  container-type: inline-size;
+}
+
+.mail {
+  display: block;
+  width: fit-content;
+  font-size: min(calc(100cqi / 14.75), 136px);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+  color: var(--bone);
+  transition: color 0.3s var(--ease);
+}
+
+.mail:hover,
+.mail:focus-visible {
+  color: var(--ember);
+}
+
+@container (max-width: 640px) {
+  .mail {
+    font-size: calc(100cqi / 8.86);
+    line-height: 1.02;
+  }
+  .mail span {
+    display: block;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 28px;
+  margin-top: clamp(24px, 4svh, 40px);
+}
+
+/* The secondary pill, as beside the work's main call to action. */
+.copy {
+  display: inline-grid;
+  min-height: 44px;
+  padding: 0 20px;
+  border: 1px solid var(--smoke);
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--bone);
+  transition:
+    border-color 0.2s var(--ease),
+    color 0.2s var(--ease);
+}
+
+/* Both labels in one cell, so the button keeps its width. */
+.copy > span {
+  grid-area: 1 / 1;
+  align-self: center;
+  justify-self: center;
+}
+
+.copy > span[aria-hidden="true"] {
+  visibility: hidden;
+}
+
+.copy:hover {
+  border-color: var(--bone);
+}
+
+.copy[data-copied="1"] {
+  border-color: var(--ember);
+  color: var(--ember);
+}
+
+.copy:focus-visible {
+  outline: 2px solid var(--bone);
+  outline-offset: 3px;
+  border-radius: 999px;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--bone);
+}
+
+.live {
+  position: relative;
+  color: var(--ember);
+}
+
+/* On air: a slow ring off the status dot. */
+.live::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: currentColor;
+  animation: onAir 2.8s var(--ease) infinite;
+}
+
+@keyframes onAir {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  70%,
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+/* The slate: small labels over their values. */
+.slates {
+  grid-column: 3 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  margin: clamp(64px, 12svh, 128px) 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--ash);
+}
+
+.slates > div:first-child {
+  grid-column: 1 / span 3;
+}
+
+.slates > div:last-child {
+  grid-column: 4 / span 6;
+}
+
+.slates dt {
+  margin-bottom: 6px;
+  font-size: var(--t-small);
+  font-weight: 700;
+}
+
+.slates dd {
+  margin: 0;
+  font-size: clamp(17px, 1.5vw, 22px);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--bone);
+}
+
+.time {
+  font-variant-numeric: tabular-nums;
+}
+
+/* The tracklist, set like end credits: each scene ranged right against a centre gutter, its song ranged left after it. */
+.reel {
+  grid-column: 1 / -1;
+  margin-top: clamp(96px, 18svh, 200px);
+}
+
+.reelHead {
+  justify-content: center;
+  margin-bottom: 22px;
+}
+
+.reel ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reel a {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 28px;
+  align-items: baseline;
+  padding: 7px 0;
+}
+
+.role {
+  text-align: right;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--smoke);
+}
+
+.code {
+  margin-right: 0.3em;
+  font-stretch: 75%;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.25s var(--ease);
+}
+
+.song {
+  font-size: clamp(18px, 1.7vw, 26px);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--bone);
+  transition: color 0.25s var(--ease);
+}
+
+.artist {
+  font-weight: 600;
+  color: var(--smoke);
+}
+
+.reel a:hover .song,
+.reel a:focus-visible .song,
+.reel a:hover .code,
+.reel a:focus-visible .code {
+  color: var(--ember);
+}
+
+/* The links, over the name. */
+.base {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px 28px;
+  margin-top: clamp(96px, 18svh, 200px);
+  padding-top: 14px;
+  border-top: 1px solid var(--ash);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+}
+
+.links a {
+  color: var(--smoke);
+  transition: color 0.2s;
+}
+
+.links a:hover {
+  color: var(--bone);
+}
+
+.rewind {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.year {
+  margin: 0;
+  color: var(--smoke);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The last frame: the name fitted edge to edge by its ink. Archivo 800 at 125% and -0.03em sets
+   "SIDDHANT KOTAK" 11.15em wide and 0.05em in from its box ("SIDDHANT" alone: 6.59em). */
+.mark {
+  grid-column: 1 / -1;
+  container-type: inline-size;
+  margin-top: clamp(14px, 2.6svh, 34px);
+}
+
+.wordmark {
+  margin: 0 0 0 -0.05em;
+  font-size: calc(100cqi / 11.17);
+  font-weight: 800;
+  font-stretch: 125%;
+  line-height: 0.76;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--bone);
+}
+
+@container (max-width: 560px) {
+  .wordmark {
+    font-size: calc(100cqi / 6.61);
+    line-height: 0.84;
+  }
+  .wordmark span {
+    display: block;
+  }
+}
+
+@media (max-width: 800px) {
+  .card {
+    padding: 64px var(--margin) 76px;
+  }
+  .footer {
+    padding-top: clamp(72px, 14svh, 140px);
+  }
+  .ask,
+  .slates {
+    grid-column: 1 / -1;
+  }
+  .pitch {
+    text-indent: calc(var(--span) * 3);
+  }
+  .slates {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--gutter);
+  }
+  .slates > div:first-child,
+  .slates > div:last-child {
+    grid-column: auto;
+  }
+  .reel a {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 2px;
+    padding: 9px 0;
+  }
+  .role,
+  .song {
+    text-align: center;
+  }
+}
+
+/* No pin: the card simply follows the timeline, on black, and nothing pulses. */
+@media (prefers-reduced-motion: reduce) {
+  .track {
+    height: auto;
+  }
+  .frame {
+    display: none;
+  }
+  .card {
+    position: relative;
+    height: auto;
+    min-height: 100svh;
+  }
+  .live::after {
+    animation: none;
+    opacity: 0;
+  }
+}

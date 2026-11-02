@@ -1,0 +1,21 @@
+.brief {
+  display: grid;
+  padding: 160px var(--margin) 0;
+}
+
+/* Label and paragraph share one cell; the label sits centred on the first line. */
+.brief .label,
+.text {
+  grid-area: 1 / 1;
+}
+
+.brief .label {
+  align-self: start;
+  margin: calc((var(--t-big) * 0.99 - 18px) / 2) 0 0;
+}
+
+@media (max-width: 800px) {
+  .brief {
+    padding-top: 110px;
+  }
+}

@@ -1,0 +1,803 @@
+/*
+ * The call sheet: a printed production form set in Archivo. Condensed (75%) tabular figures for
+ * every ID and code, bone and ember on black, hairlines in ash, a bone rule at the head of the form.
+ */
+.sheet {
+  --ember-wash: rgba(214, 160, 106, 0.075);
+  --ember-line: rgba(214, 160, 106, 0.55);
+  --head-top: 40px;
+  container: sheet / inline-size;
+  position: relative;
+  margin-top: 150px;
+}
+
+.label {
+  margin-bottom: 14px;
+}
+
+/* Shared: the condensed figure face. */
+.no,
+.hCode,
+.hScene,
+.hCast,
+.hDays,
+.daysFig,
+.deptName,
+.deptCount,
+.capRow,
+.crewLabel,
+.tabCode,
+.tabMeta,
+.rmCode,
+.rmCount,
+.hint {
+  font-stretch: 75%;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Caption: the form's title strip ---------- */
+.caption {
+  /* Above the column heads' black band (below), so the strip is never covered at rest. */
+  position: relative;
+  z-index: 3;
+  caption-side: top;
+  padding: 0 0 9px;
+  text-align: left;
+}
+
+.capRow {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--smoke);
+}
+
+.capRow b {
+  font-weight: 700;
+  color: var(--bone);
+}
+
+.capTitle {
+  font-weight: 800;
+  color: var(--bone);
+}
+
+.capStats {
+  display: flex;
+  gap: 14px;
+}
+
+.capKey {
+  margin-left: auto;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.wKey {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+/* ---------- The grid ---------- */
+.table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.colCast {
+  width: 31%;
+}
+
+.colProd {
+  width: 12.6%;
+}
+
+.colDays {
+  width: 6%;
+}
+
+/* Column heads: a bone rule above, a double rule below; they hold under the nav while the cast scrolls. */
+.head th {
+  position: sticky;
+  top: var(--head-top);
+  z-index: 2;
+  padding: 12px 0 11px;
+  vertical-align: bottom;
+  background: var(--black);
+  border-top: 1px solid var(--bone);
+  border-bottom: 3px double var(--ash);
+  /* Once stuck, a black band runs up under the nav so no row shows above the heads. */
+  box-shadow: 0 calc(var(--head-top) * -1) 0 var(--black);
+  font-weight: 600;
+}
+
+/* The form's two vertical rules: cast | productions | total. */
+.head th:nth-child(2),
+.row > td:nth-child(2),
+.head th:last-child,
+.row > td:last-child {
+  border-left: 1px solid var(--ash);
+}
+
+.hCast,
+.hDays {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--smoke);
+  text-align: left;
+}
+
+.hDays {
+  text-align: right;
+}
+
+.hNo {
+  display: inline-block;
+  width: 34px;
+}
+
+.hProd {
+  text-align: center;
+}
+
+/* The lit production: an ember bar on the head rule (shape, not just colour). */
+.hProd::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 14%;
+  right: 14%;
+  height: 3px;
+  background: var(--ember);
+  transform: scaleX(0);
+  transition: transform 0.28s var(--ease);
+}
+
+.hProd[data-on]::before {
+  transform: scaleX(1);
+}
+
+.hBtn {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  width: 100%;
+  padding: 0 3px;
+  text-align: center;
+}
+
+.hCode {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--smoke);
+  transition: color 0.2s;
+}
+
+/* Held: a filled mark beside the code. */
+.hBtn[aria-pressed="true"] .hCode::before,
+.castBtn[aria-pressed="true"] .no::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ember);
+}
+
+.hTitle {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  min-height: 2.12em;
+  font-size: 12.5px;
+  font-weight: 700;
+  font-stretch: 84%;
+  line-height: 1.06;
+  letter-spacing: -0.005em;
+  word-spacing: 0.12em;
+  color: var(--bone);
+  text-wrap: balance;
+  transition: color 0.2s;
+}
+
+.hWhere {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.hScene {
+  display: inline-block;
+  margin-top: 7px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--smoke);
+  transition: color 0.2s;
+}
+
+.hScene:hover,
+.hScene:focus-visible {
+  color: var(--bone);
+}
+
+.hProd[data-on] .hCode,
+.hProd[data-on] .hTitle,
+.hProd[data-on] .hScene {
+  color: var(--ember);
+}
+
+/* ---------- Departments ---------- */
+.deptRow th {
+  position: relative;
+  padding: 26px 0 8px;
+  text-align: left;
+  border-bottom: 1px solid rgba(236, 231, 222, 0.42);
+}
+
+.dept:first-of-type .deptRow th {
+  padding-top: 16px;
+}
+
+.deptName {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bone);
+}
+
+.deptCount {
+  position: absolute;
+  right: 0;
+  bottom: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--smoke);
+}
+
+/* ---------- Cast rows ---------- */
+.row {
+  transition: background-color 0.24s var(--ease);
+}
+
+.row > * {
+  height: 37px;
+  padding: 0;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--ash);
+}
+
+.row[data-on] {
+  background-image: linear-gradient(90deg, rgba(214, 160, 106, 0.16), rgba(214, 160, 106, 0.05) 45%, rgba(214, 160, 106, 0.03));
+}
+
+.cast {
+  position: relative;
+  text-align: left;
+  font-weight: inherit;
+}
+
+/* The lit row: a leader tick in the margin, pointing at the name. */
+.cast::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -18px;
+  width: 11px;
+  height: 1px;
+  background: var(--ember);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.24s var(--ease);
+}
+
+.row[data-on] .cast::before {
+  transform: scaleX(1);
+}
+
+.castBtn {
+  display: flex;
+  align-items: baseline;
+  width: 100%;
+  min-height: 36px;
+  padding: 9px 8px 9px 0;
+  text-align: left;
+}
+
+.no {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: 34px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--smoke);
+  transition: color 0.2s;
+}
+
+.name {
+  font-size: 14.5px;
+  font-weight: 650;
+  line-height: 1.14;
+  letter-spacing: -0.012em;
+  color: var(--bone);
+  transition: color 0.2s;
+}
+
+.row[data-on] .no {
+  color: var(--ember);
+}
+
+/* Something is lit: everything else steps back to smoke (still well above AA on black). */
+.sheet[data-lit] .row:not([data-on]) .name,
+.sheet[data-lit] .row:not([data-on]) .w {
+  color: var(--smoke);
+}
+
+.cell {
+  text-align: center;
+  transition: background-color 0.24s var(--ease);
+}
+
+.cell[data-col] {
+  background-color: var(--ember-wash);
+}
+
+.in {
+  display: inline-flex;
+}
+
+.w {
+  display: inline-grid;
+  place-items: center;
+  width: 23px;
+  height: 23px;
+  border: 1px solid transparent;
+  font-size: 15px;
+  font-weight: 800;
+  font-stretch: 75%;
+  line-height: 1;
+  color: var(--bone);
+  transition: color 0.2s, border-color 0.2s;
+}
+
+/* Where the lit row meets a lit column, the W is boxed in ember. */
+.row[data-on] .cell[data-col] .w {
+  color: var(--ember);
+  border-color: var(--ember-line);
+}
+
+.blank {
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--ash);
+  vertical-align: middle;
+}
+
+.note {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.days {
+  text-align: right;
+}
+
+.hDays {
+  padding-right: 0;
+}
+
+.daysFig {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--smoke);
+  transition: color 0.2s;
+}
+
+.row[data-on] .daysFig {
+  color: var(--bone);
+}
+
+/* ---------- Additional crew and the hint ---------- */
+.crew {
+  display: grid;
+  grid-template-columns: 31% minmax(0, 1fr);
+  align-items: baseline;
+  margin: 0;
+  padding: 14px 0 13px;
+  border-bottom: 1px solid var(--ash);
+}
+
+.crewLabel {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bone);
+}
+
+.crewList {
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--bone);
+}
+
+.hint {
+  margin: 12px 0 0;
+  text-wrap: balance;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--smoke);
+}
+
+/* ---------- Remarks callout, parked left of the grid at the lit row's height ---------- */
+.callout {
+  --y: 0px;
+  --lead: 50%;
+  position: absolute;
+  top: 0;
+  right: calc(100% + 34px);
+  z-index: 3;
+  width: min(330px, calc(var(--span) * 2.9));
+  padding: 13px 15px 14px;
+  background: color-mix(in srgb, var(--black) 92%, transparent);
+  border-top: 1px solid var(--ember);
+  box-shadow: inset 0 0 0 1px var(--ash);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate3d(8px, var(--y), 0);
+  transition: opacity 0.2s var(--ease), transform 0.32s var(--ease);
+}
+
+/* The leader line from the callout to the lit row. */
+.callout::after {
+  content: "";
+  position: absolute;
+  top: var(--lead);
+  left: 100%;
+  width: 34px;
+  height: 1px;
+  background: var(--ember-line);
+}
+
+.callout[data-show] {
+  opacity: 1;
+  transform: translate3d(0, var(--y), 0);
+}
+
+.callout[data-show][data-off="1"] {
+  opacity: 0;
+}
+
+.rmHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin: 0 0 9px;
+}
+
+.rmCode {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--ember);
+}
+
+.rmTitle {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--bone);
+}
+
+.rmWhere {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--smoke);
+}
+
+.rmCount {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--bone);
+}
+
+.rmList {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rmList li {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  column-gap: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--bone);
+}
+
+.rmList .rmCode {
+  grid-row: span 2;
+  padding-top: 0.12em;
+}
+
+.rmProd {
+  font-size: 11px;
+  font-weight: 700;
+  font-stretch: 84%;
+  letter-spacing: 0.02em;
+  word-spacing: 0.12em;
+  color: var(--smoke);
+}
+
+.rmCast {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 14px;
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--bone);
+}
+
+/* ---------- Compact grid (sheets 440–539px wide: laptops) ---------- */
+@container sheet (max-width: 539px) {
+  .colCast {
+    width: 30%;
+  }
+  .colProd {
+    width: 12.7%;
+  }
+  .hTitle {
+    font-size: 11px;
+    font-stretch: 75%;
+    word-spacing: 0.16em;
+  }
+  .capStats span:last-child {
+    display: none;
+  }
+  .name {
+    font-size: 13.5px;
+  }
+  .no {
+    width: 28px;
+  }
+  .hNo {
+    width: 28px;
+  }
+  .colDays {
+    width: 6.5%;
+  }
+  .hDays {
+    letter-spacing: 0.02em;
+  }
+}
+
+/* ---------- Production tabs (narrow sheets only) ---------- */
+.tabs,
+.tabMeta {
+  display: none;
+}
+
+@container sheet (max-width: 439px) {
+  .tabs {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0 4px;
+  }
+
+  .tab {
+    display: grid;
+    align-content: start;
+    gap: 4px;
+    padding: 9px 2px 11px 0;
+    border-top: 2px solid var(--ash);
+    text-align: left;
+    color: var(--smoke);
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .tab[aria-pressed="true"] {
+    border-top-color: var(--ember);
+    color: var(--bone);
+  }
+
+  .tabCode {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  .tab[aria-pressed="true"] .tabCode {
+    color: var(--ember);
+  }
+
+  .tabTitle {
+    font-size: 12px;
+    font-weight: 700;
+    font-stretch: 84%;
+    line-height: 1.08;
+    word-spacing: 0.12em;
+  }
+
+  .tabMeta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 14px;
+    margin: 4px 0 6px;
+    padding-top: 10px;
+    border-top: 1px solid var(--bone);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--smoke);
+  }
+
+  .fig {
+    color: var(--bone);
+  }
+
+  .tabScene {
+    margin-left: auto;
+    color: var(--bone);
+  }
+
+  .capRow,
+  .head,
+  .hint,
+  .callout {
+    display: none;
+  }
+
+  .caption {
+    padding: 0;
+  }
+
+  .colCast {
+    width: 41%;
+  }
+
+  .colProd,
+  .colDays {
+    width: 0;
+  }
+
+  .colProd[data-sel] {
+    width: 59%;
+  }
+
+  .dept[data-in="0"],
+  .row[data-in="0"] {
+    display: none;
+  }
+
+  .dept:first-of-type .deptRow th,
+  .deptRow th {
+    padding-top: 22px;
+  }
+
+  .dept[data-in="1"] ~ .dept .deptRow th {
+    padding-top: 26px;
+  }
+
+  .row > * {
+    height: auto;
+    vertical-align: top;
+  }
+
+  .castBtn {
+    padding: 11px 8px 11px 0;
+  }
+
+  .no {
+    width: 28px;
+  }
+
+  .name {
+    font-size: 14px;
+  }
+
+  .cell:not([data-sel]),
+  .days {
+    overflow: hidden;
+    border-bottom-width: 0;
+  }
+
+  .cell:not([data-sel]) .w,
+  .cell:not([data-sel]) .blank,
+  .daysFig {
+    display: none;
+  }
+
+  .cell[data-sel] {
+    padding: 11px 0;
+    text-align: left;
+    background: none;
+  }
+
+  .cell[data-sel] .in {
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr);
+    align-items: baseline;
+  }
+
+  .cell[data-sel] .w {
+    display: inline;
+    width: auto;
+    height: auto;
+    border: 0;
+    font-size: 13px;
+    color: var(--ember);
+  }
+
+  .cell[data-sel] .note {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1.32;
+    color: var(--bone);
+  }
+
+  .cast::before {
+    display: none;
+  }
+
+  .row > td:nth-child(2),
+  .row > td:last-child {
+    border-left: 0;
+  }
+
+  .crew {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+}

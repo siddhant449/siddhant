@@ -1,0 +1,347 @@
+/*
+ * SC.05, the record change. 100svh of stage pinned over 300svh. One turntable seen from above on the
+ * black page: the platter, two records (only one on it at a time), the spindle and the tonearm.
+ * Everything that moves is transformed or faded: the turning faces, the records coming and going,
+ * the arm and its shadow. Nothing that moves is filtered or blended, so each layer is drawn once.
+ */
+.scene {
+  position: relative;
+  height: 300svh;
+  /* Record size, and where the platter's centre sits across the stage. */
+  --d: min(74svh, 46vw);
+  --cx: 64vw;
+}
+
+.stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--black);
+}
+
+/* A low pool of warm light on the platter, as if the key light had found the deck. */
+.pool {
+  position: absolute;
+  left: calc(var(--cx) - var(--d) * 0.95);
+  top: calc(50svh - var(--d) * 0.95);
+  width: calc(var(--d) * 1.9);
+  height: calc(var(--d) * 1.9);
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(closest-side, rgba(214, 160, 106, 0.075), rgba(214, 160, 106, 0.025) 55%, rgba(214, 160, 106, 0) 100%);
+}
+
+/* Its own layer, so the step back at the end scales it on the compositor instead of repainting the platter. */
+.deck {
+  position: absolute;
+  left: calc(var(--cx) - var(--d) / 2);
+  top: calc(50svh - var(--d) / 2);
+  width: var(--d);
+  height: var(--d);
+  will-change: transform;
+}
+
+/* The platter: dark rubber mat, a lit rim, and the strobe dots that stand still at the right speed. */
+.platter {
+  position: absolute;
+  inset: -3.5%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle closest-side, rgba(0, 0, 0, 0) 0 95.2%, rgba(236, 231, 222, 0.16) 96.4%, rgba(0, 0, 0, 0) 97.6%),
+    radial-gradient(circle closest-side, #0e0d0c 0 88%, #181614 93%, #0b0a09 100%);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.55);
+}
+
+.platter::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: repeating-conic-gradient(rgba(236, 231, 222, 0.22) 0 0.55deg, rgba(0, 0, 0, 0) 0.55deg 3.6deg);
+  -webkit-mask-image: radial-gradient(circle closest-side, transparent 0 97.9%, #000 98.4% 99.6%, transparent 100%);
+  mask-image: radial-gradient(circle closest-side, transparent 0 97.9%, #000 98.4% 99.6%, transparent 100%);
+}
+
+.record {
+  position: absolute;
+  inset: 0;
+  will-change: transform, opacity;
+}
+
+/* Its shadow on the mat, drawn soft rather than blurred: it grows and fades as the record lifts. */
+.shadow {
+  position: absolute;
+  inset: -7%;
+  border-radius: 50%;
+  translate: 2% 5%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.75) 0 84%, rgba(0, 0, 0, 0) 100%);
+  will-change: opacity;
+}
+
+/*
+ * Black vinyl, as on the gate: fine grooves, a smooth lead-in at the rim, two track gaps, and a smooth
+ * run-out by the label. It turns, though only the label shows it.
+ */
+.face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 50%;
+  will-change: transform;
+  background:
+    radial-gradient(
+      circle closest-side,
+      transparent 0 34%,
+      rgba(7, 7, 6, 0.92) 34.2% 38.4%,
+      transparent 38.8% 57.4%,
+      rgba(5, 5, 5, 0.8) 57.7% 58.5%,
+      transparent 58.8% 76.2%,
+      rgba(5, 5, 5, 0.8) 76.5% 77.3%,
+      transparent 77.6% 98.4%,
+      rgba(4, 4, 4, 0.9) 98.6% 99.3%,
+      rgba(30, 29, 27, 0.7) 99.6%,
+      rgba(10, 10, 9, 0.9) 100%
+    ),
+    repeating-radial-gradient(circle at 50% 50%, #000 0 1.2px, #050504 1.2px 2.1px, #0f0e0d 2.1px 3px);
+}
+
+.label {
+  position: absolute;
+  left: 33%;
+  top: 33%;
+  width: 34%;
+  height: 34%;
+  overflow: visible;
+}
+
+.paper {
+  fill: var(--ash);
+}
+
+.rule {
+  fill: none;
+  stroke: rgba(236, 231, 222, 0.22);
+  stroke-width: 1;
+}
+
+.title,
+.artist {
+  font-family: var(--font);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  fill: var(--bone);
+}
+
+.title {
+  font-size: 15px;
+  font-stretch: 88%;
+}
+
+.artist {
+  font-size: 12.5px;
+  font-weight: 600;
+  fill: rgba(236, 231, 222, 0.72);
+}
+
+/* The new record: bone paper, black print, one ember mark. */
+.label[data-lit="1"] .paper {
+  fill: var(--bone);
+}
+
+.label[data-lit="1"] .rule {
+  stroke: rgba(18, 17, 16, 0.2);
+}
+
+.label[data-lit="1"] .title {
+  fill: var(--black);
+}
+
+.label[data-lit="1"] .artist {
+  fill: rgba(18, 17, 16, 0.7);
+}
+
+.mark {
+  fill: var(--ember);
+}
+
+/* The room's light on the vinyl: it stays put while the record turns under it. */
+.shine {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  background: conic-gradient(
+    from 0deg,
+    rgba(255, 244, 230, 0) 0deg,
+    rgba(255, 244, 230, 0.05) 30deg,
+    rgba(255, 244, 230, 0) 62deg,
+    rgba(255, 244, 230, 0) 118deg,
+    rgba(255, 244, 230, 0.09) 150deg,
+    rgba(255, 244, 230, 0) 182deg,
+    rgba(255, 244, 230, 0) 210deg,
+    rgba(255, 244, 230, 0.05) 240deg,
+    rgba(255, 244, 230, 0) 272deg,
+    rgba(255, 244, 230, 0) 298deg,
+    rgba(255, 244, 230, 0.09) 330deg,
+    rgba(255, 244, 230, 0) 360deg
+  );
+  -webkit-mask-image: radial-gradient(circle closest-side, transparent 0 36%, #000 39% 96%, transparent 99%);
+  mask-image: radial-gradient(circle closest-side, transparent 0 36%, #000 39% 96%, transparent 99%);
+}
+
+.spindle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 2.2%;
+  height: 2.2%;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #d8d2c8, #6b675f 60%, #2b2926);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+/* The tonearm turns about its pivot at the deck's top right; its box is the deck's. */
+.arm {
+  position: absolute;
+  inset: 0;
+  transform-origin: 96% 6%;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.armShadow,
+.armBody {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.armShadow {
+  will-change: transform, opacity;
+}
+
+.armShadow path {
+  fill: none;
+  stroke: rgba(0, 0, 0, 0.8);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.armBody {
+  transform-origin: 96% 6%;
+}
+
+.tube {
+  fill: none;
+  stroke: var(--smoke);
+  stroke-width: 1.15;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.head {
+  fill: none;
+  stroke: var(--ember);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+
+.weight {
+  fill: none;
+  stroke: var(--ash);
+  stroke-width: 3.4;
+  stroke-linecap: round;
+}
+
+.base {
+  fill: #1d1b18;
+  stroke: rgba(236, 231, 222, 0.2);
+  stroke-width: 0.5;
+}
+
+.pin {
+  fill: var(--smoke);
+}
+
+/* The one line: the site's big grey grotesk, to the left of the deck. */
+.line {
+  position: absolute;
+  z-index: 2;
+  left: var(--margin);
+  top: 50%;
+  translate: 0 -50%;
+  width: calc(var(--span) * 5 - var(--gutter));
+  margin: 0;
+  font-size: var(--t-big);
+  font-weight: 700;
+  line-height: 0.99;
+  letter-spacing: -0.034em;
+  color: var(--smoke);
+}
+
+.part {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
+.part:last-child {
+  color: var(--bone);
+}
+
+.slate {
+  position: absolute;
+  z-index: 2;
+  left: var(--margin);
+  bottom: 28px;
+}
+
+/* Phones: the deck at the top, the line under it. */
+@media (max-width: 800px) {
+  .scene {
+    --d: min(84vw, 50svh);
+    --cx: 50vw;
+  }
+
+  .pool,
+  .deck {
+    top: calc(36svh - var(--d) / 2);
+  }
+
+  .pool {
+    top: calc(36svh - var(--d) * 0.95);
+  }
+
+  .line {
+    top: auto;
+    bottom: 76px;
+    translate: none;
+    width: auto;
+    right: var(--margin);
+  }
+}
+
+/* Reduced motion: no pin; the end of the shot, still. */
+@media (prefers-reduced-motion: reduce) {
+  .scene {
+    height: auto;
+  }
+
+  .stage {
+    position: relative;
+  }
+
+  .deck,
+  .record,
+  .face,
+  .arm,
+  .armShadow,
+  .part {
+    will-change: auto;
+  }
+}

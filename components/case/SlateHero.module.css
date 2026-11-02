@@ -1,0 +1,157 @@
+/* The opening slate: the title block on the pillar side, the key frame as a screen beside it. */
+.hero {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(300px, 34fr) 62fr;
+  align-items: center;
+  gap: clamp(32px, 4vw, 72px);
+  min-height: 100svh;
+  padding: clamp(96px, 13svh, 132px) var(--margin) clamp(48px, 8svh, 84px);
+  background: var(--black);
+  color: var(--bone);
+}
+
+.block {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.slate {
+  margin-bottom: clamp(20px, 3.2svh, 40px);
+}
+
+.code {
+  margin: 0 0 10px;
+  font-size: var(--t-small);
+  font-weight: 700;
+  color: var(--ember);
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(44px, 5vw, 92px);
+  font-weight: 800;
+  font-stretch: 75%;
+  line-height: 0.9;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.logline {
+  margin: clamp(16px, 2.4svh, 28px) 0 0;
+  max-width: 30ch;
+  font-size: clamp(18px, 1.4vw, 22px);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  color: rgba(236, 231, 222, 0.86);
+}
+
+.facts {
+  display: grid;
+  gap: 8px;
+  margin: clamp(20px, 3svh, 32px) 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.facts div {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 12px;
+}
+
+.facts dt {
+  color: var(--smoke);
+}
+
+.facts dd {
+  margin: 0;
+}
+
+/* The page's one call to action: the same solid ember pill as the work section's. */
+.live {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  margin-top: clamp(24px, 3.6svh, 40px);
+  padding: 0 22px;
+  border-radius: 999px;
+  background: var(--ember);
+  color: #121110;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: 0 10px 28px -14px rgba(214, 160, 106, 0.55);
+  transition: background-color 0.2s var(--ease);
+}
+
+.live:hover {
+  background: #e7b27b;
+}
+
+.live:focus-visible {
+  outline: 2px solid var(--bone);
+  outline-offset: 3px;
+}
+
+.stage {
+  position: relative;
+  z-index: 1;
+}
+
+/* The screen is the practical light: a 64px copy of the frame, blurred ahead of time, sized as the
+   work section's glow so its feathered edge lies outside the view, fading out toward the copy. */
+.glow {
+  position: absolute;
+  inset: -24.75% -21.875%;
+  z-index: 0;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 70%, transparent 88%), linear-gradient(to right, transparent 0%, #000 22%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to bottom, #000 0%, #000 70%, transparent 88%), linear-gradient(to right, transparent 0%, #000 22%);
+  mask-composite: intersect;
+}
+
+.glowImg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  opacity: 0.32;
+}
+
+.screen {
+  position: relative;
+  z-index: 1;
+  box-shadow:
+    0 0 0 1px rgba(236, 231, 222, 0.12),
+    0 40px 90px -40px rgba(0, 0, 0, 0.9);
+}
+
+.img {
+  object-fit: cover;
+  object-position: 50% 0;
+}
+
+@media (max-width: 1023px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    padding-top: clamp(84px, 14svh, 110px);
+  }
+
+  .live {
+    width: 100%;
+    justify-content: center;
+    min-height: 52px;
+  }
+}

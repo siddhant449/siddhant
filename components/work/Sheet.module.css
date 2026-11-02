@@ -1,0 +1,172 @@
+.sheet {
+  --colw: clamp(300px, 29vw, 420px);
+  --gap: clamp(32px, 3.2vw, 64px);
+  display: grid;
+  gap: clamp(96px, 14svh, 150px);
+  padding: clamp(120px, 18svh, 180px) var(--margin) 110px;
+}
+
+.titleCard {
+  display: grid;
+  gap: 24px;
+  padding-left: calc(100vw / 6 + clamp(12px, 1.4vw, 24px) - var(--margin));
+}
+
+.lyric {
+  margin: 0;
+  gap: 0 0.22em;
+  font-size: clamp(56px, 9.2vw, 168px);
+  font-weight: 800;
+  line-height: 0.86;
+  letter-spacing: -0.045em;
+  color: var(--bone);
+}
+
+.lyric > :nth-child(-n + 4) {
+  order: 1;
+}
+
+.lyric::after {
+  content: "";
+  flex-basis: 100%;
+  order: 2;
+}
+
+.lyric > :nth-child(n + 5) {
+  order: 3;
+}
+
+.lyric > span {
+  font-stretch: 62%;
+}
+
+/* ---------- One project: the desktop's two columns, held still ---------- */
+.project {
+  display: grid;
+  grid-template-columns: var(--colw) minmax(0, 1fr);
+  column-gap: var(--gap);
+  align-items: start;
+  padding-top: 18px;
+  border-top: 1px solid rgba(236, 231, 222, 0.12);
+}
+
+.left {
+  display: grid;
+  gap: 26px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.code {
+  margin: 0;
+  color: var(--bone);
+}
+
+.code :global(.dot) {
+  color: var(--ember);
+}
+
+.left .ctas {
+  display: grid;
+  justify-content: start;
+}
+
+.hint {
+  margin: -10px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--smoke);
+}
+
+.right {
+  display: grid;
+  gap: 28px;
+  min-width: 0;
+}
+
+.hero {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.screen {
+  position: relative;
+}
+
+.hit {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: 10px;
+}
+
+.shot {
+  position: absolute;
+  inset: 0;
+}
+
+.img {
+  object-fit: cover;
+  object-position: 50% 0;
+}
+
+.caption {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--bone);
+}
+
+/* The contact sheet: one framed print, five frames and the two phones. */
+.contact {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px 16px;
+  margin: 0;
+  padding: 18px;
+  border-radius: 12px;
+  background: #161512;
+  box-shadow: 0 0 0 1px rgba(236, 231, 222, 0.1);
+  list-style: none;
+}
+
+.contact > li {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.contact .caption {
+  font-size: 13px;
+}
+
+.frame {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--stone);
+  box-shadow: 0 0 0 1px rgba(236, 231, 222, 0.12);
+}
+
+.contact > .phones {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  justify-items: center;
+  gap: 12px;
+}
+
+.phone {
+  width: min(100%, 100px);
+}

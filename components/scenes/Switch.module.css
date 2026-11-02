@@ -1,13 +1,14 @@
 /*
- * SC.02, the pitch. 100svh of stage pinned over 250svh of scroll. The hero overlaps the top of
- * the section and the A-side its last 100svh, so the section has no background of its own: until
- * its stage pins, the hero's last frames show through. It sits above the A-side (z-index) so the
- * title card pins unseen underneath, and the stage cuts to it type to type.
+ * SC.02, the pitch. 100svh of stage pinned over 730svh of scroll (RANGE in switch/field.ts): the
+ * opener, five domains and the pitch each hold still for most of their stretch. The hero overlaps
+ * the top of the section and the A-side its last 100svh, so the section has no background of its
+ * own: until its stage pins, the hero's last frames show through. It sits above the A-side
+ * (z-index) so the title card pins unseen underneath, and the stage dissolves onto it type to type.
  */
 .scene {
   position: relative;
   z-index: 1;
-  height: 350svh;
+  height: 830svh;
   margin-bottom: -100svh;
 }
 
@@ -69,8 +70,14 @@
   );
 }
 
-/* Every beat on the same stage, between the page margins. */
+/*
+ * Every beat fills the frame between the page margins and the chrome above and below (the nav;
+ * the slate and player), its content centred in the height that leaves.
+ */
 .beats {
+  --top: 64px;
+  --bottom: 84px;
+  --gutter: clamp(28px, 3.5vw, 72px);
   position: absolute;
   inset: 0;
   z-index: 3;
@@ -78,27 +85,34 @@
 
 .beat {
   position: absolute;
+  top: var(--top);
+  bottom: var(--bottom);
   left: var(--margin);
   right: var(--margin);
+  display: grid;
+  align-content: center;
 }
 
 /*
  * The words the dots draw. They are the real, accessible text, and the layout the field samples:
- * set transparent here, since the dots draw them (reduced motion shows them as they are).
+ * transparent here, since the dots draw them (reduced motion shows them as they are). `--fit` is
+ * each word's size, set once per layout to the room it has.
  */
 .word {
   margin: 0;
-  font-size: clamp(56px, 8.4vw, 168px);
+  font-size: var(--fit, clamp(56px, 8.4vw, 168px));
   font-weight: 800;
   font-stretch: 75%;
   line-height: 0.9;
   letter-spacing: -0.035em;
   color: var(--bone);
   opacity: 0;
+  /* The whole width of its column, which is the room the fit measures. */
+  justify-self: stretch;
 }
 
 .big {
-  font-size: clamp(110px, 17vw, 320px);
+  font-size: var(--fit, clamp(80px, min(17vw, 26svh), 320px));
   line-height: 0.84;
 }
 
@@ -107,60 +121,156 @@
   display: inline-block;
 }
 
-.opener,
-.handoff {
-  top: 34svh;
-}
-
 .eyebrow {
-  margin: 0 0 clamp(14px, 2.4svh, 26px);
+  margin: 0 0 clamp(16px, 3svh, 32px);
+  font-size: clamp(14px, 1.05vw, 17px);
   color: var(--smoke);
 }
 
-.layer {
-  top: 18svh;
+/*
+ * A domain. `under`: the word across the frame, then a row of where it sits and what it is (left)
+ * and what it covers (right). `beside`: a short word on the left, all of that to its right.
+ */
+.domain {
+  row-gap: clamp(22px, 4.5svh, 56px);
 }
 
-.proofWrap {
-  margin-top: clamp(18px, 3.4svh, 40px);
+.domain[data-layout="beside"] {
+  grid-template-columns: 5fr 7fr;
+  column-gap: var(--gutter);
+  align-items: center;
 }
 
-.proof {
-  max-width: 60ch;
+.about {
+  display: grid;
+  grid-template-columns: 4fr 8fr;
+  column-gap: var(--gutter);
+  align-items: start;
 }
 
-.layerLabel {
-  display: flex;
+.domain[data-layout="beside"] .about {
+  grid-template-columns: 1fr;
+  row-gap: clamp(16px, 3svh, 32px);
+}
+
+.meta {
+  display: grid;
+  align-content: start;
   gap: 10px;
-  margin: 0 0 10px;
-  font-size: var(--t-small);
+}
+
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0;
+  font-size: clamp(14px, 1.05vw, 17px);
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
   color: var(--smoke);
 }
 
 .num {
   color: var(--ember);
-  font-variant-numeric: tabular-nums;
 }
 
-.line {
-  margin: 0 0 6px;
-  font-size: clamp(17px, 1.45vw, 25px);
-  font-weight: 600;
-  line-height: 1.3;
-  letter-spacing: -0.01em;
+/* Five segments: the ones passed, the one you're on (ember), the ones to come. */
+.bar {
+  display: flex;
+  gap: 4px;
+  width: clamp(84px, 8vw, 150px);
+}
+
+.bar i {
+  flex: 1;
+  height: 2px;
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--smoke) 35%, transparent);
+}
+
+.bar i[data-state="done"] {
+  background: color-mix(in srgb, var(--bone) 70%, transparent);
+}
+
+.bar i[data-state="on"] {
+  background: var(--ember);
+}
+
+.sub {
+  margin: 0;
+  font-size: clamp(16px, 1.25vw, 21px);
+  font-weight: 700;
+  line-height: 1.25;
   color: var(--bone);
 }
 
-/* The pitch, in the page's own type, over the field. */
-.pitch {
-  top: 26svh;
+.body {
+  display: grid;
+  gap: clamp(18px, 3svh, 32px);
+}
+
+/* What the domain covers, as display text. */
+.text {
+  max-width: 52ch;
+  margin: 0;
+  font-size: clamp(20px, min(1.6vw, 2.9svh), 28px);
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  text-wrap: pretty;
+  color: var(--bone);
+}
+
+/* The tools, as quiet pills: one row of them, or a labelled row per group. */
+.tools {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  align-items: baseline;
+  gap: 10px 16px;
+}
+
+.group {
+  display: contents;
+}
+
+.toolsLabel {
+  margin: 0;
+  font-size: clamp(13px, 0.95vw, 15px);
+  font-weight: 700;
+  color: var(--smoke);
+}
+
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pills li {
+  padding: 5px 12px;
+  border: 1px solid color-mix(in srgb, var(--smoke) 40%, transparent);
+  border-radius: 999px;
+  font-size: clamp(14px, 1.05vw, 16px);
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--bone) 72%, var(--smoke));
+}
+
+/* The opener, the pitch and the handoff: one block each, at the left margin, centred in the height. */
+.opener,
+.pitch,
+.handoff {
+  justify-items: start;
 }
 
 .pitchLine {
-  max-width: 15.5ch;
+  max-width: 19ch;
   margin: 0;
-  font-size: clamp(40px, 5.4vw, 104px);
+  font-size: clamp(44px, min(8.2vw, 12.5svh), 170px);
   font-weight: 800;
   font-stretch: 75%;
   line-height: 0.92;
@@ -174,7 +284,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 14px 22px;
-  margin-top: clamp(24px, 4svh, 44px);
+  margin-top: clamp(28px, 5svh, 56px);
   pointer-events: auto;
 }
 
@@ -183,7 +293,7 @@
   align-items: center;
   gap: 8px;
   margin: 0 8px 0 0;
-  font-size: 15px;
+  font-size: clamp(15px, 1.1vw, 18px);
   font-weight: 600;
   color: var(--bone);
 }
@@ -217,11 +327,11 @@
 .cta {
   display: inline-grid;
   place-items: center;
-  min-height: 44px;
-  padding: 0 20px;
+  min-height: 48px;
+  padding: 0 24px;
   border: 1px solid var(--smoke);
   border-radius: 999px;
-  font-size: 15px;
+  font-size: clamp(15px, 1.1vw, 18px);
   font-weight: 600;
   line-height: 1;
   color: var(--bone);
@@ -247,37 +357,80 @@
   bottom: 20px;
 }
 
-/* Phones: the words sized to the width, the proof under each, the slit on the margin. */
+/* Phones: one column, the word across the width (broken over two lines where that's larger), the slit on the margin. */
 @media (max-width: 800px) {
   .slit,
   .hair {
     translate: calc(var(--margin) - 50%) 0;
   }
+  .beats {
+    --top: 58px;
+    --bottom: 60px;
+  }
   .word {
-    font-size: clamp(44px, 12.5vw, 80px);
+    font-size: var(--fit, clamp(44px, 12.5vw, 80px));
   }
   .big {
-    font-size: clamp(60px, 19vw, 120px);
+    font-size: var(--fit, clamp(56px, 18vw, 120px));
   }
-  .opener,
-  .handoff {
-    top: 30svh;
+  .domain {
+    row-gap: clamp(14px, 2.6svh, 24px);
   }
-  .layer {
-    top: 16svh;
+  .domain[data-layout="beside"] {
+    grid-template-columns: 1fr;
   }
-  .line {
+  .about {
+    grid-template-columns: 1fr;
+    row-gap: clamp(12px, 2svh, 18px);
+  }
+  .meta {
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 12px;
+  }
+  .progress {
+    font-size: 14px;
+    gap: 10px;
+  }
+  .bar {
+    width: 64px;
+  }
+  .sub {
     font-size: 15px;
   }
-  .pitch {
-    top: 22svh;
+  .body {
+    gap: clamp(12px, 2svh, 18px);
+  }
+  .text {
+    font-size: clamp(16px, min(4.6vw, 2.45svh), 18px);
+    line-height: 1.38;
+  }
+  .tools {
+    gap: 6px 10px;
+  }
+  .toolsLabel {
+    font-size: 12px;
+  }
+  .pills {
+    gap: 5px;
+  }
+  .pills li {
+    padding: 3px 9px;
+    font-size: clamp(12px, 3.4vw, 13.5px);
   }
   .pitchLine {
-    font-size: clamp(34px, 10.4vw, 60px);
+    font-size: clamp(36px, 11vw, 64px);
+  }
+  .ctas {
+    gap: 12px 14px;
   }
 }
 
-/* Reduced motion: no pin and no dots. The pitch as plain type, each beat in turn, fading in (200ms). */
+/*
+ * Reduced motion: no pin and no dots. The pitch as plain type, each beat in turn, fading in (200ms)
+ * once the section is on screen. The markup is the same as with motion, so its scroll-driven styles
+ * (inline) are overridden here.
+ */
 @media (prefers-reduced-motion: reduce) {
   .scene {
     z-index: auto;
@@ -288,8 +441,12 @@
     position: relative;
     height: auto;
     min-height: 100svh;
-    pointer-events: auto;
+    opacity: 0 !important;
+    pointer-events: auto !important;
     transition: opacity 200ms linear !important;
+  }
+  .stage[data-arrived] {
+    opacity: 1 !important;
   }
   .canvas,
   .slit,
@@ -300,7 +457,7 @@
     position: relative;
     inset: auto;
     display: grid;
-    gap: clamp(64px, 12svh, 140px);
+    gap: clamp(72px, 14svh, 160px);
     padding: clamp(110px, 16svh, 180px) var(--margin) clamp(90px, 14svh, 160px);
   }
   .beat {
@@ -309,6 +466,15 @@
   }
   .word {
     opacity: 1;
+  }
+  .eyebrow,
+  .pitch,
+  .aboutWrap {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .ctas {
+    pointer-events: auto !important;
   }
   .live::after {
     animation: none;

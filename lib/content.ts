@@ -290,7 +290,7 @@ export const mangaArt: ArtCredit[] = [
 ];
 
 /** Tools on the résumé that no production above credits; listed, not dropped. */
-export const additionalCrew = "JavaScript, SQL, Java, Zod, Knex, MongoDB, Pandas, NumPy, PyTorch, AWS, Docker, TailwindCSS, TanStack Query, Vite";
+export const additionalCrew = "JavaScript, SQL, Java, Zod, Knex, MongoDB, Pandas, NumPy, PyTorch, Hugging Face, LangChain, pgvector, Kafka, RabbitMQ, AWS, Docker, Terraform, GitHub Actions, Nginx, Prometheus, Grafana, Sentry, ELK, TailwindCSS, TanStack Query, Vite, Pytest, Vitest";
 
 export const timeline = [
   { when: "Mar 2026 – now", what: "Fullstack + AI Engineer", where: "Techuz InfoWeb" },

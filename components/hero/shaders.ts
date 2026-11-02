@@ -136,34 +136,3 @@ void main() {
   gl_FragColor = vec4(col, 1.0);
 }
 `;
-
-export const glintVert = /* glsl */ `
-attribute float aPhase;
-attribute float aSize;
-uniform float uTime;
-uniform float uHigh;
-uniform float uReveal;
-uniform float uPixelRatio;
-uniform float uSize;
-varying float vAlpha;
-void main() {
-  vec4 mv = modelViewMatrix * vec4(position, 1.0);
-  float tw = pow(0.5 + 0.5 * sin(uTime * 1.6 + aPhase * 6.2831), 6.0);
-  vAlpha = clamp(tw * 0.85 + uHigh * 2.2, 0.0, 1.0) * uReveal;
-  gl_PointSize = aSize * uSize * uPixelRatio * (0.55 + vAlpha) * (12.0 / -mv.z);
-  gl_Position = projectionMatrix * mv;
-}
-`;
-
-export const glintFrag = /* glsl */ `
-varying float vAlpha;
-void main() {
-  vec2 p = gl_PointCoord - 0.5;
-  float r = length(p);
-  // Four-point star: two thin crossed streaks plus a soft core.
-  float streak = exp(-abs(p.x) * 60.0) * exp(-abs(p.y) * 5.0) + exp(-abs(p.y) * 60.0) * exp(-abs(p.x) * 5.0);
-  float core = exp(-r * 22.0);
-  float a = (streak * 0.9 + core) * vAlpha;
-  gl_FragColor = vec4(vec3(1.0, 0.97, 0.92) * a, a);
-}
-`;

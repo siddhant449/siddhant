@@ -34,21 +34,25 @@ export type Track = {
   /**
    * The song's own intro, where the song preview starts later: the audio of Apple's official
    * music-video preview, fetched from Apple each visit (only its audio frames, by range request: about
-   * 0.5MB of the 18MB file; never copied or stored) and decoded. Times are the video's own.
+   * 0.5MB of the 18MB file; never copied or stored) and decoded. Once both are decoded, the director
+   * makes the song and its intro one source: the preview on its own timeline, the intro after it on
+   * the song's grid (video time + `shift`), so every move between them is a seam on one deck.
    */
   intro?: {
     /** The music video's iTunes id, and its preview URL (refreshed from the lookup API like the songs'). */
     id: number;
     url: string;
-    /** Its bar 1: the first sample phrase. */
+    /** Its bar 1 (video time): the first sample phrase. */
     at: number;
-    /** What it plays: all its bars once, then the first two round and round. */
-    first: [number, number];
-    loop: [number, number];
-    /** Added to its time to put it on the song's own bar grid, clear of every line the song sings. */
+    /** Fetched from (video time): enough before bar 1 for the cycle's way back in. */
+    from: number;
+    /** Added to its time to put it on the song's own bar grid, after the preview's end. */
     shift: number;
     /** Its level against the song preview (dB). */
     gain: number;
+    /** On the song's grid: the first pass from its bar 1, then the cycle that follows, round and round. */
+    first: [number, number];
+    cycle: [number, number][];
   };
 };
 
@@ -108,9 +112,11 @@ const FALLBACK: Track[] = [
     artwork:
       "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/dc/18/c1/dc18c1e1-49a3-a53c-3064-db77a5f1e36d/075679990617_art.jpg/300x300bb.jpg",
     link: "https://music.apple.com/us/song/1258981727",
-    // D major (10B). Two quiet bars carry the line ("…so live your life", 6.01), then the drums drop
-    // on 7.028 with the hook ("ay, ay, ay"); after that every other bar is a line ending "…just live
-    // your life". The song plays only its hook bars until the end card sings the line.
+    // D major (10B). The preview opens on the pre-chorus ("…then you'll see, you're gonna go far,
+    // 'cause everyone knows just who you are", 0-5.2, then "oh, oh" 5.35-5.95), then the line ("So
+    // live your life", 6.01); the drums drop on 7.028 with the hook ("ay, ay, ay"), and after that every
+    // other bar is a line ending "…just live your life". Before the end card it plays its intro and
+    // pre-chorus (below), or, while the intro isn't ready, only its hook bars.
     bpm: 80,
     downbeat: 1.028,
     startAt: 7.028,
@@ -121,20 +127,32 @@ const FALLBACK: Track[] = [
       [19.028, 22.028],
       [25.028, 28.028],
     ],
-    tails: [7.028, 13.028, 19.028, 25.028],
+    // A vowel ringing over the bar line where the song comes in: the "…life" before each hook bar, and
+    // the "see" (0.88-1.45) the pre-chorus enters on after the intro.
+    tails: [1.018, 7.028, 13.028, 19.028, 25.028],
     landmarks: { line: 6.01, drop: 7.028 },
     // The intro, from the music video's preview: O-Zone's "ma-i-a hi, ma-i-a hu" under T.I.'s lines, from
-    // its first phrase (17.81) to "let's give it to 'em, baby girl" (29.81): four bars at the song's 80bpm,
-    // in its key and tuning (held notes within 7 cents). Its first two bars end on the one bar line T.I.
-    // isn't talking over, so they make the loop. Mixed 15dB below the song preview: lifted 11dB.
+    // its first phrase (bar 1, video 17.81, grid 34.028) to "let's give it to 'em, baby girl" (done by
+    // 29.65): four bars at the song's 80bpm, in its key and tuning (held notes within 7 cents). Mixed 15dB
+    // below the song preview: lifted 11dB. On the portrait, as the record goes: the whole intro, then the
+    // pre-chorus, and round again, never reaching "So":
+    // - the intro ends 10ms before its bar 5 (the next hit starts at video 29.785) and the pre-chorus
+    //   comes in on its own downbeat, as early (1.018, "see" ringing over: scooped);
+    // - the pre-chorus ends on the sixteenth before beat 3 (5.3405), in the breath after "just who you
+    //   are" (5.22-5.33), and the intro takes up at the same place in its own bar (32.3405, video 16.12:
+    //   music, no talking), so beats and bars run on: six bars (18s) a turn.
     intro: {
       id: 1656038356,
       url: "https://video-ssl.itunes.apple.com/itunes-assets/Video112/v4/bb/c8/59/bbc859b9-9368-735e-602a-9b14e4b140e6/mzvf_3761167083085306738.1920w.h264lc.U.p.m4v",
       at: 17.81,
-      first: [17.81, 29.81],
-      loop: [17.81, 23.81],
+      from: 14.81,
       shift: 16.218,
       gain: 11,
+      first: [34.028, 46.018],
+      cycle: [
+        [1.018, 5.3405],
+        [32.3405, 46.018],
+      ],
     },
   },
 ];

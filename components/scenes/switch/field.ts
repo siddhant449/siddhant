@@ -43,28 +43,45 @@ export type BeatShape = { words: WordBox[]; strength?: number; lit?: boolean } |
 export type View = { width: number; height: number; pillar: number; phone: boolean; pinAt: number };
 
 /**
- * The scroll timeline, as fractions of the pinned scroll: each beat holds from `at` to `until`,
- * and the dots morph from one beat to the next in between. Beat 0 is the slit (the cut).
+ * The pinned scroll, in viewport heights (Switch.module.css: the scene is this plus one stage tall).
+ * Every beat below is placed in viewport heights of scroll, so its spacing reads directly.
+ */
+export const RANGE = 7.3;
+const vh = (at: number, until: number) => ({ at: at / RANGE, until: until / RANGE });
+
+/**
+ * The scroll timeline, as fractions of the pinned scroll: each beat holds still from `at` to
+ * `until` (its plateau), and the dots morph from one beat to the next in between. Beat 0 is the
+ * slit (the cut). Each domain takes 0.96 of a viewport of scroll: a 0.28 morph in, then a 0.68
+ * plateau where nothing moves and the text can be read at an ordinary scrolling pace.
  */
 export const TIMELINE: { at: number; until: number }[] = [
   { at: 0, until: 0 },
-  { at: 0.07, until: 0.14 },
-  { at: 0.2, until: 0.28 },
-  { at: 0.34, until: 0.42 },
-  { at: 0.48, until: 0.56 },
-  { at: 0.62, until: 0.69 },
-  { at: 0.74, until: 0.81 },
-  // "Here's the work." holds up to where the A-side's hold catches (q 0.88) and glides the page
-  // onto the title card, so the glide itself carries the dots from this line onto the card's.
-  { at: 0.84, until: 0.89 },
+  // "The whole product.", streamed out of the slit.
+  vh(0.3, 0.9),
+  // The five domains.
+  vh(1.18, 1.86),
+  vh(2.14, 2.82),
+  vh(3.1, 3.78),
+  vh(4.06, 4.74),
+  vh(5.02, 5.7),
+  // The dots scatter into a dim field under the pitch.
+  vh(5.96, 6.58),
+  // "Here's the work." holds up to where the A-side's hold catches (0.3 of a viewport above the
+  // card, so 7.0 here) and glides the page onto the title card: the glide itself carries the dots
+  // from this line onto the card's.
+  vh(6.78, 7.0),
   // On the title card's words, riding up with the card, then dissolving into it (the stage fades).
-  { at: 0.97, until: 1 },
+  vh(7.18, 7.3),
 ];
 
 /** The last beat: the A-side title card's words. */
 export const TITLE_BEAT = TIMELINE.length - 1;
-/** The stage dissolves onto the title card across this stretch of the scroll. */
-export const DISSOLVE: [number, number] = [0.975, 0.998];
+/** The stage dissolves onto the title card across this stretch of the scroll, once the dots have landed. */
+export const DISSOLVE: [number, number] = [7.2 / RANGE, 7.29 / RANGE];
+/** A beat's text fades in over the last of its morph and out as its dots leave (fractions of the scroll). */
+export const FADE_IN = 0.14 / RANGE;
+export const FADE_OUT = 0.1 / RANGE;
 /** The most words a lit beat can carry (each word's light is one uniform). */
 export const MAX_WORDS = 16;
 
@@ -91,7 +108,7 @@ const FIELD = 0.2;
 const UNLIT = 0.34;
 
 /** Percent → the canvas's font-stretch keyword (the variable font's width axis serves each one). */
-function stretchKeyword(stretch: string) {
+export function stretchKeyword(stretch: string) {
   const pct = parseFloat(stretch) || 100;
   const steps: [number, CanvasFontStretch][] = [
     [50, "ultra-condensed"],

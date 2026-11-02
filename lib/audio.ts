@@ -114,7 +114,8 @@ type Lyric = {
 
 /** A decoded source: one of the songs, or Live Your Life's intro. */
 type Source = CueId | "intro";
-type Decoded = { buf: AudioBuffer; pad: number; ms: number; bytes?: number };
+/** `intro`: Live Your Life made one source with its intro (see merge()). */
+type Decoded = { buf: AudioBuffer; pad: number; ms: number; bytes?: number; intro?: boolean };
 
 const BINS = 64;
 const OPEN = 20000;
@@ -154,6 +155,11 @@ const LEAD = 0.02;
 const EDGE = 0.004;
 /** The edges of a loop roll's grains (s). */
 const GRAIN = 0.002;
+/**
+ * In Live Your Life's merged source (merge()), where its intro's part starts: past the song preview's
+ * own 30s, before the intro's earliest audio (grid 31.03).
+ */
+const INTRO_FROM = 30.5;
 /** The brake: two beats; its speed curve's steepness. */
 const BRAKE_BEATS = 2;
 const BRAKE_K = 2.6;
@@ -399,8 +405,11 @@ class AudioDirector {
     this.lyric = { id, state: "pending", cued: true, jump: 0 };
   }
 
-  /** The lyric left the screen: let its song play on, rejoining its own loop on the bar. */
-  blurLyric(id: string) {
+  /**
+   * The lyric left the screen: let its song play on, rejoining its own loop on the bar. `past`: it left
+   * by the top, the visitor scrolling on beyond it (from the end card into the footer).
+   */
+  blurLyric(id: string, past = false) {
     if (this.lyric?.id !== id) return;
     const line = LYRICS[id];
     this.lyric = null;
@@ -409,14 +418,20 @@ class AudioDirector {
     // restore. A jump still on its way sees the lyric is gone and stands down.
     const d = this.decks[this.live];
     if (d.cue !== line.cue) return;
-    // Live Your Life's line left behind (scrolling back up from the end card): back to the intro on the bar.
-    const other = this.decks[1 - this.live];
-    if (line.cue === "S4" && this.state.soundOn && !this.onIntro(d) && this.decoded.has("intro")) {
-      // Its song not heard yet (a cut or the brake still bringing it in, or the end card's own cut):
-      // the live deck is the one waiting, so the intro comes in on it instead, when the song would have.
-      const h = this.handover;
-      if (h && h.to === "S4" && h.kind !== "rise" && h.kind !== "return" && this.ctx!.currentTime < h.until) return this.introInstead(d, h);
-      return this.toIntro(d, other);
+    if (line.cue === "S4") {
+      // Into the footer: the song plays on from the line, as the record does, and never back.
+      if (past) return;
+      // Back up to the portrait: to the intro on the bar.
+      if (this.state.soundOn && this.introReady("S4") && !this.onIntro(d)) {
+        const h = this.handover;
+        const pending = h && h.to === "S4" && h.kind !== "rise" && h.kind !== "return" && this.ctx!.currentTime < h.until;
+        // Already on its way back to the intro.
+        if (pending && h.from === "S4") return;
+        // Its song not heard yet (a cut or the brake still bringing it in): the live deck is the one
+        // waiting, so the intro comes in on it instead, when the song would have.
+        if (pending) return this.introInstead(d, h);
+        if (d.kind === "buffer") return this.toIntro(d);
+      }
     }
     this.rejoin(d);
   }
@@ -428,11 +443,12 @@ class AudioDirector {
    */
   private prepareIntro() {
     const t = this.track("S4");
-    if (!t?.intro || this.decoded.has("intro") || this.loading.has("intro") || this.failed.has("intro")) return;
+    if (!t?.intro || this.introReady("S4") || this.decoded.has("intro") || this.loading.has("intro") || this.failed.has("intro")) return;
     const t0 = performance.now();
-    const job = loadIntroAudio(t.intro.url, t.intro.at - 3, this.ctx?.sampleRate ?? 48000)
+    const job = loadIntroAudio(t.intro.url, t.intro.from, this.ctx?.sampleRate ?? 48000)
       .then(({ buf, t0: first, bytes }) => {
         this.decoded.set("intro", { buf, pad: calibrate(buf, { ...INTRO_SYNC, pad: first }), ms: performance.now() - t0, bytes });
+        this.mergeSoon();
       })
       .catch(() => {
         this.failed.add("intro");
@@ -623,6 +639,7 @@ class AudioDirector {
         const data = await res.arrayBuffer();
         const buf = await new Offline(2, 1, this.ctx?.sampleRate ?? 48000).decodeAudioData(data);
         this.decoded.set(cue, { buf, pad: calibrate(buf, SYNC[cue]), ms: performance.now() - t0 });
+        if (cue === "S4") this.mergeSoon();
       } catch {
         this.failed.add(cue);
       } finally {
@@ -868,24 +885,18 @@ class AudioDirector {
   }
 
   /**
-   * Puts a cue on a deck: its decoded song if it has one, otherwise its <audio> element starts loading
-   * it. `intro`: Live Your Life's intro instead (decoded, or not at all).
+   * Puts a cue on a deck: its decoded song if it has one (Live Your Life's with its intro, once both
+   * are in: merge()), otherwise its <audio> element starts loading it.
    */
-  private load(deck: Deck, cue: CueId, intro = false) {
+  private load(deck: Deck, cue: CueId) {
     const t = this.track(cue);
     if (!t) return null;
     const was = deck.kind;
     deck.cue = cue;
-    if (intro && t.intro && this.decoded.has("intro")) {
-      deck.kind = "buffer";
-      deck.source = "intro";
-      deck.level = Math.pow(10, t.intro.gain / 20);
-    } else {
-      deck.level = 1;
-      deck.source = cue;
-      deck.kind = this.decoded.has(cue) ? "buffer" : "element";
-      if (deck.kind === "element" && (deck.cue !== cue || !deck.el.src || !deck.el.src.includes(t.preview.slice(-30)))) deck.el.src = t.preview;
-    }
+    deck.level = 1;
+    deck.source = cue;
+    deck.kind = this.decoded.has(cue) ? "buffer" : "element";
+    if (deck.kind === "element" && (!deck.el.src || !deck.el.src.includes(t.preview.slice(-30)))) deck.el.src = t.preview;
     // Switching between its <audio> and decoded voices, the deck lets go of the other first, so nothing
     // it had going carries on under the new song through the same fader.
     if (was === "element" && deck.kind === "buffer") deck.el.pause();
@@ -915,14 +926,51 @@ class AudioDirector {
     d.el.pause();
   }
 
-  /** True while a deck plays Live Your Life's intro. */
+  /** True while a deck plays Live Your Life's intro: past the preview's own 30s, in the merged source. */
   private onIntro(d: Deck) {
-    return d.source === "intro";
+    return d.cue === "S4" && (this.pos(d) ?? 0) > INTRO_FROM;
   }
 
-  /** How far a deck's own timeline sits from its song's grid: the intro's shift, or 0. */
-  private shift(d: Deck) {
-    return this.onIntro(d) ? (this.track("S4")?.intro?.shift ?? 0) : 0;
+  /** Live Your Life is decoded together with its intro, so it can come in on it. */
+  private introReady(cue: CueId) {
+    return cue === "S4" && this.decoded.get("S4")?.intro === true;
+  }
+
+  /** merge() in idle time (a few ms of copying), once the song and its intro are both decoded. */
+  private mergeSoon() {
+    if (!this.decoded.has("intro") || !this.decoded.has("S4")) return;
+    if (typeof window.requestIdleCallback === "function") window.requestIdleCallback(() => this.merge(), { timeout: 1000 });
+    else window.setTimeout(() => this.merge(), 50);
+  }
+
+  /**
+   * Live Your Life and its intro made one source: the song preview on its element timeline, and after
+   * it, on the song's own grid (video time + shift, its bar 1 on 34.028), the intro's audio lifted to
+   * the song's level. The portrait's cycle (intro, pre-chorus, intro...) and every move between the two
+   * are then seams on one deck, placed on the audio clock like any other. Voices already playing keep
+   * the buffer they started on; the song's part sits exactly where it did (only the pad is applied).
+   */
+  private merge() {
+    const intro = this.track("S4")?.intro;
+    const song = this.decoded.get("S4");
+    const vid = this.decoded.get("intro");
+    if (!intro || !song || song.intro || !vid || vid.buf.sampleRate !== song.buf.sampleRate) return;
+    const sr = song.buf.sampleRate;
+    const s0 = Math.round(song.pad * sr);
+    const i0 = Math.round((vid.pad + intro.shift) * sr);
+    const length = Math.max(s0 + song.buf.length, i0 + vid.buf.length);
+    const buf = new AudioBuffer({ numberOfChannels: song.buf.numberOfChannels, length, sampleRate: sr });
+    const k = Math.pow(10, intro.gain / 20);
+    for (let c = 0; c < buf.numberOfChannels; c++) {
+      const out = buf.getChannelData(c);
+      const a = song.buf.getChannelData(c);
+      const skip = Math.max(0, -s0);
+      out.set(a.subarray(skip), s0 + skip);
+      const b = vid.buf.getChannelData(Math.min(c, vid.buf.numberOfChannels - 1));
+      for (let i = Math.max(0, -i0); i < b.length; i++) out[i0 + i] = b[i] * k;
+    }
+    this.decoded.set("S4", { buf, pad: 0, ms: song.ms, bytes: vid.bytes, intro: true });
+    this.decoded.delete("intro");
   }
 
   // -------------------------------------------------------------- voices: decoded songs on the audio clock
@@ -980,8 +1028,7 @@ class AudioDirector {
     const after = all.filter(([a]) => a > pos).sort((x, y) => x[0] - y[0])[0];
     if (after) return after[1];
     const t = this.track(d.cue)!;
-    const shift = this.shift(d);
-    return gridAfter(t, pos + shift, 4, 0.05) - shift;
+    return gridAfter(t, pos, 4, 0.05);
   }
 
   /** Which region of the cycle comes after the one a voice at `pos` plays in. */
@@ -1030,7 +1077,7 @@ class AudioDirector {
   private pos(d: Deck, at?: number): number | null {
     if (!this.ctx) return null;
     const p = this.raw(d, at);
-    return p === null ? null : p + this.shift(d);
+    return p;
   }
 
   /** A deck's position on its own source's timeline now (or at the clock time `at`), or null if it isn't sounding. */
@@ -1141,11 +1188,12 @@ class AudioDirector {
    * Where a song comes in after a cut, and what it plays: at the line that is waiting for it
    * (holding the line's bars once the line is on screen), otherwise on its drop.
    */
-  private entry(cue: CueId, d?: Deck) {
+  private entry(cue: CueId) {
     const t = this.track(cue)!;
-    if (d && this.onIntro(d) && t.intro) return { at: t.intro.at, first: t.intro.first, cycle: [t.intro.loop] };
     const line = this.lyricFor(cue);
     if (line) return this.lyric!.cued ? { at: line.approach, ...this.own(t) } : { at: line.approach, first: null, cycle: [line.hold] };
+    // Live Your Life, its intro ready: on the intro's bar 1, then the portrait's cycle.
+    if (this.introReady(cue) && t.intro) return { at: t.intro.first[0], first: t.intro.first, cycle: t.intro.cycle };
     return { at: t.drop, ...this.own(t) };
   }
 
@@ -1222,7 +1270,7 @@ class AudioDirector {
     // Only one deck plays: the other is silent, and takes the new song now, so it is loaded in time.
     // Live Your Life comes in on its intro when the intro is ready and no line is waiting for the song.
     this.silence(inn);
-    this.load(inn, cue, cue === "S4" && !this.lyricFor(cue));
+    this.load(inn, cue);
     this.reset(inn, now);
     if (out.kind === "buffer") {
       const v = this.voiceAt(out, now);
@@ -1259,8 +1307,11 @@ class AudioDirector {
     const t = this.load(d, cue);
     if (!t) return;
     const line = this.lyricFor(cue);
-    const at = line ? line.approach : t.startAt;
+    // Sound on at the portrait, the intro ready: it rises on the intro's bar 1 and its cycle.
+    const intro = !line && this.introReady(cue) && d.kind === "buffer" ? t.intro : undefined;
+    const at = line ? line.approach : intro ? intro.first[0] : t.startAt;
     if (line && !this.lyric!.cued) this.program(d, null, [line.hold]);
+    else if (intro) this.program(d, intro.first, intro.cycle);
     else this.program(d, this.own(t).first, this.own(t).cycle);
     this.reset(d, now);
     this.clearEcho(now, now + 0.03);
@@ -1497,7 +1548,7 @@ class AudioDirector {
     inn.lp.frequency.setValueAtTime(lpFrom, start);
     inn.lp.frequency.exponentialRampToValueAtTime(OPEN, start + 60 / t.bpm);
     if (inn.kind === "buffer") {
-      const e = this.entry(cue, inn);
+      const e = this.entry(cue);
       this.program(inn, e.first, e.cycle);
       this.start(inn, start, e.at);
       return;
@@ -1508,7 +1559,7 @@ class AudioDirector {
     // running it briefly faster (or slower): no seek, which would make it later still.
     this.step(Math.max(0, start - now - LEAD_IN), () => {
       if (inn.kind !== "element") return;
-      const e = this.entry(cue, inn);
+      const e = this.entry(cue);
       this.program(inn, e.first, e.cycle);
       inn.el.preservesPitch = false;
       inn.el.currentTime = Math.max(0, e.at - Math.max(0, start - ctx.currentTime) + ELEMENT_LAG);
@@ -1523,7 +1574,7 @@ class AudioDirector {
         inn.el.playbackRate = 1;
         return;
       }
-      const e = this.entry(cue, inn);
+      const e = this.entry(cue);
       const err = inn.el.currentTime - ELEMENT_LAG + (start - ctx.currentTime) - e.at;
       inn.el.playbackRate = inn.el.paused || Math.abs(err) < 0.004 ? 1 : Math.min(3, Math.max(0.5, 1 - err / left));
       this.step(0.04, trim);
@@ -1588,59 +1639,17 @@ class AudioDirector {
   }
 
   /**
-   * The end card's line while the intro plays: a same-song cut to the song itself on the intro's next
-   * beat, straight onto the beat before the line ("So" under a beat later). Two sources, one song at a
-   * time: the intro is silent 20ms before the song comes in.
+   * Back from the line to the intro (scrolling up from the end card or the footer to the portrait): on
+   * its next bar line the song jumps to the intro's bar 1 and the portrait's cycle. One source on one
+   * deck: a seam like any other, crossfaded in 3ms in the last quiet moment before the line.
    */
-  private introToLine(out: Deck, lyric: Lyric, line: LyricLine) {
-    const decks = this.decks!;
+  private toIntro(d: Deck) {
+    const intro = this.track("S4")!.intro!;
     const now = this.ctx!.currentTime;
-    const at = now + this.beatWait(out, 0.12, now);
-    const token = this.begin(now, false);
-    const inn = out === decks[0] ? decks[1] : decks[0];
-    this.live = decks.indexOf(inn);
-    this.silence(inn);
-    this.load(inn, line.cue);
-    this.reset(inn, now);
-    this.clearEcho(now, now + 0.03);
-    // Silent by the last quiet moment before the beat (where a seam would cross: none is queued, so
-    // no loop seam sounds just before the cut): 20ms of air between the two sources.
-    fadeOut(out.fader.gain, at - LEAD, EDGE);
-    if (out.kind === "buffer") this.finish(out, at - LEAD - SEAM - 0.001);
-    else this.step(at - now + 0.05, () => out.el.pause());
-    inn.fader.gain.setValueAtTime(0, at);
-    inn.fader.gain.linearRampToValueAtTime(inn.level, at + EDGE);
-    if (inn.kind === "buffer") {
-      this.program(inn, null, [line.hold]);
-      this.start(inn, at, line.approach);
-    } else {
-      this.step(at - now - PREROLL, () => {
-        this.program(inn, null, [line.hold]);
-        inn.el.currentTime = line.approach - PREROLL + ELEMENT_LAG;
-        this.start(inn, at);
-      });
-    }
-    lyric.state = "armed";
-    this.handover = { kind: "cut", token, from: out.cue, to: line.cue, at, until: at };
-  }
-
-  /**
-   * Back from the song to its intro (scrolling up from the end card): the song stops on its bar, and
-   * the intro comes in at its first phrase.
-   */
-  private toIntro(out: Deck, inn: Deck) {
-    const now = this.ctx!.currentTime;
-    const at = now + this.barWait(out, 0.3, now);
-    const token = this.begin(now, false);
-    this.live = this.decks!.indexOf(inn);
-    this.load(inn, "S4", true);
-    this.reset(inn, now);
-    this.clearEcho(now, now + 0.03);
-    // Silent by the last quiet moment before the bar line (as in introToLine): no seam sounds first.
-    fadeOut(out.fader.gain, at - LEAD, EDGE);
-    if (out.kind === "buffer") this.finish(out, at - LEAD - SEAM - 0.001);
-    this.bringIn(inn, "S4", at, OPEN, now);
-    this.handover = { kind: "cut", token, from: out.cue, to: "S4", at, until: at };
+    const at = now + this.barWait(d, 0.3, now);
+    const token = this.begin(now, true);
+    this.jumpTo(d, at, intro.first[0], intro.first, intro.cycle);
+    this.handover = { kind: "cut", token, from: "S4", to: "S4", at, until: at };
   }
 
   /**
@@ -1653,10 +1662,9 @@ class AudioDirector {
     const now = this.ctx!.currentTime;
     const at = Math.max(h.until, now + 0.02);
     this.silence(d, now);
-    this.load(d, "S4", true);
     d.fader.gain.setValueAtTime(0, at);
     d.fader.gain.linearRampToValueAtTime(d.level, at + 0.015);
-    const e = this.entry("S4", d);
+    const e = this.entry("S4");
     this.program(d, e.first, e.cycle);
     this.start(d, at, e.at);
     this.handover = { ...h, until: at };
@@ -1670,20 +1678,13 @@ class AudioDirector {
     const d = this.decks[this.live];
     const h = this.handover;
     const now = this.ctx.currentTime;
-    // Its song cued up by a cut but not heard yet: it comes in at the line, silently moved there (the
-    // song itself, not its intro, when the intro was on its way).
-    if (d.cue === line.cue && h && h.kind !== "rise" && h.kind !== "return" && now < h.until - 0.02) {
-      // Back onto the line before the song it was leaving had gone (off the end card and on again within
-      // the bar): that song is still running into its line, so it carries on and the cut is called off.
-      const heard = this.decks[1 - this.live];
-      if (h.from === line.cue && h.to === line.cue && heard.cue === line.cue && !this.onIntro(heard) && this.gainOf(heard, now) > AUDIBLE) return this.resume(heard);
-      if (this.onIntro(d)) {
-        this.dropAfter(d, now + 0.01);
-        this.load(d, line.cue);
-        d.fader.gain.cancelScheduledValues(now);
-        d.fader.gain.setValueAtTime(0, Math.max(now, h.until - 0.001));
-        d.fader.gain.linearRampToValueAtTime(d.level, h.until + 0.015);
-      }
+    // A jump back to the intro still on its way on this very deck (off the end card and on again within
+    // the bar): called off; the song carries on from where it is, and the line is planned from there.
+    if (d.cue === line.cue && h && h.from === line.cue && h.to === line.cue && h.kind === "cut" && now < h.until - 0.02 && this.raw(d) !== null) {
+      this.dropAfter(d, now + 0.01);
+      this.handover = { kind: "return", token: this.token, from: null, to: line.cue, at: now, until: now };
+    } else if (d.cue === line.cue && h && h.kind !== "rise" && h.kind !== "return" && now < h.until - 0.02) {
+      // Its song cued up by a cut but not heard yet: it comes in at the line, silently moved there.
       if (d.kind === "buffer") {
         this.dropAfter(d, now + 0.01);
         this.program(d, null, [line.hold]);
@@ -1699,10 +1700,17 @@ class AudioDirector {
     }
     const pos = this.pos(d);
     if (d.cue !== line.cue || pos === null) return;
-    if (this.onIntro(d)) return this.introToLine(d, lyric, line);
-    // Already running into the line from its own approach, its first word still ahead: on into it, then held.
-    if (pos >= line.approach - 0.05 && pos < line.hold[0] && pos < line.words[0].t - 0.1) {
+    // Already running into the line, its first word still ahead (from its approach, or from the
+    // pre-chorus that leads to it, short of where that would turn back to the intro): on into it.
+    const first = line.words[0].t;
+    const runsIn = (pos >= line.approach - 0.05 && pos < first - 0.1) || (!!line.runIn && pos >= line.runIn[0] - 0.05 && pos < line.runIn[1]);
+    if (runsIn && !this.onIntro(d)) {
       this.program(d, null, [line.hold]);
+      lyric.state = "armed";
+      return;
+    }
+    // The line already sung and the song playing on after it (back up from the footer): it carries on.
+    if (d.cycle.length === 1 && d.cycle[0] === line.hold && pos >= first - 0.1 && !this.onIntro(d)) {
       lyric.state = "armed";
       return;
     }

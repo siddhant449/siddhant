@@ -60,7 +60,11 @@ export default function LyricLine({ lineId, fallback, window: win, onLand, prese
       if (on !== focused) {
         focused = on;
         if (on) audio.focusLyric(lineId);
-        else audio.blurLyric(lineId);
+        else {
+          // Gone by the top (the visitor scrolled on beyond it) or by the bottom (back up).
+          const r = el.getBoundingClientRect();
+          audio.blurLyric(lineId, r.top + r.height / 2 < window.innerHeight / 2);
+        }
       }
       raf = requestAnimationFrame(watch);
     };

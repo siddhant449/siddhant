@@ -14,7 +14,7 @@ import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
 import { audio } from "@/lib/audio";
 import { Driver } from "./Driver";
 import { heroLoop } from "./loop";
-import { backdropFrag, fullscreenVert, glintFrag, glintVert } from "./shaders";
+import { backdropFrag, fullscreenVert } from "./shaders";
 import { HERO_PIN } from "./timing";
 
 type SceneProps = {
@@ -138,10 +138,9 @@ function ChromeTitle({ word, scroll, revealAt }: Pick<SceneProps, "word" | "scro
   const font = useLoader(FontLoader, "/fonts/archivo-expanded-800.typeface.json");
   const group = useRef<THREE.Group>(null);
   const matRef = useRef<THREE.MeshPhysicalMaterial>(null);
-  const glintMat = useRef<THREE.ShaderMaterial>(null);
-  const { size, gl } = useThree();
+  const { size } = useThree();
 
-  const { geometry, width, height, glints } = useMemo(() => {
+  const { geometry, width, height } = useMemo(() => {
     const geo = new TextGeometry(word, {
       font,
       size: 1,
@@ -157,39 +156,14 @@ function ChromeTitle({ word, scroll, revealAt }: Pick<SceneProps, "word" | "scro
     const bb = geo.boundingBox!.clone();
     const halfW = (bb.max.x - bb.min.x) / 2;
 
-    // Glints sit on real outline vertices along the front face, near the cap line or baseline.
-    const pos = geo.attributes.position as THREE.BufferAttribute;
-    const picks: number[] = [];
-    const rand = mulberry(7);
-    const v = new THREE.Vector3();
-    const h = bb.max.y - bb.min.y;
-    let guard = 0;
-    while (picks.length < 12 * 3 && guard++ < 50000) {
-      v.fromBufferAttribute(pos, Math.floor(rand() * pos.count));
-      const onFront = v.z > bb.max.z - 0.03;
-      const onEdge = v.y > bb.max.y - h * 0.08 || v.y < bb.min.y + h * 0.06;
-      const spaced = picks.every((_, j) => j % 3 || Math.abs(picks[j] - v.x) > halfW * 0.12);
-      if (onFront && onEdge && spaced) {
-        bendPoint(v, halfW);
-        picks.push(v.x, v.y, v.z + 0.05);
-      }
-    }
     arcBend(geo, halfW);
     geo.computeBoundingBox();
     const bent = geo.boundingBox!;
 
-    const g = new THREE.BufferGeometry();
-    g.setAttribute("position", new THREE.Float32BufferAttribute(picks, 3));
-    const n = picks.length / 3;
-    g.setAttribute("aPhase", new THREE.Float32BufferAttribute(Array.from({ length: n }, () => rand()), 1));
-    g.setAttribute("aSize", new THREE.Float32BufferAttribute(Array.from({ length: n }, () => 60 + rand() * 70), 1));
-    return { geometry: geo, width: bent.max.x - bent.min.x, height: bent.max.y - bent.min.y, glints: g };
+    return { geometry: geo, width: bent.max.x - bent.min.x, height: bent.max.y - bent.min.y };
   }, [font, word]);
 
-  useEffect(() => () => {
-    geometry.dispose();
-    glints.dispose();
-  }, [geometry, glints]);
+  useEffect(() => () => geometry.dispose(), [geometry]);
 
   useFrame((state) => {
     const g = group.current;
@@ -222,19 +196,12 @@ function ChromeTitle({ word, scroll, revealAt }: Pick<SceneProps, "word" | "scro
     g.rotation.y = pointer.sx * 0.16;
 
     if (matRef.current) {
-      matRef.current.emissiveIntensity = lv.bass * 0.22 * (1 - dim);
+      matRef.current.emissiveIntensity = lv.bass * 0.06 * (1 - dim);
       matRef.current.opacity = 1 - gone;
     }
-    // The chrome's reflections come from the scene's environment (the title is all that uses it),
-    // so they dim there: a material's own envMapIntensity only scales a map set on the material.
+    // The metal's light comes from the scene's environment (the title is all that uses it), so it
+    // dims there: a material's own envMapIntensity only scales a map set on the material.
     state.scene.environmentIntensity = 1 - dim * 0.9;
-    if (glintMat.current) {
-      const u = glintMat.current.uniforms;
-      u.uTime.value = state.clock.elapsedTime;
-      u.uHigh.value = lv.high;
-      u.uSize.value = Math.min(Math.max(size.width / 1440, 0.4), 1.15);
-      u.uReveal.value = revealProgress(revealAt, 1.6, 1.2) * (1 - smooth(0.1, 0.35, e));
-    }
 
     pointer.sx += (pointer.x - pointer.sx) * 0.05;
     pointer.sy += (pointer.y - pointer.sy) * 0.05;
@@ -243,47 +210,21 @@ function ChromeTitle({ word, scroll, revealAt }: Pick<SceneProps, "word" | "scro
   return (
     <group ref={group}>
       <mesh geometry={geometry}>
+        {/* Satin graphite, not mirror chrome: soft, broad highlights and no hot specks. */}
         <meshPhysicalMaterial
           ref={matRef}
           transparent
-          color="#f3f1ee"
-          metalness={1}
-          roughness={0.1}
-          clearcoat={1}
-          clearcoatRoughness={0.05}
+          color="#8f8a83"
+          metalness={0.9}
+          roughness={0.36}
+          clearcoat={0.25}
+          clearcoatRoughness={0.45}
           emissive="#f6e7d3"
           emissiveIntensity={0}
         />
       </mesh>
-      <points geometry={glints} renderOrder={2}>
-        <shaderMaterial
-          ref={glintMat}
-          vertexShader={glintVert}
-          fragmentShader={glintFrag}
-          transparent
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-          uniforms={{
-            uTime: { value: 0 },
-            uHigh: { value: 0 },
-            uReveal: { value: 0 },
-            uPixelRatio: { value: gl.getPixelRatio() },
-            uSize: { value: 1 },
-          }}
-        />
-      </points>
     </group>
   );
-}
-
-function mulberry(seed: number) {
-  return () => {
-    seed |= 0;
-    seed = (seed + 0x6d2b79f5) | 0;
-    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
 }
 
 /**
@@ -363,15 +304,14 @@ export default function HeroScene(props: SceneProps) {
       <Backdrop scroll={props.scroll} revealAt={props.revealAt} />
       <ChromeTitle word={props.word} scroll={props.scroll} revealAt={props.revealAt} />
       <CameraRig scroll={props.scroll} revealAt={props.revealAt} />
-      {/* One key light from camera-left, as in the photograph (Rembrandt-style): a warm key,
-          a weak cool fill on the right, strips on black so the chrome reads as metal. */}
+      {/* One key light from camera-left, as in the photograph: the pillar's warm light rims the
+          letters; a soft top light and a weak cool fill give the satin its form, nothing harder. */}
       <Environment resolution={256} frames={1}>
-        <Lightformer form="rect" intensity={3.2} color="#f2c89a" position={[-6, 2, 2]} scale={[1.2, 9, 1]} rotation-y={Math.PI / 2} />
-        <Lightformer form="rect" intensity={3.4} color="#fff6ea" position={[-1, 6, 1]} scale={[12, 0.8, 1]} rotation-x={Math.PI / 2} />
-        <Lightformer form="rect" intensity={2.6} color="#ffffff" position={[-1, 2.5, 5]} scale={[14, 0.35, 1]} />
-        <Lightformer form="rect" intensity={1.5} color="#cfd8ea" position={[7, 0, 2]} scale={[0.6, 8, 1]} rotation-y={-Math.PI / 2} />
-        <Lightformer form="rect" intensity={0.6} color="#f2c89a" position={[0, -5, 2]} scale={[12, 0.4, 1]} rotation-x={-Math.PI / 2} />
-        <Lightformer form="ring" intensity={2.5} color="#ffffff" position={[-3, 3, 7]} scale={1} />
+        <Lightformer form="rect" intensity={4} color="#f2c89a" position={[-6, 2, 2]} scale={[1.2, 9, 1]} rotation-y={Math.PI / 2} />
+        <Lightformer form="rect" intensity={1.1} color="#fff6ea" position={[-1, 6, 1]} scale={[12, 2.4, 1]} rotation-x={Math.PI / 2} />
+        <Lightformer form="rect" intensity={0.5} color="#ffffff" position={[-1, 2.5, 5]} scale={[14, 1.6, 1]} />
+        <Lightformer form="rect" intensity={0.7} color="#cfd8ea" position={[7, 0, 2]} scale={[0.6, 8, 1]} rotation-y={-Math.PI / 2} />
+        <Lightformer form="rect" intensity={0.4} color="#f2c89a" position={[0, -5, 2]} scale={[12, 0.4, 1]} rotation-x={-Math.PI / 2} />
       </Environment>
       <BloomPulse />
       <Driver loop={heroLoop} />

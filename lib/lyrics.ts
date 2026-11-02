@@ -10,8 +10,13 @@ export type LyricLine = {
    * beat of the first word, it is the line itself: the song starts on the words, no run-up.
    */
   approach: number;
-  /** The bar-aligned region the deck loops while the line is on screen. */
+  /** The bar-aligned region the deck loops while the line is on screen (and, for a closing line, after it). */
   hold: [number, number];
+  /**
+   * Where the song, playing there, runs into the line on its own (a line coming on screen while it
+   * does just waits for its words instead of jumping).
+   */
+  runIn?: [number, number];
 };
 
 /**
@@ -46,11 +51,15 @@ export const LYRICS: Record<string, LyricLine> = {
   liveYourLife: {
     id: "liveYourLife",
     cue: "S4",
-    // Kept for the end card: until then the song plays only its hook bars. On the line the song jumps,
-    // on its next beat, to beat 3 of the bar that carries it (5.528), so "So" comes in under a beat
-    // later; the line then runs on into the song's own drop and its hook bar, which holds.
+    // Kept for the end card: until then the song plays its intro and pre-chorus, which stops short of
+    // "So". On the line the song jumps, on its next beat, to beat 3 of the bar that carries it (5.528), so
+    // "So" comes in under a beat later; if the pre-chorus is already playing, it just runs on into it.
+    // Then the song plays on through the end card and the footer (its drop, its hook and line bars), and
+    // at the preview's end loops the six bars from 10.028: the longest stretch that loops seamlessly
+    // (either side of 28.028 and 10.028 match, 0.95 and 0.94), hook and line bars still alternating.
     approach: 5.528,
-    hold: [7.028, 10.028],
+    hold: [10.028, 28.028],
+    runIn: [1.018, 5.28],
     words: [
       { w: "So", t: 6.01 },
       { w: "live", t: 6.14 },

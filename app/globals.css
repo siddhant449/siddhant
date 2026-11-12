@@ -1,0 +1,158 @@
+@import "tailwindcss";
+@import "lenis/dist/lenis.css";
+
+/*
+  Tokens
+  Ink and chalk carry the page. Colour only appears on contact: in the flow
+  field around the cursor and when a project is touched.
+*/
+:root {
+  --ink: #000000;
+  --chalk: #ecece7;
+  --ash: #8f8f8a;
+  --smoke: #3d3d3b;
+  --paper: #e4e4de;
+  --paper-ink: #0d0d0c;
+  --line: rgb(236 236 231 / 0.14);
+  --line-strong: rgb(236 236 231 / 0.28);
+  --gutter: clamp(16px, 3.4vw, 56px);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-chalk: var(--chalk);
+  --color-ash: var(--ash);
+  --color-smoke: var(--smoke);
+  --color-paper: var(--paper);
+  --color-paper-ink: var(--paper-ink);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --ease-out-expo: var(--ease-out);
+  --ease-in-out-quart: var(--ease-in-out);
+}
+
+/* Width axis of Archivo (62 to 125). Width is the voice of this site. */
+@utility wdth-* {
+  font-variation-settings: "wdth" --value(integer);
+}
+
+@utility px-gutter {
+  padding-inline: var(--gutter);
+}
+
+@layer base {
+  html {
+    background: var(--ink);
+    color: var(--chalk);
+    color-scheme: dark;
+    overflow-x: clip;
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background: var(--ink);
+    color: var(--chalk);
+    font-family: var(--font-sans);
+    font-size: 17px;
+    line-height: 1.6;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background: var(--chalk);
+    color: var(--ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
+    border-radius: 4px;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  img {
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+}
+
+/* Preloader: rendered on the server so content never flashes underneath it. */
+.preloader {
+  animation: preloader-failsafe 0.01s linear 5s forwards;
+}
+html[data-intro="seen"] .preloader {
+  display: none;
+}
+@keyframes preloader-failsafe {
+  to {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+/* Hide the system cursor only where the custom one is running. */
+@media (hover: hover) and (pointer: fine) {
+  html.has-cursor,
+  html.has-cursor a,
+  html.has-cursor button {
+    cursor: none;
+  }
+}
+
+/* Link roll: the label slides up and its twin follows. */
+.roll {
+  display: inline-grid;
+  overflow: hidden;
+  line-height: 1.2;
+}
+.roll > span {
+  grid-area: 1 / 1;
+  transition: transform 0.55s var(--ease-out);
+}
+.roll > span:last-child {
+  transform: translateY(105%);
+}
+.group:hover .roll > span:first-child,
+.group:focus-visible .roll > span:first-child {
+  transform: translateY(-105%);
+}
+.group:hover .roll > span:last-child,
+.group:focus-visible .roll > span:last-child {
+  transform: translateY(0);
+}
+
+/* Fine grain over the whole page keeps the black from banding. */
+.grain {
+  pointer-events: none;
+  position: fixed;
+  inset: -50%;
+  z-index: 60;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .preloader {
+    display: none;
+  }
+}

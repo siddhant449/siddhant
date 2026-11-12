@@ -1,7 +1,7 @@
 "use client";
 
 import { useLenis } from "lenis/react";
-import { motion, useAnimate } from "motion/react";
+import { useAnimate } from "motion/react";
 import { useEffect, useState } from "react";
 import { site } from "@/lib/content";
 import { useIntro } from "@/lib/intro";
@@ -40,7 +40,7 @@ export function Preloader() {
 
     const fontsReady = Promise.race([
       document.fonts?.ready ?? Promise.resolve(),
-      new Promise((r) => setTimeout(r, 1200)),
+      new Promise((r) => setTimeout(r, 1000)),
     ]);
 
     (async () => {
@@ -49,13 +49,13 @@ export function Preloader() {
       await animate(
         "[data-word]",
         { y: ["105%", "0%"] },
-        { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
+        { duration: 0.65, ease: [0.22, 1, 0.36, 1] },
       );
       if (cancelled) return;
       await animate(
         "[data-word]",
         { "--wd": [125, 62], fontWeight: [200, 800], letterSpacing: ["0em", "-0.02em"] },
-        { duration: 0.75, ease: [0.76, 0, 0.24, 1] },
+        { duration: 0.6, ease: [0.76, 0, 0.24, 1] },
       );
       if (cancelled) return;
       animate("[data-meta]", { opacity: 0 }, { duration: 0.25 });
@@ -63,7 +63,7 @@ export function Preloader() {
       await animate(
         scope.current,
         { clipPath: ["inset(0% 0% 0% 0%)", "inset(0% 0% 100% 0%)"] },
-        { duration: 0.9, ease: [0.76, 0, 0.24, 1] },
+        { duration: 0.8, ease: [0.76, 0, 0.24, 1] },
       );
       if (cancelled) return;
       try {
@@ -98,14 +98,14 @@ export function Preloader() {
         <span>{site.location}</span>
       </div>
       <div className="overflow-hidden pb-[0.06em]">
-        <motion.span
+        {/* A plain element: only this component's timeline moves it. */}
+        <span
           data-word
-          initial={{ y: "105%" }}
-          style={{ "--wd": 125, fontWeight: 200 } as React.CSSProperties}
+          style={{ "--wd": 125, fontWeight: 200, transform: "translateY(105%)" } as React.CSSProperties}
           className="block whitespace-nowrap text-[clamp(36px,10vw,200px)] leading-[0.86] [font-variation-settings:'wdth'_var(--wd)]"
         >
           {site.name}
-        </motion.span>
+        </span>
       </div>
     </div>
   );

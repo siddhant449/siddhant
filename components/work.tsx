@@ -2,7 +2,7 @@
 
 import {
   animate,
-  motion,
+  m,
   useInView,
   useMotionTemplate,
   useMotionValue,
@@ -20,12 +20,10 @@ const SPREAD = { duration: 1.35, ease: [0.45, 0, 0.15, 1] as const };
 /** Desktop capture from the small breakpoint up, the phone capture below it. */
 function Shot({
   project,
-  priority,
   decorative,
   className = "",
 }: {
   project: LiveProject;
-  priority?: boolean;
   decorative?: boolean;
   className?: string;
 }) {
@@ -35,7 +33,6 @@ function Shot({
         src={project.images.hero}
         alt={decorative ? "" : project.images.alt}
         fill
-        priority={priority}
         sizes="(min-width: 768px) 94vw, 100vw"
         className={`hidden object-cover object-top sm:block ${className}`}
       />
@@ -50,7 +47,7 @@ function Shot({
   );
 }
 
-function ProjectFrame({ project, priority }: { project: LiveProject; priority?: boolean }) {
+function ProjectFrame({ project }: { project: LiveProject }) {
   const frame = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: frame, offset: ["start end", "end start"] });
   const imageY = useTransform(scrollYProgress, [0, 1], ["-3.4%", "3.4%"]);
@@ -93,23 +90,23 @@ function ProjectFrame({ project, priority }: { project: LiveProject; priority?: 
       className="relative aspect-[4/5] overflow-hidden rounded-[clamp(12px,1.4vw,22px)] bg-smoke/30 sm:aspect-[16/9.3]"
     >
       {/* At rest: monochrome. */}
-      <motion.div style={{ y: imageY }} className="absolute inset-x-0 top-[-2%] h-[107.5%] max-sm:-inset-y-[6%] max-sm:h-auto">
-        <Shot project={project} priority={priority} className="grayscale brightness-[0.72] contrast-[1.12]" />
-      </motion.div>
+      <m.div style={{ y: imageY }} className="absolute inset-x-0 top-[-2%] h-[107.5%] max-sm:-inset-y-[6%] max-sm:h-auto">
+        <Shot project={project} className="grayscale brightness-[0.72] contrast-[1.12]" />
+      </m.div>
 
       {/* On contact: the same frame in colour, revealed through a growing circle. */}
-      <motion.div
+      <m.div
         aria-hidden
         className="absolute inset-0"
         style={{ WebkitMaskImage: mask, maskImage: mask }}
       >
-        <motion.div style={{ y: imageY }} className="absolute inset-x-0 top-[-2%] h-[107.5%] max-sm:-inset-y-[6%] max-sm:h-auto">
+        <m.div style={{ y: imageY }} className="absolute inset-x-0 top-[-2%] h-[107.5%] max-sm:-inset-y-[6%] max-sm:h-auto">
           <Shot project={project} decorative />
-        </motion.div>
-      </motion.div>
+        </m.div>
+      </m.div>
 
       {/* The phone build, floating over the desktop one. */}
-      <motion.div
+      <m.div
         style={{ y: phoneY }}
         className="absolute bottom-[6%] right-[5%] hidden aspect-[390/844] w-[18%] overflow-hidden rounded-[clamp(10px,1.5vw,26px)] border border-line-strong shadow-[0_40px_80px_-20px_rgb(0_0_0/0.75)] sm:block"
       >
@@ -120,14 +117,14 @@ function ProjectFrame({ project, priority }: { project: LiveProject; priority?: 
           sizes="18vw"
           className="object-cover object-top grayscale transition-[filter] duration-700 group-hover/card:grayscale-0"
         />
-      </motion.div>
+      </m.div>
 
       <div className="pointer-events-none absolute inset-0 rounded-[inherit] ring-1 ring-inset ring-line" />
     </div>
   );
 }
 
-function ProjectEntry({ project, index }: { project: LiveProject; index: number }) {
+function ProjectEntry({ project }: { project: LiveProject }) {
   return (
     <article className="group/card">
       <a
@@ -138,7 +135,7 @@ function ProjectEntry({ project, index }: { project: LiveProject; index: number 
         aria-label={`${project.name}: open the live site in a new tab`}
         className="block rounded-[clamp(12px,1.4vw,22px)]"
       >
-        <ProjectFrame project={project} priority={index === 0} />
+        <ProjectFrame project={project} />
       </a>
 
       <div className="mt-7 grid gap-x-6 gap-y-6 md:mt-9 md:grid-cols-12">
@@ -201,8 +198,8 @@ export function Work() {
       </div>
 
       <div className="space-y-[clamp(96px,12vw,200px)]">
-        {liveWork.projects.map((project, i) => (
-          <ProjectEntry key={project.slug} project={project} index={i} />
+        {liveWork.projects.map((project) => (
+          <ProjectEntry key={project.slug} project={project} />
         ))}
       </div>
     </section>

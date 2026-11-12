@@ -11,7 +11,9 @@ const archivo = Archivo({
   subsets: ["latin"],
   axes: ["wdth"],
   variable: "--font-archivo",
-  display: "swap",
+  // Text waits for the real font instead of swapping: the intro covers the wait,
+  // and the condensed and expanded widths have no fallback that could match them.
+  display: "block",
 });
 
 const title = `${site.name}, ${site.role}`;
@@ -67,7 +69,8 @@ const jsonLd = {
 };
 
 // Skip the intro on repeat visits before the first paint.
-const introScript = `try{if(sessionStorage.getItem("sk-intro-seen")==="1"||matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.dataset.intro="seen"}catch(e){}`;
+// Mark when the web font is ready, so text that wraps differently in it is laid out only once.
+const introScript = `try{var d=document.documentElement,r=function(){d.dataset.fonts="ready"};if(sessionStorage.getItem("sk-intro-seen")==="1"||matchMedia("(prefers-reduced-motion: reduce)").matches)d.dataset.intro="seen";if(document.fonts&&document.fonts.load){document.fonts.load('200 16px "Archivo"').then(r,r);setTimeout(r,3000)}else r()}catch(e){document.documentElement.dataset.fonts="ready"}`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
@@ -85,7 +88,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </Providers>
         <div aria-hidden className="grain" />
         <noscript>
-          <style>{`.preloader{display:none!important}`}</style>
+          <style>{`.preloader{display:none!important}.await-font{visibility:visible!important}`}</style>
         </noscript>
       </body>
     </html>

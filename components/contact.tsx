@@ -1,7 +1,7 @@
 "use client";
 
 import { useLenis } from "lenis/react";
-import { motion, useInView, useScroll, useTransform } from "motion/react";
+import { m, useInView, useScroll, useTransform } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { contact, site } from "@/lib/content";
 import { flowState, notifyFlow } from "@/lib/flow-state";
@@ -87,7 +87,7 @@ export function Contact() {
       {/* Ease the black page into the field behind the footer. */}
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[38vh] bg-gradient-to-b from-ink to-transparent" />
 
-      <motion.div style={{ y: lift }} className="relative">
+      <m.div style={{ y: lift }} className="relative">
         <Lines
           as="h2"
           id="contact-title"
@@ -113,7 +113,7 @@ export function Contact() {
             </div>
           </Fade>
         </div>
-      </motion.div>
+      </m.div>
 
       <div className="relative mt-24 grid gap-x-6 gap-y-10 border-t border-line pt-8 text-[14px] sm:grid-cols-2 md:grid-cols-12">
         <div className="md:col-span-3">

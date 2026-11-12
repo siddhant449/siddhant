@@ -291,7 +291,7 @@ export const about = {
   experience: [
     { org: "Techuz InfoWeb", role: "Fullstack + AI Engineer", when: "2026" },
     { org: "Demaze Technologies", role: "ML/AI + Fullstack Engineer", when: "2025–26" },
-    { org: "Tic-Tech-Toe ’24, DAIICT", role: "Top 14 of 200+ teams, 48-hour hackathon", when: "2024" },
+    { org: "Tic-Tech-Toe ’24, DAIICT", role: "Top 5 of 200+ teams, 48-hour hackathon", when: "2024" },
     { org: "LJ Institute of Engineering & Technology", role: "B.E. Computer Science", when: "2026" },
   ],
 } as const;

@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useInView, useMotionValueEvent, useScroll, useTransform } from "motion/react";
+import { m, useInView, useMotionValueEvent, useScroll, useTransform } from "motion/react";
 import { useEffect, useRef } from "react";
 import { hero, site } from "@/lib/content";
 import { flowState, notifyFlow } from "@/lib/flow-state";
@@ -39,7 +39,7 @@ export function Hero() {
     >
       {/* Let the field sink into the black page below. */}
       <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-[34vh] bg-gradient-to-b from-transparent to-ink" />
-      <motion.div style={{ y: copyY, opacity: copyOpacity }} className="relative grid gap-y-10 md:grid-cols-12">
+      <m.div style={{ y: copyY, opacity: copyOpacity }} className="await-font relative grid gap-y-10 md:grid-cols-12">
         <Lines
           as="p"
           when={done}
@@ -81,22 +81,23 @@ export function Hero() {
             </a>
           </Fade>
         </div>
-      </motion.div>
+      </m.div>
 
-      <motion.div style={{ y: nameY }} className="relative">
+      <m.div style={{ y: nameY }} className="relative">
         <h1 className="leading-[0.8] tracking-[-0.03em]">
           <span className="sr-only">
             {site.name}, {site.role.toLowerCase()} in {site.location}
           </span>
-          <span aria-hidden className="hidden sm:block">
-            <FitLine text={site.name} fallback="13.2vw" variation={nameVariation} show={done} delay={0.3} />
+          {/* Fallback sizes are the measured fit as a share of the container, so nothing shifts. */}
+          <span aria-hidden className="hidden [container-type:inline-size] sm:block">
+            <FitLine text={site.name} fallback="13.152cqw" variation={nameVariation} show={done} delay={0.3} />
           </span>
-          <span aria-hidden className="block sm:hidden">
-            <FitLine text="Siddhant" fallback="24vw" variation={nameVariation} show={done} delay={0.3} />
-            <FitLine text="Kotak" measure="Siddhant" fallback="24vw" variation={nameVariation} show={done} delay={0.38} />
+          <span aria-hidden className="block [container-type:inline-size] sm:hidden">
+            <FitLine text="Siddhant" fallback="22.375cqw" variation={nameVariation} show={done} delay={0.3} />
+            <FitLine text="Kotak" measure="Siddhant" fallback="22.375cqw" variation={nameVariation} show={done} delay={0.38} />
           </span>
         </h1>
-      </motion.div>
+      </m.div>
     </section>
   );
 }

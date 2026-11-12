@@ -1,0 +1,255 @@
+@import "../../iso/iso.css";
+
+/* The kit's dark theme, retuned to the site's black and chalk. */
+.tw-figure.iso {
+  --anatomy-page: #000;
+  --anatomy-card: #070707;
+  --anatomy-text: var(--ash);
+  --anatomy-strong: var(--chalk);
+  --anatomy-muted: #6c6c68;
+  --anatomy-paper: #0b0b0a;
+  --anatomy-face: #151514;
+  --anatomy-top: #171716;
+  --anatomy-shade-0: #0c0c0b;
+  --anatomy-shade-1: #0f0f0e;
+  --anatomy-shade-2: #121211;
+  --anatomy-shade-3: #151514;
+  --anatomy-lit-top: #2a2a28;
+  --anatomy-lit-shade: #1e1e1c;
+  --anatomy-hi: #e2e2dc;
+  --anatomy-mid: #85857f;
+  --anatomy-lo: #50504c;
+  --anatomy-faint: #30302e;
+  --anatomy-lit: #ffffff;
+  --anatomy-halo: #000;
+  --anatomy-halo-opacity: 0.95;
+  --anatomy-dot: #e6e6e0;
+  --anatomy-weight: 0.7px;
+}
+
+.tw-figure .iso-figure {
+  margin: 0;
+}
+
+/* The card: no labels up top, a soft spotlight behind the tower and a pool of
+   light under it, like a product shot. */
+.tw-figure .iso-plate {
+  padding: 10px 10px 40px;
+  border-radius: 20px;
+  background:
+    radial-gradient(52% 44% at 52% 44%, rgb(236 236 231 / 0.075), transparent 72%),
+    radial-gradient(46% 12% at 52% 90%, rgb(236 236 231 / 0.06), transparent 75%),
+    var(--anatomy-card);
+  box-shadow: 0 0 0 1px var(--line);
+  overflow: hidden;
+}
+
+.tw-figure .iso-plate-corners {
+  inset: 16px 20px;
+}
+
+/* Corners in the site's own type: sentence case, no tracking. */
+.tw-figure .iso-plate-corner {
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--anatomy-muted);
+}
+.tw-figure .iso-plate-corner[data-corner="fig"] {
+  color: var(--chalk);
+  font-weight: 600;
+}
+.tw-figure .iso-plate-corner[data-corner="title"],
+.tw-figure .iso-plate-corner[data-corner="hint"] {
+  text-transform: none;
+  letter-spacing: 0;
+}
+.tw-figure .iso-plate-corner[data-corner="readout"] {
+  color: var(--chalk);
+}
+
+.tw {
+  position: relative;
+}
+/* Holds the drawing's exact box until it loads, so nothing shifts. */
+.tw-placeholder {
+  width: 100%;
+  aspect-ratio: 600 / 760;
+}
+.tw .iso-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+/* From tablet up the card fills the pinned column top to bottom and the
+   drawing fills the card. */
+@media (min-width: 768px) {
+  .tw-figure .iso-plate {
+    height: min(calc(100svh - max(84px, 9vh) - 28px), 880px);
+    min-height: 520px;
+  }
+  .tw-stage,
+  .tw-stage .tw,
+  .tw-stage .tw-placeholder {
+    height: 100%;
+  }
+  .tw-stage .tw-placeholder {
+    aspect-ratio: auto;
+  }
+  .tw .iso-svg {
+    height: 100%;
+  }
+}
+
+/* The active layer's proof, in the empty top-left of the card. */
+.tw-caption {
+  display: none;
+}
+@media (min-width: 768px) {
+  .tw-caption {
+    display: block;
+    position: absolute;
+    top: 22px;
+    left: 24px;
+    z-index: 2;
+    max-width: min(26ch, 32%);
+    pointer-events: none;
+  }
+}
+.tw-layer {
+  font-size: 12.5px;
+  line-height: 1.3;
+  color: var(--anatomy-muted);
+  font-variant-numeric: tabular-nums;
+}
+.tw-proof {
+  margin-top: 8px;
+  font-size: clamp(15px, 1.15vw, 18px);
+  font-weight: 300;
+  line-height: 1.35;
+  letter-spacing: -0.005em;
+  color: var(--chalk);
+  font-variation-settings: "wdth" 106;
+}
+
+/* The floor being read lights up: its machine's edges go from mid to hi. */
+.tw [data-band] .iso-edge,
+.tw [data-band] .iso-crease {
+  transition: stroke 0.5s var(--anatomy-ease);
+}
+.tw[data-floor="0"] [data-band="interface"] .iso-edge[data-tone="mid"],
+.tw[data-floor="1"] [data-band="systems"] .iso-edge[data-tone="mid"],
+.tw[data-floor="2"] [data-band="fullstack"] .iso-edge[data-tone="mid"],
+.tw[data-floor="3"] [data-band="ai"] .iso-edge[data-tone="mid"],
+.tw[data-floor="4"] [data-band="cloud"] .iso-edge[data-tone="mid"] {
+  stroke: var(--anatomy-hi);
+}
+.tw[data-floor="0"] [data-band="interface"] .iso-crease,
+.tw[data-floor="1"] [data-band="systems"] .iso-crease,
+.tw[data-floor="2"] [data-band="fullstack"] .iso-crease,
+.tw[data-floor="3"] [data-band="ai"] .iso-crease,
+.tw[data-floor="4"] [data-band="cloud"] .iso-crease {
+  stroke: var(--anatomy-lo);
+}
+
+/* Glass: a faint tint and two highlights. */
+.tw-glass {
+  fill: #ecece7;
+  fill-opacity: 0.035;
+  stroke: none;
+}
+.tw-shine {
+  stroke-linecap: round;
+  opacity: 0.55;
+}
+
+/* Screens and windows. */
+.tw-window {
+  fill: #050505;
+  stroke: var(--anatomy-lo);
+  stroke-width: 0.7px;
+  vector-effect: non-scaling-stroke;
+}
+.tw-px {
+  fill: var(--anatomy-faint);
+  transition: fill 0.5s var(--anatomy-ease);
+}
+.tw[data-floor="0"] .tw-px-on {
+  fill: var(--anatomy-lit);
+}
+.tw-readout {
+  font-family: var(--font-sans);
+  font-size: 8.6px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  fill: var(--anatomy-mid);
+  transition: fill 0.5s var(--anatomy-ease);
+}
+.tw[data-floor="3"] .tw-readout {
+  fill: var(--anatomy-lit);
+}
+.tw-bars line {
+  stroke: var(--anatomy-lo);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+}
+.tw[data-floor="3"] .tw-bars line {
+  stroke: var(--anatomy-mid);
+}
+
+/* Lamps and lenses light with their floor. */
+.tw-lamp,
+.tw-lens {
+  fill: var(--anatomy-lo);
+  transition: fill 0.4s var(--anatomy-ease);
+}
+.tw[data-floor="0"] .tw-lamp {
+  fill: var(--anatomy-lit);
+}
+.tw[data-floor="3"] .tw-lens {
+  fill: var(--anatomy-lit);
+  animation: tw-blink 1.6s steps(1, end) infinite;
+}
+.tw[data-floor="3"] .tw-sensor:nth-child(2n) .tw-lens {
+  animation-delay: 0.4s;
+}
+@keyframes tw-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* Outbound flow shows only while the capsule is being sent. */
+.tw-flow {
+  opacity: 0;
+  transition: opacity 0.5s var(--anatomy-ease);
+}
+.tw[data-floor="4"] .tw-flow {
+  opacity: 0.9;
+}
+
+.tw-needle {
+  stroke-width: 1.1px;
+}
+
+/* Floors you can click. */
+.tw-hits path {
+  fill: transparent;
+  stroke: none;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tw *,
+  .tw-figure * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

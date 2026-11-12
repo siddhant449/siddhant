@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 import { useId, useState } from "react";
 import { privateWork, type PrivateProject } from "@/lib/content";
 import { Fade, Lines } from "./ui/reveal";
@@ -56,7 +56,7 @@ function Row({
 
       <AnimatePresence initial={false}>
         {open && (
-          <motion.div
+          <m.div
             id={panelId}
             role="region"
             aria-label={project.title}
@@ -92,7 +92,7 @@ function Row({
                 <p className="mt-6 text-[13px] text-ash lg:hidden">{project.context}</p>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </li>

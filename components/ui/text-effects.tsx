@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  motion,
+  m,
   useMotionValue,
   useScroll,
   useSpring,
@@ -25,9 +25,9 @@ function ScrollWord({
 }) {
   const opacity = useTransform(progress, range, [0.16, 1]);
   return (
-    <motion.span style={{ opacity }} className="inline-block">
+    <m.span style={{ opacity }} className="inline-block">
       {word}
-    </motion.span>
+    </m.span>
   );
 }
 
@@ -144,7 +144,7 @@ export function Magnetic({
   }
 
   return (
-    <motion.span
+    <m.span
       ref={ref}
       onPointerMove={onMove}
       onPointerLeave={onLeave}
@@ -152,6 +152,6 @@ export function Magnetic({
       className={`inline-block ${className ?? ""}`}
     >
       {children}
-    </motion.span>
+    </m.span>
   );
 }

@@ -102,6 +102,12 @@ html[data-intro="seen"] .preloader {
   }
 }
 
+/* Text that wraps differently in the web font stays unpainted until it arrives
+   (the intro covers the wait), so its reflow is never seen or counted. */
+html:not([data-fonts="ready"]) .await-font {
+  visibility: hidden;
+}
+
 /* Hide the system cursor only where the custom one is running. */
 @media (hover: hover) and (pointer: fine) {
   html.has-cursor,

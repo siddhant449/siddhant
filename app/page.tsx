@@ -6,6 +6,7 @@ import { Nav } from "@/components/nav";
 import { PrivateWork } from "@/components/private-work";
 import { Services } from "@/components/services";
 import { Stack } from "@/components/stack";
+import { TowerFigure } from "@/components/figures/tower/figure";
 import { Work } from "@/components/work";
 
 export default function Home() {
@@ -23,7 +24,7 @@ export default function Home() {
         <Manifesto />
         <Work />
         <PrivateWork />
-        <Stack />
+        <Stack figure={<TowerFigure />} />
         <Services />
         <About />
       </main>

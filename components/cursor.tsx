@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion, useMotionValue, useSpring } from "motion/react";
+import { AnimatePresence, m, useMotionValue, useSpring } from "motion/react";
 import { useEffect, useState } from "react";
 
 type Mode = "idle" | "link" | "label";
@@ -94,19 +94,19 @@ export function Cursor() {
 
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 z-[90]">
-      <motion.div
+      <m.div
         className="absolute left-0 top-0 h-2.5 w-2.5 rounded-full bg-chalk mix-blend-difference"
         style={{ x: sx, y: sy, translateX: "-50%", translateY: "-50%" }}
         animate={{ scale: visible ? dotScale * (pressed ? 0.7 : 1) : 0 }}
         transition={{ type: "spring", stiffness: 400, damping: 28 }}
       />
-      <motion.div
+      <m.div
         className="absolute left-0 top-0"
         style={{ x: lx, y: ly, translateX: "-50%", translateY: "-50%" }}
       >
         <AnimatePresence>
           {visible && mode === "label" && (
-            <motion.span
+            <m.span
               key={label}
               initial={{ scale: 0.4, opacity: 0 }}
               animate={{ scale: pressed ? 0.9 : 1, opacity: 1 }}
@@ -115,10 +115,10 @@ export function Cursor() {
               className="block whitespace-nowrap rounded-full bg-chalk px-4 py-2.5 text-[13px] font-semibold leading-none text-ink"
             >
               {label}
-            </motion.span>
+            </m.span>
           )}
         </AnimatePresence>
-      </motion.div>
+      </m.div>
     </div>
   );
 }

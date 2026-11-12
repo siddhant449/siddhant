@@ -1,7 +1,7 @@
 "use client";
 
 import { useLenis } from "lenis/react";
-import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "motion/react";
+import { AnimatePresence, m, useMotionValueEvent, useScroll } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { nav, site } from "@/lib/content";
 import { useIntro } from "@/lib/intro";
@@ -50,7 +50,21 @@ export function Nav() {
   const [hidden, setHidden] = useState(false);
   const [open, setOpen] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
+  const list = useRef<HTMLUListElement>(null);
+  const [pill, setPill] = useState<{ left: number; width: number } | null>(null);
   const { scrollY } = useScroll();
+
+  // Measure the active link so the pill can slide to it.
+  useEffect(() => {
+    const measure = () => {
+      const link = active ? list.current?.querySelector<HTMLElement>(`[data-section="${active}"]`) : null;
+      setPill(link ? { left: link.offsetLeft, width: link.offsetWidth } : null);
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    document.fonts?.ready.then(measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [active]);
 
   // Step aside while reading down the page; come back on the first scroll up.
   useMotionValueEvent(scrollY, "change", (y) => {
@@ -80,7 +94,7 @@ export function Nav() {
 
   return (
     <>
-      <motion.header
+      <m.header
         initial={{ y: -24, opacity: 0 }}
         animate={done ? { y: hidden && !open ? -110 : 0, opacity: 1 } : { y: -24, opacity: 0 }}
         transition={{ duration: 0.8, ease: EASE, delay: done && !hidden ? 0.35 : 0 }}
@@ -99,20 +113,22 @@ export function Nav() {
             aria-label="Sections"
             className="absolute left-1/2 hidden -translate-x-1/2 rounded-full border border-line bg-ink/60 p-1.5 backdrop-blur-xl md:block"
           >
-            <ul className="flex items-center">
+            <ul ref={list} className="relative flex items-center">
+              {/* One pill that slides to the active link (measured, so no layout animation is needed). */}
+              <m.li
+                aria-hidden
+                className="pointer-events-none absolute left-0 top-0 h-full rounded-full bg-chalk"
+                initial={false}
+                animate={pill ? { x: pill.left, width: pill.width, opacity: 1 } : { opacity: 0 }}
+                transition={{ type: "spring", stiffness: 380, damping: 34 }}
+              />
               {nav.map((item) => {
                 const isActive = active === item.href.slice(1);
                 return (
                   <li key={item.href} className="relative">
-                    {isActive && (
-                      <motion.span
-                        layoutId="nav-active"
-                        className="absolute inset-0 rounded-full bg-chalk"
-                        transition={{ type: "spring", stiffness: 380, damping: 34 }}
-                      />
-                    )}
                     <a
                       href={item.href}
+                      data-section={item.href.slice(1)}
                       aria-current={isActive ? "location" : undefined}
                       className={`group relative block rounded-full px-4 py-2 text-[14px] font-medium leading-none transition-colors duration-300 ${
                         isActive ? "text-ink" : "text-ash hover:text-chalk"
@@ -148,11 +164,11 @@ export function Nav() {
             </button>
           </div>
         </div>
-      </motion.header>
+      </m.header>
 
       <AnimatePresence>
         {open && (
-          <motion.div
+          <m.div
             id="mobile-menu"
             role="dialog"
             aria-modal="true"
@@ -167,7 +183,7 @@ export function Nav() {
               <ul>
                 {nav.map((item, i) => (
                   <li key={item.href} className="overflow-hidden border-b border-line">
-                    <motion.a
+                    <m.a
                       href={item.href}
                       onClick={() => setOpen(false)}
                       initial={{ y: "100%" }}
@@ -177,12 +193,12 @@ export function Nav() {
                       autoFocus={i === 0}
                     >
                       {item.label}
-                    </motion.a>
+                    </m.a>
                   </li>
                 ))}
               </ul>
             </nav>
-            <motion.div
+            <m.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.55, duration: 0.6 }}
@@ -196,8 +212,8 @@ export function Nav() {
                 <a href={site.links.github} target="_blank" rel="noreferrer">GitHub</a>
                 <a href={site.links.resume} target="_blank" rel="noreferrer">Résumé</a>
               </div>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
     </>

@@ -18,6 +18,7 @@ npm run build    # production build (static)
 | --- | --- |
 | `lib/content.ts` | Every word on the site. Edit copy here only. |
 | `components/flow-field.tsx` | The WebGL2 contour shader behind the hero and footer. |
+| `components/figures/tower/` | The "From pixel to packet" figure: a pneumatic sorting tower drawn with the Anatomy kit (`components/iso/`, MIT). See `docs/superpowers/specs/2026-11-12-sorting-tower-design.md`. |
 | `components/preloader.tsx` | The opening sequence (once per session, skipped for reduced motion). |
 | `components/hero.tsx` … `contact.tsx` | One file per section, in page order. |
 | `components/ui/` | Text reveals, scramble, roll links, magnetic buttons, fitted display type. |
@@ -30,6 +31,13 @@ npm run build    # production build (static)
 - Client work done at an employer is described by what it does, never by its product name.
 - No "currently working on" status lines.
 - No audio of any kind.
+
+## Performance
+
+- The tower figure is not in the page HTML: its code loads in idle time after the intro and it mounts as its section approaches.
+- Motion runs through `LazyMotion` with `m.*` components; its animation features load in a separate chunk after hydration.
+- The WebGL shader compiles without blocking the main thread (`KHR_parallel_shader_compile`).
+- No layout shift: the fitted name uses container units, and hero text that wraps differently in the web font stays unpainted until the font arrives.
 
 ## Motion and accessibility
 

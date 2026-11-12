@@ -141,16 +141,10 @@ void main() {
 }
 `;
 
-function compile(gl: WebGL2RenderingContext, type: number, src: string) {
-  const shader = gl.createShader(type);
-  if (!shader) return null;
+function shaderOf(gl: WebGL2RenderingContext, type: number, src: string) {
+  const shader = gl.createShader(type)!;
   gl.shaderSource(shader, src);
   gl.compileShader(shader);
-  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    console.warn("[flow-field]", gl.getShaderInfoLog(shader));
-    gl.deleteShader(shader);
-    return null;
-  }
   return shader;
 }
 
@@ -180,191 +174,213 @@ export function FlowField() {
       return;
     }
 
-    const vs = compile(gl, gl.VERTEX_SHADER, VERT);
-    const fs = compile(gl, gl.FRAGMENT_SHADER, FRAG);
-    if (!vs || !fs) {
-      canvas.dataset.fallback = "true";
-      return;
-    }
+    // Compile without blocking the page: with KHR_parallel_shader_compile the
+    // driver compiles on its own threads, and the field starts once it is done.
+    const parallel = gl.getExtension("KHR_parallel_shader_compile");
+    const vs = shaderOf(gl, gl.VERTEX_SHADER, VERT);
+    const fs = shaderOf(gl, gl.FRAGMENT_SHADER, FRAG);
     const program = gl.createProgram()!;
     gl.attachShader(program, vs);
     gl.attachShader(program, fs);
     gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      console.warn("[flow-field]", gl.getProgramInfoLog(program));
-      canvas.dataset.fallback = "true";
-      return;
-    }
-    gl.useProgram(program);
 
-    // One triangle that covers the screen.
-    const buffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
-    const aPos = gl.getAttribLocation(program, "aPos");
-    gl.enableVertexAttribArray(aPos);
-    gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+    let teardown = () => {};
+    let poll = 0;
+    let cancelled = false;
 
-    const u = {
-      res: gl.getUniformLocation(program, "uRes"),
-      time: gl.getUniformLocation(program, "uTime"),
-      mouse: gl.getUniformLocation(program, "uMouse"),
-      vel: gl.getUniformLocation(program, "uVel"),
-      hover: gl.getUniformLocation(program, "uHover"),
-      order: gl.getUniformLocation(program, "uOrder"),
-      intro: gl.getUniformLocation(program, "uIntro"),
+    const start = () => {
+      gl.useProgram(program);
+
+      // One triangle that covers the screen.
+      const buffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+      const aPos = gl.getAttribLocation(program, "aPos");
+      gl.enableVertexAttribArray(aPos);
+      gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+      const u = {
+        res: gl.getUniformLocation(program, "uRes"),
+        time: gl.getUniformLocation(program, "uTime"),
+        mouse: gl.getUniformLocation(program, "uMouse"),
+        vel: gl.getUniformLocation(program, "uVel"),
+        hover: gl.getUniformLocation(program, "uHover"),
+        order: gl.getUniformLocation(program, "uOrder"),
+        intro: gl.getUniformLocation(program, "uIntro"),
+      };
+
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
+      // Keep the pixel budget near 2.6 million so the shader holds 60fps on
+      // ordinary laptops; drop it further if frames start running long.
+      let quality = 1;
+      let width = 0;
+      let height = 0;
+
+      function resize() {
+        const rect = canvas!.getBoundingClientRect();
+        width = Math.max(1, rect.width);
+        height = Math.max(1, rect.height);
+        const budget = Math.sqrt(2.6e6 / (width * height));
+        const scale = Math.min(window.devicePixelRatio || 1, 2, budget) * quality;
+        canvas!.width = Math.round(width * scale);
+        canvas!.height = Math.round(height * scale);
+        gl!.viewport(0, 0, canvas!.width, canvas!.height);
+        gl!.uniform2f(u.res, canvas!.width, canvas!.height);
+        if (!running) draw(0);
+      }
+
+      // Pointer, in the shader's aspect-corrected space (y up, centred).
+      const pointer = { x: 0.35, y: 0.1, tx: 0.35, ty: 0.1, vx: 0, vy: 0, hover: 0, active: 0 };
+      let lastMove = 0;
+
+      function onPointerMove(e: PointerEvent) {
+        if (reduceMotion) return;
+        pointer.tx = (e.clientX - width / 2) / height;
+        pointer.ty = -(e.clientY - height / 2) / height;
+        pointer.active = e.pointerType === "mouse" ? 1 : 0.75;
+        lastMove = performance.now();
+      }
+      function onPointerLeave() {
+        pointer.active = 0;
+      }
+
+      let time = 7.3; // start somewhere with an interesting shape
+      let order = flowState.heroOrder;
+      let intro = 0;
+      let raf = 0;
+      let running = false;
+      let last = 0;
+      let slowFrames = 0;
+
+      function draw(dt: number) {
+        const visible = flowState.heroVisible || flowState.footerVisible;
+        const targetOrder = flowState.footerVisible && !flowState.heroVisible ? 1 : flowState.heroOrder;
+        const ease = (rate: number) => 1 - Math.exp(-dt * rate);
+
+        if (reduceMotion) {
+          order = targetOrder;
+          intro = introDoneRef.current ? 1 : 0;
+        } else {
+          order += (targetOrder - order) * ease(4);
+          const introTarget = introDoneRef.current ? 1 : 0;
+          intro += (introTarget - intro) * ease(1.6);
+          time += dt;
+
+          // Pointer easing, velocity and presence.
+          const px = pointer.x;
+          const py = pointer.y;
+          pointer.x += (pointer.tx - pointer.x) * ease(7);
+          pointer.y += (pointer.ty - pointer.y) * ease(7);
+          const vx = dt > 0 ? (pointer.x - px) / dt : 0;
+          const vy = dt > 0 ? (pointer.y - py) / dt : 0;
+          pointer.vx += (Math.max(-2, Math.min(2, vx)) * 0.06 - pointer.vx) * ease(6);
+          pointer.vy += (Math.max(-2, Math.min(2, vy)) * 0.06 - pointer.vy) * ease(6);
+          const idle = performance.now() - lastMove > (finePointer ? 4000 : 900);
+          const hoverTarget = idle ? 0 : pointer.active;
+          pointer.hover += (hoverTarget - pointer.hover) * ease(hoverTarget > pointer.hover ? 3 : 1.2);
+        }
+
+        gl!.uniform1f(u.time, time);
+        gl!.uniform2f(u.mouse, pointer.x, pointer.y);
+        gl!.uniform2f(u.vel, pointer.vx, pointer.vy);
+        gl!.uniform1f(u.hover, pointer.hover);
+        gl!.uniform1f(u.order, order);
+        gl!.uniform1f(u.intro, intro);
+        if (visible || !running) gl!.drawArrays(gl!.TRIANGLES, 0, 3);
+      }
+
+      function loop(now: number) {
+        const dt = last ? Math.min((now - last) / 1000, 1 / 20) : 1 / 60;
+        last = now;
+
+        // Adaptive quality: if frames keep running long, render fewer pixels.
+        if (dt > 1 / 40) slowFrames++;
+        else slowFrames = Math.max(0, slowFrames - 1);
+        if (slowFrames > 45 && quality > 0.55) {
+          quality *= 0.8;
+          slowFrames = 0;
+          resize();
+        }
+
+        draw(dt);
+        const visible = flowState.heroVisible || flowState.footerVisible;
+        if (!visible || document.hidden) {
+          running = false;
+          last = 0;
+          return;
+        }
+        raf = requestAnimationFrame(loop);
+      }
+
+      function wake() {
+        if (reduceMotion) {
+          draw(0);
+          return;
+        }
+        if (running || document.hidden) return;
+        if (!(flowState.heroVisible || flowState.footerVisible)) return;
+        running = true;
+        last = 0;
+        raf = requestAnimationFrame(loop);
+      }
+
+      const ro = new ResizeObserver(resize);
+      ro.observe(canvas);
+      resize();
+
+      flowState.listeners.add(wake);
+      document.addEventListener("visibilitychange", wake);
+      window.addEventListener("pointermove", onPointerMove, { passive: true });
+      document.documentElement.addEventListener("pointerleave", onPointerLeave);
+
+      function onLost(e: Event) {
+        e.preventDefault();
+        cancelAnimationFrame(raf);
+        running = false;
+        canvas!.dataset.fallback = "true";
+      }
+      canvas.addEventListener("webglcontextlost", onLost);
+
+      canvas.dataset.ready = "true";
+      wake();
+
+      return () => {
+        cancelAnimationFrame(raf);
+        running = false;
+        ro.disconnect();
+        flowState.listeners.delete(wake);
+        document.removeEventListener("visibilitychange", wake);
+        window.removeEventListener("pointermove", onPointerMove);
+        document.documentElement.removeEventListener("pointerleave", onPointerLeave);
+        canvas.removeEventListener("webglcontextlost", onLost);
+        gl.deleteBuffer(buffer);
+      };
     };
 
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-
-    // Keep the pixel budget near 2.6 million so the shader holds 60fps on
-    // ordinary laptops; drop it further if frames start running long.
-    let quality = 1;
-    let width = 0;
-    let height = 0;
-
-    function resize() {
-      const rect = canvas!.getBoundingClientRect();
-      width = Math.max(1, rect.width);
-      height = Math.max(1, rect.height);
-      const budget = Math.sqrt(2.6e6 / (width * height));
-      const scale = Math.min(window.devicePixelRatio || 1, 2, budget) * quality;
-      canvas!.width = Math.round(width * scale);
-      canvas!.height = Math.round(height * scale);
-      gl!.viewport(0, 0, canvas!.width, canvas!.height);
-      gl!.uniform2f(u.res, canvas!.width, canvas!.height);
-      if (!running) draw(0);
-    }
-
-    // Pointer, in the shader's aspect-corrected space (y up, centred).
-    const pointer = { x: 0.35, y: 0.1, tx: 0.35, ty: 0.1, vx: 0, vy: 0, hover: 0, active: 0 };
-    let lastMove = 0;
-
-    function onPointerMove(e: PointerEvent) {
-      if (reduceMotion) return;
-      pointer.tx = (e.clientX - width / 2) / height;
-      pointer.ty = -(e.clientY - height / 2) / height;
-      pointer.active = e.pointerType === "mouse" ? 1 : 0.75;
-      lastMove = performance.now();
-    }
-    function onPointerLeave() {
-      pointer.active = 0;
-    }
-
-    let time = 7.3; // start somewhere with an interesting shape
-    let order = flowState.heroOrder;
-    let intro = 0;
-    let raf = 0;
-    let running = false;
-    let last = 0;
-    let slowFrames = 0;
-
-    function draw(dt: number) {
-      const visible = flowState.heroVisible || flowState.footerVisible;
-      const targetOrder = flowState.footerVisible && !flowState.heroVisible ? 1 : flowState.heroOrder;
-      const ease = (rate: number) => 1 - Math.exp(-dt * rate);
-
-      if (reduceMotion) {
-        order = targetOrder;
-        intro = introDoneRef.current ? 1 : 0;
-      } else {
-        order += (targetOrder - order) * ease(4);
-        const introTarget = introDoneRef.current ? 1 : 0;
-        intro += (introTarget - intro) * ease(1.6);
-        time += dt;
-
-        // Pointer easing, velocity and presence.
-        const px = pointer.x;
-        const py = pointer.y;
-        pointer.x += (pointer.tx - pointer.x) * ease(7);
-        pointer.y += (pointer.ty - pointer.y) * ease(7);
-        const vx = dt > 0 ? (pointer.x - px) / dt : 0;
-        const vy = dt > 0 ? (pointer.y - py) / dt : 0;
-        pointer.vx += (Math.max(-2, Math.min(2, vx)) * 0.06 - pointer.vx) * ease(6);
-        pointer.vy += (Math.max(-2, Math.min(2, vy)) * 0.06 - pointer.vy) * ease(6);
-        const idle = performance.now() - lastMove > (finePointer ? 4000 : 900);
-        const hoverTarget = idle ? 0 : pointer.active;
-        pointer.hover += (hoverTarget - pointer.hover) * ease(hoverTarget > pointer.hover ? 3 : 1.2);
-      }
-
-      gl!.uniform1f(u.time, time);
-      gl!.uniform2f(u.mouse, pointer.x, pointer.y);
-      gl!.uniform2f(u.vel, pointer.vx, pointer.vy);
-      gl!.uniform1f(u.hover, pointer.hover);
-      gl!.uniform1f(u.order, order);
-      gl!.uniform1f(u.intro, intro);
-      if (visible || !running) gl!.drawArrays(gl!.TRIANGLES, 0, 3);
-    }
-
-    function loop(now: number) {
-      const dt = last ? Math.min((now - last) / 1000, 1 / 20) : 1 / 60;
-      last = now;
-
-      // Adaptive quality: if frames keep running long, render fewer pixels.
-      if (dt > 1 / 40) slowFrames++;
-      else slowFrames = Math.max(0, slowFrames - 1);
-      if (slowFrames > 45 && quality > 0.55) {
-        quality *= 0.8;
-        slowFrames = 0;
-        resize();
-      }
-
-      draw(dt);
-      const visible = flowState.heroVisible || flowState.footerVisible;
-      if (!visible || document.hidden) {
-        running = false;
-        last = 0;
+    const begin = () => {
+      if (cancelled) return;
+      if (parallel && !gl.getProgramParameter(program, parallel.COMPLETION_STATUS_KHR)) {
+        poll = requestAnimationFrame(begin);
         return;
       }
-      raf = requestAnimationFrame(loop);
-    }
-
-    function wake() {
-      if (reduceMotion) {
-        draw(0);
+      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        console.warn("[flow-field]", gl.getShaderInfoLog(vs), gl.getShaderInfoLog(fs), gl.getProgramInfoLog(program));
+        canvas.dataset.fallback = "true";
         return;
       }
-      if (running || document.hidden) return;
-      if (!(flowState.heroVisible || flowState.footerVisible)) return;
-      running = true;
-      last = 0;
-      raf = requestAnimationFrame(loop);
-    }
-
-    const ro = new ResizeObserver(resize);
-    ro.observe(canvas);
-    resize();
-
-    flowState.listeners.add(wake);
-    document.addEventListener("visibilitychange", wake);
-    window.addEventListener("pointermove", onPointerMove, { passive: true });
-    document.documentElement.addEventListener("pointerleave", onPointerLeave);
-
-    function onLost(e: Event) {
-      e.preventDefault();
-      cancelAnimationFrame(raf);
-      running = false;
-      canvas!.dataset.fallback = "true";
-    }
-    canvas.addEventListener("webglcontextlost", onLost);
-
-    canvas.dataset.ready = "true";
-    wake();
+      teardown = start();
+    };
+    begin();
 
     return () => {
-      cancelAnimationFrame(raf);
-      running = false;
-      ro.disconnect();
-      flowState.listeners.delete(wake);
-      document.removeEventListener("visibilitychange", wake);
-      window.removeEventListener("pointermove", onPointerMove);
-      document.documentElement.removeEventListener("pointerleave", onPointerLeave);
-      canvas.removeEventListener("webglcontextlost", onLost);
+      cancelled = true;
+      cancelAnimationFrame(poll);
+      teardown();
       gl.deleteProgram(program);
       gl.deleteShader(vs);
       gl.deleteShader(fs);
-      gl.deleteBuffer(buffer);
     };
   }, []);
 

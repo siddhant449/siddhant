@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useInView } from "motion/react";
+import { m, useInView } from "motion/react";
 import { useRef, type ElementType, type ReactNode } from "react";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -42,14 +42,14 @@ export function Lines({
     <Tag ref={ref} id={id} className={className}>
       {lines.map((line, i) => (
         <span key={i} className="block overflow-hidden pb-[0.08em] -mb-[0.08em]">
-          <motion.span
+          <m.span
             className={`block ${lineClassName ?? ""}`}
             initial={{ y: from }}
             animate={show ? { y: "0%" } : { y: from }}
             transition={{ duration: 1.1, ease: EASE, delay: delay + i * stagger }}
           >
             {line}
-          </motion.span>
+          </m.span>
         </span>
       ))}
     </Tag>
@@ -77,14 +77,14 @@ export function Words({
       <span aria-hidden>
         {words.map((word, i) => (
           <span key={i} className="inline-block overflow-hidden pb-[0.1em] -mb-[0.1em] align-top">
-            <motion.span
+            <m.span
               className="inline-block"
               initial={{ y: from }}
               animate={show ? { y: "0%" } : { y: from }}
               transition={{ duration: 0.9, ease: EASE, delay: delay + i * stagger }}
             >
               {word}
-            </motion.span>
+            </m.span>
             {i < words.length - 1 ? " " : null}
           </span>
         ))}
@@ -107,7 +107,7 @@ export function Fade({
   as?: "div" | "p" | "span" | "ul" | "li" | "dl";
 }) {
   const { ref, show } = useTrigger(when);
-  const MotionTag = motion[Tag] as typeof motion.div;
+  const MotionTag = m[Tag] as typeof m.div;
   return (
     <MotionTag
       ref={ref as React.RefObject<HTMLDivElement>}

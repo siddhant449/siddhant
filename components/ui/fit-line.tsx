@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, type MotionValue } from "motion/react";
+import { m, type MotionValue } from "motion/react";
 import { useLayoutEffect, useRef, useState } from "react";
 
 /**
@@ -63,7 +63,7 @@ export function FitLine({
         </span>
       </span>
       <span className="block overflow-hidden pb-[0.04em]">
-        <motion.span
+        <m.span
           className={`block whitespace-nowrap ${innerClassName ?? ""}`}
           style={{
             fontSize: size,
@@ -75,7 +75,7 @@ export function FitLine({
           transition={{ duration: 1.25, ease: [0.22, 1, 0.36, 1], delay }}
         >
           {text}
-        </motion.span>
+        </m.span>
       </span>
     </span>
   );

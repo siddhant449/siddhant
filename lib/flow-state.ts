@@ -6,7 +6,7 @@
 export const flowState = {
   /** 0 = loose, fluid contours. 1 = straight, engineered lines. */
   heroOrder: 0,
-  heroVisible: true,
+  heroVisible: false,
   footerVisible: false,
   /** Fades the field in after the intro. */
   intro: 0,

@@ -1,9 +1,11 @@
 "use client";
 
 import { AnimatePresence, m } from "motion/react";
+import Link from "next/link";
 import { useId, useState } from "react";
 import { privateWork, type PrivateProject } from "@/lib/content";
 import { Fade, Lines } from "./ui/reveal";
+import { Roll } from "./ui/text-effects";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -90,6 +92,11 @@ function Row({
                   ))}
                 </ul>
                 <p className="mt-6 text-[13px] text-ash lg:hidden">{project.context}</p>
+                {project.slug ? (
+                  <Link href={`/work/${project.slug}`} className="group mt-6 inline-flex border-b border-chalk pb-1 text-[15px] font-semibold">
+                    <Roll>Read the case study</Roll>
+                  </Link>
+                ) : null}
               </div>
             </div>
           </m.div>

@@ -10,6 +10,7 @@ import {
   useTransform,
 } from "motion/react";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { liveWork, type LiveProject } from "@/lib/content";
 import { Fade, Lines } from "./ui/reveal";
@@ -47,7 +48,7 @@ function Shot({
   );
 }
 
-function ProjectFrame({ project }: { project: LiveProject }) {
+export function ProjectFrame({ project }: { project: LiveProject }) {
   const frame = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: frame, offset: ["start end", "end start"] });
   const imageY = useTransform(scrollYProgress, [0, 1], ["-3.4%", "3.4%"]);
@@ -127,16 +128,14 @@ function ProjectFrame({ project }: { project: LiveProject }) {
 function ProjectEntry({ project }: { project: LiveProject }) {
   return (
     <article className="group/card">
-      <a
-        href={project.url}
-        target="_blank"
-        rel="noreferrer"
-        data-cursor-label="Visit live site"
-        aria-label={`${project.name}: open the live site in a new tab`}
+      <Link
+        href={`/work/${project.slug}`}
+        data-cursor-label="Read case study"
+        aria-label={`${project.name}: read the case study`}
         className="block rounded-[clamp(12px,1.4vw,22px)]"
       >
         <ProjectFrame project={project} />
-      </a>
+      </Link>
 
       <div className="mt-7 grid gap-x-6 gap-y-6 md:mt-9 md:grid-cols-12">
         <div className="md:col-span-5">
@@ -164,11 +163,14 @@ function ProjectEntry({ project }: { project: LiveProject }) {
               <dd>{project.stack.join(", ")}</dd>
             </div>
           </dl>
+          <Link href={`/work/${project.slug}`} className="group mt-5 flex w-fit items-center gap-2 border-b border-chalk pb-1 font-semibold">
+            <Roll>Read the case study</Roll>
+          </Link>
           <a
             href={project.url}
             target="_blank"
             rel="noreferrer"
-            className="group mt-5 inline-flex items-center gap-2 border-b border-line-strong pb-1 font-medium"
+            className="group mt-3 inline-flex items-center gap-2 border-b border-line-strong pb-1 font-medium text-ash"
           >
             <Roll>{project.host}</Roll>
             <svg aria-hidden viewBox="0 0 12 12" className="h-2.5 w-2.5 transition-transform duration-500 ease-out-expo group-hover:-translate-y-0.5 group-hover:translate-x-0.5">

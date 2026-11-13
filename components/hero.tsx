@@ -23,6 +23,14 @@ export function Hero() {
     flowState.heroVisible = inView;
     notifyFlow();
   }, [inView]);
+  // Leaving the home page: the field no longer has a hero to show through.
+  useEffect(
+    () => () => {
+      flowState.heroVisible = false;
+      notifyFlow();
+    },
+    [],
+  );
 
   const nameWidth = useTransform(scrollYProgress, [0, 0.75], [100, 62]);
   const nameVariation = useTransform(nameWidth, (w) => `"wdth" ${w.toFixed(1)}`);

@@ -2,6 +2,8 @@
 
 import { useLenis } from "lenis/react";
 import { AnimatePresence, m, useMotionValueEvent, useScroll } from "motion/react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { nav, site } from "@/lib/content";
 import { useIntro } from "@/lib/intro";
@@ -43,10 +45,19 @@ function useActiveSection() {
   return active;
 }
 
+/** On the home page a plain anchor (smooth-scrolled by Lenis); elsewhere a client-side link home. */
+function SectionLink({ onHome, ...props }: React.ComponentProps<"a"> & { onHome: boolean; href: string }) {
+  return onHome ? <a {...props} /> : <Link {...props} />;
+}
+
 export function Nav() {
   const { done } = useIntro();
   const lenis = useLenis();
-  const active = useActiveSection();
+  const onHome = usePathname() === "/";
+  const sectionActive = useActiveSection();
+  const active = onHome ? sectionActive : null;
+  // Off the home page, section links lead back to the home page's sections.
+  const hrefOf = (hash: string) => (onHome ? hash : `/${hash}`);
   const [hidden, setHidden] = useState(false);
   const [open, setOpen] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
@@ -101,13 +112,15 @@ export function Nav() {
         className="fixed inset-x-0 top-0 z-50 px-gutter pt-4 md:pt-5"
       >
         <div className="flex items-center justify-between gap-4">
-          <a
-            href="#top"
-            className="group relative z-10 text-[15px] font-semibold leading-none wdth-75"
-            aria-label={`${site.name}, back to top`}
-          >
-            <Roll>{site.name}</Roll>
-          </a>
+          {onHome ? (
+            <a href="#top" className="group relative z-10 text-[15px] font-semibold leading-none wdth-75" aria-label={`${site.name}, back to top`}>
+              <Roll>{site.name}</Roll>
+            </a>
+          ) : (
+            <Link href="/" className="group relative z-10 text-[15px] font-semibold leading-none wdth-75" aria-label={`${site.name}, home`}>
+              <Roll>{site.name}</Roll>
+            </Link>
+          )}
 
           <nav
             aria-label="Sections"
@@ -126,8 +139,9 @@ export function Nav() {
                 const isActive = active === item.href.slice(1);
                 return (
                   <li key={item.href} className="relative">
-                    <a
-                      href={item.href}
+                    <SectionLink
+                      onHome={onHome}
+                      href={hrefOf(item.href)}
                       data-section={item.href.slice(1)}
                       aria-current={isActive ? "location" : undefined}
                       className={`group relative block rounded-full px-4 py-2 text-[14px] font-medium leading-none transition-colors duration-300 ${
@@ -135,7 +149,7 @@ export function Nav() {
                       }`}
                     >
                       <Roll>{item.label}</Roll>
-                    </a>
+                    </SectionLink>
                   </li>
                 );
               })}
@@ -184,7 +198,7 @@ export function Nav() {
                 {nav.map((item, i) => (
                   <li key={item.href} className="overflow-hidden border-b border-line">
                     <m.a
-                      href={item.href}
+                      href={hrefOf(item.href)}
                       onClick={() => setOpen(false)}
                       initial={{ y: "100%" }}
                       animate={{ y: "0%" }}

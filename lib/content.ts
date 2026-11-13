@@ -80,20 +80,20 @@ export const liveWork = {
       },
     },
     {
-      slug: "webindia",
-      name: "WebIndia Inc.",
+      slug: "agency-concept",
+      name: "Marketing agency",
       url: "https://webindiainc.vercel.app/",
       host: "webindiainc.vercel.app",
-      kind: "Digital marketing agency website",
+      kind: "Digital marketing agency, concept site",
       summary:
-        "A new home for a Google Premier Partner agency with 16+ years of client work. Services, reviews and proof are arranged so a visitor can go from first scroll to booked call without hunting for anything.",
+        "A concept site for a performance marketing agency. Reviews, services and answers are arranged so a visitor can go from first scroll to booked call without hunting for anything.",
       role: "Design and development",
       stack: ["Next.js", "TypeScript", "Responsive build"],
       images: {
-        hero: "/work/webindia-hero.webp",
-        mobile: "/work/webindia-mobile.webp",
-        alt: "WebIndia Inc. home page: the headline “Performance-First Digital Marketing Agency” with a 680+ Upwork reviews panel.",
-        mobileAlt: "WebIndia Inc. home page on a phone.",
+        hero: "/work/agency-hero.webp",
+        mobile: "/work/agency-mobile.webp",
+        alt: "Agency concept home page: the headline “Performance-First Digital Marketing Agency” beside a panel of review counts.",
+        mobileAlt: "Agency concept home page on a phone.",
       },
     },
   ] satisfies LiveProject[],
@@ -101,6 +101,8 @@ export const liveWork = {
 
 export type PrivateProject = {
   title: string;
+  /** Case study page, when there is one. */
+  slug?: string;
   context: string;
   line: string;
   facts: { value: string; label: string }[];
@@ -114,6 +116,7 @@ export const privateWork = {
   projects: [
     {
       title: "Clinical messaging platform",
+      slug: "clinical-messaging",
       context: "Client work, under NDA",
       line: "HIPAA-compliant, multi-tenant messaging for healthcare teams.",
       facts: [
@@ -126,9 +129,10 @@ export const privateWork = {
       stack: ["TypeScript", "Node.js", "Socket.IO", "PostgreSQL", "Redis", "Azure"],
     },
     {
-      title: "Fashion e-commerce search",
+      title: "AI fashion e-commerce platform",
+      slug: "fashion-commerce",
       context: "Client work, under NDA",
-      line: "Search that understands a photo as well as a phrase.",
+      line: "Search, recommendations and tagging that understand what a product looks like.",
       facts: [
         { value: "15+", label: "FastAPI microservices" },
         { value: "85%+", label: "search accuracy, under a second" },
@@ -140,6 +144,7 @@ export const privateWork = {
     },
     {
       title: "Trading risk platform",
+      slug: "trading-risk",
       context: "Client work, under NDA",
       line: "Risk scores that explain their own reasoning.",
       facts: [
@@ -304,3 +309,210 @@ export const contact = {
   backToTop: "Back to top",
   signature: "Designed and built by Siddhant in Ahmedabad.",
 } as const;
+
+/* ------------------------------------------------------------------ */
+/* Case studies                                                         */
+/* ------------------------------------------------------------------ */
+
+export type CaseStudy = {
+  slug: string;
+  title: string;
+  /** Client site, concept site, or client work under NDA. */
+  kind: string;
+  role: string;
+  stack: string[];
+  /** One line under the title. */
+  hook: string;
+  /** For search results and link previews. */
+  description: string;
+  /** Live projects only: the frame on the home page, reused as the cover. */
+  live?: LiveProject;
+  brief: string;
+  approach: { title: string; body: string }[];
+  inside: { title: string; body: string; image?: { src: string; alt: string } }[];
+  factsTitle: string;
+  facts: { value: string; label: string }[];
+  next: string;
+};
+
+const [TRUVOLT, AGENCY] = liveWork.projects;
+
+export const caseStudies: CaseStudy[] = [
+  {
+    slug: "truvolt",
+    title: "Truvolt",
+    kind: "Client site",
+    role: "Design and development",
+    stack: ["Next.js", "TypeScript", "Responsive build"],
+    hook: "A transformer maker founded in 1970, given a website as exact as its machines.",
+    description:
+      "Case study: a website for Truvolt, a Kolkata transformer manufacturer, written for engineering buyers who read spec sheets first.",
+    live: TRUVOLT,
+    brief:
+      "Truvolt has built power, distribution and furnace-duty transformers in Kolkata since 1970, for steel plants, refineries and state distribution companies. Its buyers are engineers and procurement teams. Before they ask for a quote they want capacities, voltage classes and standards, and proof that the plant can deliver.",
+    approach: [
+      { title: "Lead with the spec", body: "The first screen states the range, 25 kVA to 36 MVA up to 66 kV, with three figures before a single adjective." },
+      { title: "Show who already relies on it", body: "A wall of more than 100 operators, from public sector majors to EPC contractors and six state distribution companies, that holds a row when you hover or tap it." },
+      { title: "Open up the machine", body: "Core, windings, tank, cooling and standards set out as a spec table beside the test process, the way an engineer would check them." },
+      { title: "Walk the plant", body: "Manufacturing to commissioning as numbered stages with real photography, so the promise has a place behind it." },
+      { title: "One clear next step", body: "Every path ends at the enquiry, with the engineers’ 48 to 72 hour reply stated up front." },
+    ],
+    inside: [
+      {
+        title: "Proof before pitch",
+        body: "Operators are grouped the way buyers recognise them, industry and EPC first, then distribution companies, each with its sector underneath. It reads like a reference list, because that is what it is.",
+        image: { src: "/work/truvolt/clients.webp", alt: "Truvolt client wall: logos of public sector and EPC operators in rows, with a second row of state distribution companies." },
+      },
+      {
+        title: "The spec, in the open",
+        body: "Materials and standards sit in a quiet table next to the engineering process, so the page answers the questions a tender asks without a download.",
+        image: { src: "/work/truvolt/core.webp", alt: "Truvolt “Built From the Core Outward” section: a specification table beside a quality and testing panel." },
+      },
+      {
+        title: "A plant you can follow",
+        body: "Build, inspection, testing and dispatch run as stages joined by a single line, alternating sides as you scroll.",
+        image: { src: "/work/truvolt/process.webp", alt: "Truvolt process section: numbered stages for manufacturing and testing, with photographs of the plant." },
+      },
+    ],
+    factsTitle: "What the site carries",
+    facts: [
+      { value: "25 kVA–36 MVA", label: "range, up to 66 kV" },
+      { value: "100+", label: "operators on the client wall" },
+      { value: "9", label: "countries served" },
+      { value: "55+", label: "years of the company’s history" },
+    ],
+    next: "agency-concept",
+  },
+  {
+    slug: "agency-concept",
+    title: "Marketing agency",
+    kind: "Concept site",
+    role: "Design and development",
+    stack: ["Next.js", "TypeScript", "Responsive build"],
+    hook: "A concept site for a performance marketing agency, built to turn proof into a booked call.",
+    description: "Case study: a concept website for a performance marketing agency, built so proof and services lead straight to a booked call.",
+    live: AGENCY,
+    brief:
+      "A performance marketing agency’s best evidence lives in ad accounts and review platforms, where visitors never see it. The concept: put that proof on the first screen, make six services easy to compare, answer the usual doubts before they come up, and keep one action in reach the whole way down.",
+    approach: [
+      { title: "Proof first", body: "Review counts from three platforms sit beside the headline, so the claim and the evidence arrive together." },
+      { title: "Services as a rail", body: "Google, Bing, Facebook and Amazon ads, SEO and WordPress as numbered cards you can step through, with a short index beside them." },
+      { title: "Answer the doubts", body: "A plain-language FAQ covers cost, worth and how to choose an agency, the questions that stall a decision." },
+      { title: "One action, always in reach", body: "“Let’s Connect” stays pinned in the header from the first screen to the last." },
+    ],
+    inside: [
+      {
+        title: "Six services, one glance",
+        body: "Each service gets one card with one promise, and the index on the left shows where you are in the set.",
+        image: { src: "/work/agency-concept/services.webp", alt: "Agency concept services section: an index of six services beside a rail of numbered service cards." },
+      },
+      {
+        title: "Doubts, answered in order",
+        body: "Numbered questions open in place, so a visitor can scan the list and read only what matters to them.",
+        image: { src: "/work/agency-concept/faq.webp", alt: "Agency concept FAQ: a list of numbered questions with the first one open." },
+      },
+    ],
+    factsTitle: "What the site carries",
+    facts: [
+      { value: "6", label: "services in one rail" },
+      { value: "3", label: "review platforms on the first screen" },
+      { value: "1", label: "action, pinned throughout" },
+    ],
+    next: "clinical-messaging",
+  },
+  {
+    slug: "clinical-messaging",
+    title: "Clinical messaging platform",
+    kind: "Client work, under NDA",
+    role: "Fullstack engineering",
+    stack: ["TypeScript", "Node.js", "Socket.IO", "PostgreSQL", "Redis", "Azure Service Bus", "Azure Container Apps", "Entra ID"],
+    hook: "HIPAA-compliant messaging that keeps every message in order, sends it once and seals every tenant off.",
+    description: "Case study: a HIPAA-compliant, multi-tenant clinical messaging platform with ordered, exactly-once delivery and database-level tenant isolation.",
+    brief:
+      "Healthcare teams across many organisations needed realtime messaging on one platform, under HIPAA. Protected data could never cross between tenants, reach a push notification or pass through the API unguarded, and every action had to be auditable.",
+    approach: [
+      { title: "One image, three entry points", body: "A stateless REST API, a Socket.IO gateway with a Redis adapter for fan-out across replicas, and Service Bus workers, deployed as three independently scaled Azure Container Apps." },
+      { title: "Isolation in the database", body: "FORCE row-level security on 34 tables, with the tenant set by SET LOCAL inside each transaction, because session-scoped settings leak between requests under pgBouncer transaction pooling." },
+      { title: "Slow work off the request path", body: "Push dispatch, thumbnails, video transcoding and link previews moved onto 13 publish/subscribe topics with dead-letter queues, bounded retries and idempotent consumers." },
+      { title: "In order, exactly once", body: "A server-assigned sequence per conversation plus client idempotency keys: a retried send returns the original row, so no conflict-resolution service was needed." },
+      { title: "Compliance in the schema", body: "Entra ID single sign-on with hashed sessions revoked per request, push notifications that carry no protected data, 30-minute signed links so the API never proxies protected files, and an append-only, partitioned audit log that rejects UPDATE and DELETE." },
+    ],
+    inside: [
+      { title: "One runner per job", body: "Scheduled work runs on exactly one worker at a time, elected by leases held in the database, so scaling the worker tier never runs a job twice." },
+      { title: "Locked-down Azure", body: "VNet-integrated Container Apps, a private endpoint for Redis, secrets from Key Vault through managed identity, and only digest-verified images promoted to production." },
+      { title: "Covered by tests", body: "627 backend and 686 frontend tests guard the guarantees above, from row-level policies to message ordering." },
+    ],
+    factsTitle: "In numbers",
+    facts: [
+      { value: "34", label: "tables under row-level security" },
+      { value: "13", label: "pub/sub topics with dead-letter queues" },
+      { value: "1,313", label: "automated tests, front and back" },
+      { value: "30 min", label: "lifetime of a signed file link" },
+    ],
+    next: "fashion-commerce",
+  },
+  {
+    slug: "fashion-commerce",
+    title: "AI fashion e-commerce platform",
+    kind: "Client work, under NDA",
+    role: "ML/AI and backend engineering",
+    stack: ["Python", "FastAPI", "Elasticsearch 8", "OpenCLIP", "Sentence Transformers", "GPT-4o vision", "LLMs"],
+    hook: "The AI behind a fashion store: search that reads photos, recommendations with reasons, and a catalogue that tags itself.",
+    description:
+      "Case study: the AI layer of a fashion e-commerce platform across 15+ microservices: multimodal search, recommendations with trend forecasting, and automatic product tagging.",
+    brief:
+      "A fashion store lives or dies on whether shoppers find what they picture. Keyword search couldn’t match a photo or tell that two differently worded descriptions meant the same dress, recommendations had nothing to go on beyond category, and every new product needed tagging by hand.",
+    approach: [
+      { title: "Split into services", body: "More than 15 FastAPI microservices, so search, recommendations and tagging scale and ship on their own." },
+      { title: "Two kinds of meaning", body: "CLIP-based visual search and semantic search over Sentence Transformers, both served from Elasticsearch 8 vector search." },
+      { title: "Rank in tiers", body: "An eight-tier ranking blends visual, semantic and catalogue signals, at 85%+ accuracy with sub-second responses." },
+      { title: "Recommend with reasons", body: "Multi-factor scoring (35% semantic, 20% brand, 18% category) with seasonal weather and LLM-powered trend forecasting." },
+      { title: "Tag without a tagging team", body: "GPT-4o vision extracts wardrobe features and OpenCLIP produces 768-dimension embeddings, tagging more than 1,000 products automatically." },
+    ],
+    inside: [
+      { title: "A photo is a query", body: "Images and text land in the same embedding space, so a picture of a dress finds dresses that look like it, not just ones that share its tags." },
+      { title: "Weights you can read", body: "Recommendation weights are explicit numbers, so the business can see and tune why a product was suggested." },
+      { title: "Ahead of the season", body: "Seasonal weather and LLM trend forecasting feed the recommendations, so what is suggested changes with what people will actually wear." },
+    ],
+    factsTitle: "In numbers",
+    facts: [
+      { value: "15+", label: "FastAPI microservices" },
+      { value: "85%+", label: "search accuracy" },
+      { value: "<1 s", label: "response time" },
+      { value: "1,000+", label: "products tagged automatically" },
+    ],
+    next: "trading-risk",
+  },
+  {
+    slug: "trading-risk",
+    title: "Trading risk platform",
+    kind: "Client work, under NDA",
+    role: "ML/AI and backend engineering",
+    stack: ["Python", "FastAPI", "XGBoost", "scikit-learn", "FinBERT", "Celery", "MLflow", "Optuna", "SHAP", "LIME"],
+    hook: "Risk scores that explain their own reasoning, next to what the market is saying.",
+    description: "Case study: a trading risk and market sentiment platform with a three-model ensemble, news sentiment at 19,200+ articles a day and explainable scores.",
+    brief:
+      "A trading business needed to see risk building in trader behaviour, leverage and volatility before it turned into losses, alongside what the news was saying. The scores had to be explainable to people who don’t read model weights.",
+    approach: [
+      { title: "Three engines, one score", body: "An ensemble of behavioural XGBoost (40%), leverage random forest (35%) and volatility XGBoost (25%) over 146+ engineered features, at 85 to 92% accuracy." },
+      { title: "Served fast", body: "A FastAPI backend with sub-10 ms health checks and 2 to 5 second inference." },
+      { title: "Read the market", body: "A companion platform watching 30+ premium sources, including Reuters, Bloomberg and the Economic Times, processing 19,200+ articles a day at 99.9% uptime with mirror-feed fallback and circuit breakers." },
+      { title: "Two sentiment models", body: "FinBERT (85% accurate on financial text) and Twitter-RoBERTa, batched and cached, combined into one compound score." },
+      { title: "Explain every score", body: "SHAP for global feature importance, LIME for individual cases, and GPT-4 summaries with counterfactuals for executives." },
+    ],
+    inside: [
+      { title: "Models that keep up", body: "Celery retrains the models every week, Optuna tunes them by Bayesian optimisation, and MLflow tracks every experiment." },
+      { title: "Built to stay up", body: "If a news feed fails, a mirror takes over and a circuit breaker stops the failure from spreading." },
+    ],
+    factsTitle: "In numbers",
+    facts: [
+      { value: "146+", label: "engineered features" },
+      { value: "85–92%", label: "ensemble accuracy" },
+      { value: "19,200+", label: "news articles a day" },
+      { value: "99.9%", label: "uptime" },
+    ],
+    next: "truvolt",
+  },
+];
+
+export const caseStudyOf = (slug: string) => caseStudies.find((c) => c.slug === slug);

@@ -43,3 +43,6 @@ next-env.d.ts
 # local tooling
 /.playwright-mcp
 /.superpowers
+
+# personal files kept out of the public repo
+/Resume*.pdf

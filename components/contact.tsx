@@ -129,11 +129,6 @@ export function Contact() {
                 <Roll>GitHub</Roll>
               </a>
             </li>
-            <li>
-              <a href={site.links.resume} target="_blank" rel="noreferrer" className="group inline-flex">
-                <Roll>Résumé (PDF)</Roll>
-              </a>
-            </li>
           </ul>
         </div>
         <div className="md:col-span-3">

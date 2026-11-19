@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   applicationName: site.name,
   authors: [{ name: site.name, url: site.url }],
   keywords: [
-    "Siddhant Kotak",
+    "Hojefa Lakdawala",
     "fullstack engineer",
     "AI engineer",
     "Next.js developer",

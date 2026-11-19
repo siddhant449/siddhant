@@ -98,11 +98,11 @@ export function Hero() {
           </span>
           {/* Fallback sizes are the measured fit as a share of the container, so nothing shifts. */}
           <span aria-hidden className="hidden [container-type:inline-size] sm:block">
-            <FitLine text={site.name} fallback="13.152cqw" variation={nameVariation} show={done} delay={0.3} />
+            <FitLine text={site.name} fallback="11.316cqw" variation={nameVariation} show={done} delay={0.3} />
           </span>
           <span aria-hidden className="block [container-type:inline-size] sm:hidden">
-            <FitLine text="Siddhant" fallback="22.375cqw" variation={nameVariation} show={done} delay={0.3} />
-            <FitLine text="Kotak" measure="Siddhant" fallback="22.375cqw" variation={nameVariation} show={done} delay={0.38} />
+            <FitLine text="Hojefa" measure="Lakdawala" fallback="18.539cqw" variation={nameVariation} show={done} delay={0.3} />
+            <FitLine text="Lakdawala" fallback="18.539cqw" variation={nameVariation} show={done} delay={0.38} />
           </span>
         </h1>
       </m.div>

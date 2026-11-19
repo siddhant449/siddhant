@@ -1,4 +1,4 @@
-# Siddhant Kotak — portfolio
+# Hojefa Lakdawala — portfolio
 
 One-page portfolio built with Next.js 16 (App Router), Motion and Lenis.
 
@@ -23,7 +23,6 @@ npm run build    # production build (static)
 | `components/hero.tsx` … `contact.tsx` | One file per section, in page order. |
 | `components/ui/` | Text reveals, scramble, roll links, magnetic buttons, fitted display type. |
 | `public/work/` | Captures of the live client sites. |
-| `public/docs/` | Résumé PDF. |
 | `app/opengraph-image.png` | Link-preview image (a capture of the hero). |
 
 ## Rules for the copy

@@ -224,7 +224,6 @@ export function Nav() {
               <div className="flex gap-6 text-ash">
                 <a href={site.links.linkedin} target="_blank" rel="noreferrer">LinkedIn</a>
                 <a href={site.links.github} target="_blank" rel="noreferrer">GitHub</a>
-                <a href={site.links.resume} target="_blank" rel="noreferrer">Résumé</a>
               </div>
             </m.div>
           </m.div>

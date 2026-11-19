@@ -6,20 +6,19 @@
  */
 
 export const site = {
-  name: "Siddhant Kotak",
-  shortName: "Siddhant",
+  name: "Hojefa Lakdawala",
+  shortName: "Hojefa",
   role: "Fullstack & AI Engineer",
   location: "Ahmedabad, India",
   timeZone: "Asia/Kolkata",
   email: "siddharthkotak280@gmail.com",
-  url: "https://siddhant-xi.vercel.app",
+  url: "https://hojefa-lakdawala.vercel.app",
   links: {
     linkedin: "https://www.linkedin.com/in/siddhant-kotak-07116a208",
     github: "https://github.com/SiddhantKotak",
-    resume: "/docs/siddhant-kotak-resume.pdf",
   },
   description:
-    "Siddhant Kotak is a fullstack and AI engineer in Ahmedabad who designs and builds websites, web apps and AI features end to end, from the first pixel to the last packet.",
+    "Hojefa Lakdawala is a fullstack and AI engineer in Ahmedabad who designs and builds websites, web apps and AI features end to end, from the first pixel to the last packet.",
 } as const;
 
 export const nav = [
@@ -33,7 +32,7 @@ export const hero = {
   surface: "Polished on the surface.",
   depth: "Engineered all the way down.",
   intro:
-    "I’m Siddhant, a fullstack and AI engineer in Ahmedabad. I design and build websites, web apps and AI features end to end, from the first pixel to the last packet.",
+    "I’m Hojefa, a fullstack and AI engineer in Ahmedabad. I design and build websites, web apps and AI features end to end, from the first pixel to the last packet.",
   primaryCta: "Start a project",
   secondaryCta: "See the work",
 } as const;
@@ -307,7 +306,7 @@ export const contact = {
   copy: "Copy email",
   copied: "Copied",
   backToTop: "Back to top",
-  signature: "Designed and built by Siddhant in Ahmedabad.",
+  signature: "Designed and built by Hojefa in Ahmedabad.",
 } as const;
 
 /* ------------------------------------------------------------------ */

@@ -1,6 +1,5 @@
-import { about, site } from "@/lib/content";
+import { about } from "@/lib/content";
 import { Fade, Lines, Words } from "./ui/reveal";
-import { Roll } from "./ui/text-effects";
 
 export function About() {
   return (
@@ -32,17 +31,6 @@ export function About() {
               />
             ))}
           </div>
-          <Fade delay={0.2} className="mt-10">
-            <a
-              href={site.links.resume}
-              target="_blank"
-              rel="noreferrer"
-              className="group inline-flex items-center gap-3 rounded-full border border-line-strong px-6 py-4 text-[15px] font-semibold leading-none transition-colors duration-500 hover:border-chalk"
-            >
-              <Roll>Download résumé</Roll>
-              <span className="text-[13px] font-normal text-ash">PDF</span>
-            </a>
-          </Fade>
         </div>
 
         <div className="md:col-span-5 md:col-start-8">

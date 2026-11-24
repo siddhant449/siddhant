@@ -6,291 +6,489 @@
  */
 
 export const site = {
-  name: "Hojefa Lakdawala",
-  shortName: "Hojefa",
-  role: "Fullstack & AI Engineer",
+  name: "Siddhant Kotak",
+  shortName: "Siddhant",
+  role: "Designer & fullstack AI engineer",
   location: "Ahmedabad, India",
   timeZone: "Asia/Kolkata",
-  email: "lhojefa@gmail.com",
-  url: "https://hojefa-lakdawala.vercel.app",
+  email: "siddharthkotak280@gmail.com",
+  url: "https://siddhant-xi.vercel.app",
   links: {
     linkedin: "https://www.linkedin.com/in/siddhant-kotak-07116a208",
     github: "https://github.com/SiddhantKotak",
+    resume: "/docs/siddhant-kotak-resume.pdf",
   },
   description:
-    "Hojefa Lakdawala is a fullstack and AI engineer in Ahmedabad who designs and builds websites, web apps and AI features end to end, from the first pixel to the last packet.",
+    "Siddhant Kotak designs websites and builds the software behind them: marketing sites for manufacturers, agencies and brands, and AI and backend systems for healthcare, commerce and finance.",
 } as const;
 
+/** Section index in page order. The two kinds of work carry their counts. */
 export const nav = [
-  { label: "Work", href: "#work" },
-  { label: "Stack", href: "#stack" },
-  { label: "Services", href: "#services" },
+  { label: "Design", href: "#design", count: 5 },
+  { label: "Engineering", href: "#engineering", count: 4 },
+  { label: "Toolbox", href: "#toolbox" },
   { label: "About", href: "#about" },
 ] as const;
 
+/* ------------------------------------------------------------------ */
+/* Hero: one line per discipline, and a door to each                    */
+/* ------------------------------------------------------------------ */
+
 export const hero = {
-  surface: "Polished on the surface.",
-  depth: "Engineered all the way down.",
-  intro:
-    "I’m Hojefa, a fullstack and AI engineer in Ahmedabad. I design and build websites, web apps and AI features end to end, from the first pixel to the last packet.",
-  primaryCta: "Start a project",
-  secondaryCta: "See the work",
+  /** Four short columns over the wordmark, Monolith-style. */
+  meta: [
+    { strong: "Siddhant Kotak", soft: "Designer & fullstack AI engineer" },
+    { strong: "Ahmedabad, India", soft: "time" },
+    { strong: "Available for projects", soft: "Websites and systems", dot: true },
+    { strong: "Scroll", soft: "↓", align: "right" },
+  ],
+  lead: "I design websites for manufacturers, brands and agencies, and engineer production systems for healthcare, commerce and finance.",
+  doors: {
+    design: { index: "01", label: "Design", meta: "05 Websites", title: [{ text: "Websites that earn trust." }] },
+    engineering: {
+      index: "02",
+      label: "Engineering",
+      meta: "04 Systems",
+      title: [{ text: "Systems that " }, { text: "hold up.", italic: true }],
+    },
+  },
 } as const;
 
-export const manifesto =
-  "A beautiful site that buckles under real traffic is a liability. A rock-solid system nobody enjoys using is a missed sale. I build the version where you don’t have to choose.";
+/* ------------------------------------------------------------------ */
+/* 01 Design: live websites                                             */
+/* ------------------------------------------------------------------ */
+
+export type Screen = { src: string; caption: string; phone?: boolean };
 
 export type LiveProject = {
   slug: string;
   name: string;
   url: string;
   host: string;
+  sector: string;
+  place: string;
   kind: string;
   summary: string;
   role: string;
   stack: string[];
+  /** Colour of the presentation board behind the screenshots. */
+  tone: string;
   images: {
     hero: string;
     mobile: string;
     alt: string;
     mobileAlt: string;
   };
+  /** Every screen captured from the live site, in page order. */
+  screens: Screen[];
 };
 
-export const liveWork = {
-  title: "Work you can click.",
-  note: "Both are live. Open them, resize them, try to break them.",
+export const design = {
+  index: "01",
+  label: "Design",
+  meta: "05 Websites · designed and built end to end",
+  title: "Websites",
+  intro:
+    "Five live sites for a transformer maker, a Swiss stone brand, a skincare label and two growth agencies. Each one written, designed and built by me.",
   projects: [
     {
       slug: "truvolt",
       name: "Truvolt",
       url: "https://truvolt.vercel.app/",
       host: "truvolt.vercel.app",
-      kind: "Industrial manufacturer website",
+      sector: "Industrial manufacturing",
+      place: "Kolkata, India",
+      kind: "Client site",
       summary:
-        "A site for a Kolkata transformer maker founded in 1970. It walks engineering buyers through a range from 25 kVA to 36 MVA, the plant that builds it and the 100+ operators who run on it, in the exact, unhurried voice the product deserves.",
+        "A website for a transformer manufacturer founded in 1970, written for engineering buyers: the range, the plant behind it and the operators who already rely on it.",
       role: "Design and development",
-      stack: ["Next.js", "TypeScript", "Responsive build"],
+      stack: ["Next.js", "TypeScript"],
+      tone: "#14365f",
       images: {
         hero: "/work/truvolt-hero.webp",
         mobile: "/work/truvolt-mobile.webp",
         alt: "Truvolt home page: the headline “Reliable Power for a World of Industrial Applications” beside capacity figures and a photograph of a power transformer.",
         mobileAlt: "Truvolt home page on a phone.",
       },
+      screens: [
+        { src: "/work/truvolt-hero.webp", caption: "Home" },
+        { src: "/work/truvolt/standard.webp", caption: "The standard" },
+        { src: "/work/truvolt/clients.webp", caption: "Operators" },
+        { src: "/work/truvolt/core.webp", caption: "From the core outward" },
+        { src: "/work/truvolt/range.webp", caption: "The range" },
+        { src: "/work/truvolt-mobile.webp", caption: "Phone", phone: true },
+        { src: "/work/truvolt/process.webp", caption: "Process" },
+        { src: "/work/truvolt/delivery.webp", caption: "Tested for delivery" },
+        { src: "/work/truvolt/enquiry.webp", caption: "One enquiry" },
+      ],
+    },
+    {
+      slug: "skinrock",
+      name: "Skinrock",
+      url: "https://skinrock-kohl.vercel.app/",
+      host: "skinrock-kohl.vercel.app",
+      sector: "Architectural materials",
+      place: "Switzerland",
+      kind: "Brand website",
+      summary:
+        "A site for a Swiss natural stone veneer, 1.5 mm thin and translucent when backlit. It leads with the material itself, then the collection, the projects and the test results architects ask for.",
+      role: "Design and development",
+      stack: ["Next.js", "TypeScript"],
+      tone: "#4a3b30",
+      images: {
+        hero: "/work/skinrock/cover.webp",
+        mobile: "/work/skinrock/mobile.webp",
+        alt: "Skinrock home page: the headline “Real stone. Thin enough to let light through.” over a room clad in stone veneer.",
+        mobileAlt: "Skinrock home page on a phone.",
+      },
+      screens: [
+        { src: "/work/skinrock/cover.webp", caption: "Home" },
+        { src: "/work/skinrock/bend.webp", caption: "It bends" },
+        { src: "/work/skinrock/collection.webp", caption: "Collection" },
+        { src: "/work/skinrock/mobile.webp", caption: "Phone", phone: true },
+        { src: "/work/skinrock/projects.webp", caption: "Projects" },
+        { src: "/work/skinrock/why.webp", caption: "Why Skinrock" },
+        { src: "/work/skinrock/tested.webp", caption: "Independently tested" },
+        { src: "/work/skinrock/samples.webp", caption: "Samples" },
+      ],
+    },
+    {
+      slug: "seoulceuticals",
+      name: "SeoulCeuticals",
+      url: "https://siddhant449.github.io/nutraceuticals/",
+      host: "siddhant449.github.io/nutraceuticals",
+      sector: "Skincare e-commerce",
+      place: "United States",
+      kind: "E-commerce storefront",
+      summary:
+        "A storefront for a Korean-inspired skincare brand, pairing editorial typography with the proof shoppers look for: ingredients, reviews and routines.",
+      role: "Design and development",
+      stack: ["HTML", "CSS", "JavaScript"],
+      tone: "#c4552a",
+      images: {
+        hero: "/work/seoulceuticals/cover.webp",
+        mobile: "/work/seoulceuticals/mobile.webp",
+        alt: "SeoulCeuticals flagship line: “Multiple actives, never just one.” above product photography of serums and creams.",
+        mobileAlt: "SeoulCeuticals home page on a phone.",
+      },
+      screens: [
+        { src: "/work/seoulceuticals/cover.webp", caption: "Flagship line" },
+        { src: "/work/seoulceuticals/approach.webp", caption: "Approach" },
+        { src: "/work/seoulceuticals/mobile.webp", caption: "Phone", phone: true },
+        { src: "/work/seoulceuticals/formula.webp", caption: "The formula" },
+        { src: "/work/seoulceuticals/routine.webp", caption: "Morning and night" },
+        { src: "/work/seoulceuticals/story.webp", caption: "Our story" },
+        { src: "/work/seoulceuticals/faq.webp", caption: "Questions" },
+      ],
+    },
+    {
+      slug: "prefdigihub",
+      name: "Pref Digi Hub",
+      url: "https://prefdigihub.vercel.app/",
+      host: "prefdigihub.vercel.app",
+      sector: "Digital growth agency",
+      place: "India and UAE",
+      kind: "Agency website",
+      summary:
+        "A site for a growth agency working across SEO, AI search and paid media. A live estimate in the hero turns a visitor’s budget into a projected number of enquiries.",
+      role: "Design and development",
+      stack: ["Next.js", "TypeScript"],
+      tone: "#23207a",
+      images: {
+        hero: "/work/prefdigihub/cover.webp",
+        mobile: "/work/prefdigihub/mobile.webp",
+        alt: "Pref Digi Hub home page: “Get found. Get chosen. Get more customers.” beside an enquiry estimate panel.",
+        mobileAlt: "Pref Digi Hub home page on a phone.",
+      },
+      screens: [
+        { src: "/work/prefdigihub/cover.webp", caption: "Home" },
+        { src: "/work/prefdigihub/services.webp", caption: "Services" },
+        { src: "/work/prefdigihub/ai.webp", caption: "AI search" },
+        { src: "/work/prefdigihub/mobile.webp", caption: "Phone", phone: true },
+        { src: "/work/prefdigihub/process.webp", caption: "Process" },
+        { src: "/work/prefdigihub/case.webp", caption: "A client result" },
+        { src: "/work/prefdigihub/compare.webp", caption: "Search vs AI search" },
+        { src: "/work/prefdigihub/cta.webp", caption: "Free check" },
+      ],
     },
     {
       slug: "agency-concept",
       name: "Marketing agency",
       url: "https://webindiainc.vercel.app/",
       host: "webindiainc.vercel.app",
-      kind: "Digital marketing agency, concept site",
+      sector: "Performance marketing",
+      place: "Concept",
+      kind: "Concept site",
       summary:
-        "A concept site for a performance marketing agency. Reviews, services and answers are arranged so a visitor can go from first scroll to booked call without hunting for anything.",
+        "A concept site for a performance marketing agency. Reviews, services and answers are arranged so a visitor can go from first scroll to booked call without hunting.",
       role: "Design and development",
-      stack: ["Next.js", "TypeScript", "Responsive build"],
+      stack: ["Next.js", "TypeScript"],
+      tone: "#1f4fd8",
       images: {
         hero: "/work/agency-hero.webp",
         mobile: "/work/agency-mobile.webp",
         alt: "Agency concept home page: the headline “Performance-First Digital Marketing Agency” beside a panel of review counts.",
         mobileAlt: "Agency concept home page on a phone.",
       },
+      screens: [
+        { src: "/work/agency-hero.webp", caption: "Home" },
+        { src: "/work/agency-concept/services.webp", caption: "Services" },
+        { src: "/work/agency-mobile.webp", caption: "Phone", phone: true },
+        { src: "/work/agency-concept/certifications.webp", caption: "Certifications" },
+        { src: "/work/agency-concept/faq.webp", caption: "Answers" },
+      ],
     },
   ] satisfies LiveProject[],
+  gallery: {
+    title: "Every screen",
+    note: "All five sites, screen by screen. Scroll and the columns move against each other.",
+  },
 } as const;
 
-export type PrivateProject = {
+/* ------------------------------------------------------------------ */
+/* 02 Engineering: systems, shown as spec sheets                        */
+/* ------------------------------------------------------------------ */
+
+/** A schematic drawn in code: boxes on a grid and the arrows between them. */
+export type Diagram = {
+  nodes: { id: string; col: number; row: number; label: string; sub: string }[];
+  /** `hot` edges are the main path and carry the accent colour. */
+  edges: { from: string; to: string; hot?: boolean }[];
+};
+
+export type SystemProject = {
+  index: string;
   title: string;
   /** Case study page, when there is one. */
   slug?: string;
-  context: string;
+  domain: string;
+  nda: boolean;
   line: string;
-  facts: { value: string; label: string }[];
-  detail: string;
+  role: string;
+  problem: string;
   stack: string[];
+  facts: { value: string; label: string }[];
+  diagram: Diagram;
 };
 
-export const privateWork = {
-  title: "The rest runs behind logins and NDAs.",
-  note: "Client names stay private. The engineering doesn’t have to.",
+export const engineering = {
+  index: "02",
+  label: "Engineering",
+  meta: "04 Systems · 3 under NDA",
+  title: "Systems",
+  intro:
+    "Production systems for clients in healthcare, commerce and finance. Their names stay private; the architecture and the numbers don’t.",
+  stamp: "Under NDA · walkthrough on request",
   projects: [
     {
+      index: "02.1",
       title: "Clinical messaging platform",
       slug: "clinical-messaging",
-      context: "Client work, under NDA",
-      line: "HIPAA-compliant, multi-tenant messaging for healthcare teams.",
-      facts: [
-        { value: "34", label: "tables sealed by row-level security" },
-        { value: "13", label: "pub/sub topics with dead-letter queues" },
-        { value: "1,313", label: "automated tests, front and back" },
-      ],
-      detail:
-        "One container image, three entry points: a stateless API, a realtime gateway that fans out across replicas, and background workers, each scaled on its own. Messages arrive in order and exactly once, protected files are served through 30-minute signed links, and the audit log refuses to be edited.",
+      domain: "Healthcare",
+      nda: true,
+      line: "HIPAA-compliant, multi-tenant messaging for care teams, with ordered, exactly-once delivery.",
+      role: "Fullstack engineering",
+      problem: "Realtime messaging for many care organisations, where protected data must never cross between tenants.",
       stack: ["TypeScript", "Node.js", "Socket.IO", "PostgreSQL", "Redis", "Azure"],
+      facts: [
+        { value: "34", label: "Tables under row-level security" },
+        { value: "13", label: "Pub/sub topics with dead-letter queues" },
+        { value: "1,313", label: "Automated tests, front and back" },
+      ],
+      diagram: {
+        nodes: [
+          { id: "clients", col: 0, row: 0, label: "Clients", sub: "Web · mobile · SSO" },
+          { id: "api", col: 1, row: 0, label: "REST API", sub: "Stateless" },
+          { id: "bus", col: 2, row: 0, label: "Service Bus", sub: "13 topics · DLQ" },
+          { id: "workers", col: 3, row: 0, label: "Workers", sub: "Idempotent · leases" },
+          { id: "teams", col: 0, row: 1, label: "Care teams", sub: "Live, in order" },
+          { id: "gateway", col: 1, row: 1, label: "Realtime", sub: "Socket.IO · Redis" },
+          { id: "db", col: 2, row: 1, label: "Postgres", sub: "Row-level security" },
+          { id: "audit", col: 3, row: 1, label: "Audit log", sub: "Append-only" },
+        ],
+        edges: [
+          { from: "clients", to: "api", hot: true },
+          { from: "api", to: "gateway", hot: true },
+          { from: "gateway", to: "teams", hot: true },
+          { from: "api", to: "bus" },
+          { from: "bus", to: "workers" },
+          { from: "api", to: "db" },
+          { from: "db", to: "audit" },
+        ],
+      },
     },
     {
+      index: "02.2",
       title: "AI fashion e-commerce platform",
       slug: "fashion-commerce",
-      context: "Client work, under NDA",
-      line: "Search, recommendations and tagging that understand what a product looks like.",
+      domain: "Commerce",
+      nda: true,
+      line: "Search that reads photos, recommendations with reasons, and a catalogue that tags itself.",
+      role: "ML/AI and backend engineering",
+      problem: "Shoppers search with photos and loose words; keyword search and hand tagging couldn’t keep up.",
+      stack: ["Python", "FastAPI", "Elasticsearch", "OpenCLIP", "GPT-4o vision"],
       facts: [
         { value: "15+", label: "FastAPI microservices" },
-        { value: "85%+", label: "search accuracy, under a second" },
-        { value: "1,000+", label: "products tagged by a vision model" },
+        { value: "85%+", label: "Search accuracy, under a second" },
+        { value: "1,000+", label: "Products tagged automatically" },
       ],
-      detail:
-        "Visual search on CLIP embeddings and semantic search on sentence transformers, served from Elasticsearch vector search and ranked in eight tiers. Recommendations weigh meaning, brand, category and even the season’s weather.",
-      stack: ["Python", "FastAPI", "Elasticsearch", "OpenCLIP", "GPT-4o vision"],
+      diagram: {
+        nodes: [
+          { id: "shoppers", col: 0, row: 0, label: "Shoppers", sub: "A photo or words" },
+          { id: "api", col: 1, row: 0, label: "Search API", sub: "15+ FastAPI services" },
+          { id: "embed", col: 2, row: 0, label: "Embeddings", sub: "CLIP · transformers" },
+          { id: "index", col: 3, row: 0, label: "Vector search", sub: "Elasticsearch 8" },
+          { id: "catalogue", col: 0, row: 1, label: "Catalogue", sub: "1,000+ products" },
+          { id: "tagging", col: 1, row: 1, label: "Vision tagging", sub: "GPT-4o · OpenCLIP" },
+          { id: "recs", col: 2, row: 1, label: "Recommendations", sub: "Meaning · brand · season" },
+          { id: "rank", col: 3, row: 1, label: "Ranking", sub: "8 tiers · under 1 s" },
+        ],
+        edges: [
+          { from: "shoppers", to: "api", hot: true },
+          { from: "api", to: "embed", hot: true },
+          { from: "embed", to: "index", hot: true },
+          { from: "index", to: "rank", hot: true },
+          { from: "catalogue", to: "tagging" },
+          { from: "tagging", to: "embed" },
+          { from: "recs", to: "rank" },
+        ],
+      },
     },
     {
+      index: "02.3",
       title: "Trading risk platform",
       slug: "trading-risk",
-      context: "Client work, under NDA",
-      line: "Risk scores that explain their own reasoning.",
+      domain: "Finance",
+      nda: true,
+      line: "Risk scores that explain their own reasoning, next to what the market is saying.",
+      role: "ML/AI and backend engineering",
+      problem: "See risk building before it turns into losses, and explain every score to people who don’t read model weights.",
+      stack: ["Python", "XGBoost", "FinBERT", "Celery", "MLflow"],
       facts: [
-        { value: "146+", label: "engineered features, three-model ensemble" },
-        { value: "19,200+", label: "news articles analysed a day" },
-        { value: "99.9%", label: "uptime with circuit-breaker fallbacks" },
+        { value: "146+", label: "Engineered features" },
+        { value: "19,200+", label: "News articles analysed a day" },
+        { value: "99.9%", label: "Uptime, with circuit breakers" },
       ],
-      detail:
-        "An XGBoost and random-forest ensemble scores trading risk at 85 to 92% accuracy, while FinBERT reads the market’s mood. SHAP, LIME and plain-language summaries tell a human why, and the models retrain themselves every week.",
-      stack: ["Python", "XGBoost", "FinBERT", "Celery", "MLflow", "Optuna"],
+      diagram: {
+        nodes: [
+          { id: "news", col: 0, row: 0, label: "News", sub: "30+ sources a day" },
+          { id: "sentiment", col: 1, row: 0, label: "Sentiment", sub: "FinBERT · RoBERTa" },
+          { id: "features", col: 2, row: 0, label: "Features", sub: "146+ engineered" },
+          { id: "ensemble", col: 3, row: 0, label: "Risk ensemble", sub: "XGBoost · forest" },
+          { id: "mirror", col: 0, row: 1, label: "Mirror feeds", sub: "Circuit breakers" },
+          { id: "retrain", col: 1, row: 1, label: "Weekly retrain", sub: "Celery · Optuna" },
+          { id: "desk", col: 2, row: 1, label: "Risk team", sub: "Scores with reasons" },
+          { id: "explain", col: 3, row: 1, label: "Explanations", sub: "SHAP · LIME · GPT-4" },
+        ],
+        edges: [
+          { from: "news", to: "sentiment", hot: true },
+          { from: "sentiment", to: "features", hot: true },
+          { from: "features", to: "ensemble", hot: true },
+          { from: "ensemble", to: "explain", hot: true },
+          { from: "explain", to: "desk", hot: true },
+          { from: "mirror", to: "news" },
+          { from: "retrain", to: "ensemble" },
+        ],
+      },
     },
     {
+      index: "02.4",
       title: "Shizuku",
-      context: "Personal project",
-      line: "A studio that turns documents into manga.",
+      domain: "Personal project",
+      nda: false,
+      line: "A studio that turns documents into manga, with a 2.5D engine that keeps scenes consistent across panels.",
+      role: "Design and engineering",
+      problem: "Turn a document into a manga whose characters and camera angles hold from panel to panel.",
+      stack: ["React", "Express", "TypeScript", "Drizzle ORM", "Redis"],
       facts: [
-        { value: "16+", label: "shared packages in one monorepo" },
-        { value: "2.5D", label: "spatial engine for consistent panels" },
-        { value: "3", label: "generation pipelines: layout, panels, voice" },
+        { value: "16+", label: "Shared packages in one monorepo" },
+        { value: "2.5D", label: "Engine for consistent panels" },
+        { value: "3", label: "Pipelines: layout, panels, voice" },
       ],
-      detail:
-        "Characters are mapped to grid coordinates so camera angles and scene continuity hold across a whole page of panels. Text becomes layout, layout becomes panels, panels get voices, with hash-based copyright checks along the way.",
-      stack: ["React", "Express", "TypeScript", "Drizzle ORM", "PostgreSQL", "Redis"],
+      diagram: {
+        nodes: [
+          { id: "doc", col: 0, row: 0, label: "Document", sub: "Text in" },
+          { id: "layout", col: 1, row: 0, label: "Layout", sub: "Pages and beats" },
+          { id: "engine", col: 2, row: 0, label: "2.5D engine", sub: "Characters on a grid" },
+          { id: "panels", col: 3, row: 0, label: "Panels", sub: "Scenes that hold" },
+          { id: "repo", col: 0, row: 1, label: "Monorepo", sub: "16+ packages" },
+          { id: "check", col: 1, row: 1, label: "Copyright check", sub: "Hash-based" },
+          { id: "studio", col: 2, row: 1, label: "Studio", sub: "React · Express" },
+          { id: "voice", col: 3, row: 1, label: "Voices", sub: "Per character" },
+        ],
+        edges: [
+          { from: "doc", to: "layout", hot: true },
+          { from: "layout", to: "engine", hot: true },
+          { from: "engine", to: "panels", hot: true },
+          { from: "panels", to: "voice", hot: true },
+          { from: "voice", to: "studio", hot: true },
+          { from: "check", to: "layout" },
+        ],
+      },
     },
-  ] satisfies PrivateProject[],
+  ] satisfies SystemProject[],
 } as const;
 
-export type StackLayer = {
-  name: string;
-  /** Short name for the isometric slab label. */
-  short: string;
-  promise: string;
-  proof: string;
-  groups: { label: string; tools: string[] }[];
-};
+/* ------------------------------------------------------------------ */
+/* 03 Toolbox: the logo grid                                            */
+/* ------------------------------------------------------------------ */
 
-export const stack = {
-  title: ["From pixel", "to packet."],
-  intro:
-    "Everything between a tap on the screen and a packet leaving the data centre, and the tools I reach for at every layer.",
-  layers: [
-    {
-      name: "Interface",
-      short: "Interface",
-      promise: "Interfaces that feel fast, look like you and move with intent.",
-      proof: "The page you’re reading: Next.js, Motion, Lenis and a hand-written GLSL shader.",
-      groups: [
-        { label: "Design", tools: ["Figma", "Claude Design"] },
-        { label: "Build", tools: ["React", "Next.js", "Tailwind CSS", "TanStack Query", "Vite"] },
-        {
-          label: "Motion & 3D",
-          tools: ["Motion", "Lenis", "Three.js", "React Three Fiber", "GLSL", "Web Audio API"],
-        },
-      ],
-    },
-    {
-      name: "System Design",
-      short: "Systems",
-      promise: "Built for the day traffic spikes and nothing is allowed to drop.",
-      proof: "34 tables sealed by row-level security, 13 topics with dead-letter queues, and every message delivered exactly once.",
-      groups: [
-        { label: "Messaging", tools: ["Kafka", "Azure Service Bus", "Celery", "Redis pub/sub"] },
-        { label: "Realtime & search", tools: ["Socket.IO", "Redis", "Elasticsearch"] },
-        {
-          label: "Patterns",
-          tools: [
-            "Microservices",
-            "Event-driven design",
-            "Dead-letter queues",
-            "Idempotent consumers",
-            "Exactly-once delivery",
-            "Leader election",
-            "Row-level security",
-          ],
-        },
-      ],
-    },
-    {
-      name: "Fullstack",
-      short: "Fullstack",
-      promise: "Typed from the database to the button, so whole classes of bugs never ship.",
-      proof: "1,313 automated tests across the front and back end of a single platform.",
-      groups: [
-        { label: "Languages", tools: ["TypeScript", "Python", "SQL", "JavaScript", "Java"] },
-        { label: "Server", tools: ["Node.js", "Express 5", "FastAPI", "Zod", "REST APIs"] },
-        { label: "Data", tools: ["PostgreSQL", "MongoDB", "Drizzle ORM", "Knex"] },
-        { label: "Workflow", tools: ["Turborepo", "Vitest", "Pytest"] },
-      ],
-    },
-    {
-      name: "AI",
-      short: "AI",
-      promise: "Models that reach production and can explain their answers.",
-      proof: "Multimodal search at 85%+ accuracy in under a second, and risk models at 85–92% that show their reasoning.",
-      groups: [
-        { label: "LLMs", tools: ["GPT", "Claude", "Gemini", "LangChain", "RAG"] },
-        { label: "Retrieval", tools: ["Embeddings", "Vector search", "OpenCLIP", "Sentence Transformers"] },
-        { label: "Machine learning", tools: ["PyTorch", "Deep learning", "XGBoost", "scikit-learn", "FinBERT"] },
-        { label: "MLOps", tools: ["MLflow", "Optuna", "SHAP", "LIME"] },
-      ],
-    },
-    {
-      name: "Cloud & Deployment",
-      short: "Cloud",
-      promise: "Deploys that are boring, in the best possible way.",
-      proof: "Private networking, secrets in Key Vault through managed identity, and only digest-verified images reach production.",
-      groups: [
-        { label: "AWS", tools: ["EC2", "S3", "ECS", "Lambda"] },
-        { label: "Azure", tools: ["Container Apps", "Key Vault", "Blob Storage", "Entra ID", "API Management"] },
-        { label: "Delivery", tools: ["Docker", "GitHub Actions", "Nginx", "Vercel"] },
-        { label: "Monitoring", tools: ["Sentry", "Grafana", "Prometheus", "ELK stack"] },
-      ],
-    },
-  ] satisfies StackLayer[],
-} as const;
-
-export const services = {
-  title: "What you can hire me for.",
-  items: [
-    {
-      name: "Websites that sell",
-      body: "Marketing sites with a point of view: fast, findable, and built to turn a visit into an enquiry.",
-      tags: ["Design", "Next.js", "SEO", "Motion"],
-    },
-    {
-      name: "Web apps & dashboards",
-      body: "Product interfaces with real state, auth and data behind them, shaped around the people who use them every day.",
-      tags: ["React", "TypeScript", "TanStack Query"],
-    },
-    {
-      name: "AI features",
-      body: "Semantic and visual search, recommendations and explainable models that ship to production, not just to a demo.",
-      tags: ["Embeddings", "LLMs", "Python"],
-    },
-    {
-      name: "Backends & realtime",
-      body: "APIs, queues and multi-tenant data models that stay correct when traffic, teams and tenants multiply.",
-      tags: ["Node.js", "PostgreSQL", "Azure"],
-    },
+/** Tools actually shipped with. `icon` is a Simple Icons export name. */
+export const toolbox = {
+  index: "03",
+  label: "Toolbox",
+  title: "Toolbox",
+  note: "The libraries and platforms behind the work above, from the first frame in Figma to the last deploy.",
+  tools: [
+    { name: "Figma", layer: "Design", icon: "siFigma" },
+    { name: "React", layer: "Interface", icon: "siReact" },
+    { name: "Next.js", layer: "Interface", icon: "siNextdotjs" },
+    { name: "TypeScript", layer: "Language", icon: "siTypescript" },
+    { name: "Tailwind CSS", layer: "Interface", icon: "siTailwindcss" },
+    { name: "Three.js", layer: "Motion & 3D", icon: "siThreedotjs" },
+    { name: "WebGL", layer: "Motion & 3D", icon: "siWebgl" },
+    { name: "Vite", layer: "Interface", icon: "siVite" },
+    { name: "Node.js", layer: "Server", icon: "siNodedotjs" },
+    { name: "Express", layer: "Server", icon: "siExpress" },
+    { name: "FastAPI", layer: "Server", icon: "siFastapi" },
+    { name: "Python", layer: "Language", icon: "siPython" },
+    { name: "PostgreSQL", layer: "Data", icon: "siPostgresql" },
+    { name: "MongoDB", layer: "Data", icon: "siMongodb" },
+    { name: "Redis", layer: "Data", icon: "siRedis" },
+    { name: "Drizzle", layer: "Data", icon: "siDrizzle" },
+    { name: "Socket.IO", layer: "Realtime", icon: "siSocketdotio" },
+    { name: "Kafka", layer: "Messaging", icon: "siApachekafka" },
+    { name: "Celery", layer: "Messaging", icon: "siCelery" },
+    { name: "Elasticsearch", layer: "Search", icon: "siElasticsearch" },
+    { name: "PyTorch", layer: "AI", icon: "siPytorch" },
+    { name: "scikit-learn", layer: "AI", icon: "siScikitlearn" },
+    { name: "MLflow", layer: "MLOps", icon: "siMlflow" },
+    { name: "LangChain", layer: "AI", icon: "siLangchain" },
+    { name: "Claude", layer: "LLMs", icon: "siClaude" },
+    { name: "Gemini", layer: "LLMs", icon: "siGooglegemini" },
+    { name: "Docker", layer: "Delivery", icon: "siDocker" },
+    { name: "GitHub Actions", layer: "Delivery", icon: "siGithubactions" },
+    { name: "Vercel", layer: "Cloud", icon: "siVercel" },
+    { name: "Azure", layer: "Cloud", icon: null },
+    { name: "AWS", layer: "Cloud", icon: null },
+    { name: "Sentry", layer: "Monitoring", icon: "siSentry" },
+    { name: "Grafana", layer: "Monitoring", icon: "siGrafana" },
+    { name: "Turborepo", layer: "Workflow", icon: "siTurborepo" },
+    { name: "Vitest", layer: "Testing", icon: "siVitest" },
   ],
 } as const;
 
+/* ------------------------------------------------------------------ */
+/* 04 About, 05 Contact                                                 */
+/* ------------------------------------------------------------------ */
+
 export const about = {
-  title: "The short version.",
+  index: "04",
+  label: "About",
+  title: "About",
   paragraphs: [
-    "I’m a computer science engineer from Ahmedabad who enjoys both ends of the stack equally, and the seam between them most of all.",
-    "I’ve shipped HIPAA-grade messaging infrastructure, machine-learning pipelines that retrain themselves every week, and marketing sites people actually enjoy scrolling. The common thread is care for the details users feel and the ones they never see.",
+    "I’m a computer science engineer from Ahmedabad who works at both ends of a product: the page a customer sees and the system that answers it.",
+    "I’ve designed and built websites for manufacturers, brands and agencies, and shipped HIPAA-grade messaging infrastructure and machine-learning pipelines for clients in healthcare, commerce and finance.",
   ],
   experience: [
     { org: "Techuz InfoWeb", role: "Fullstack + AI Engineer", when: "2026" },
@@ -298,15 +496,33 @@ export const about = {
     { org: "Tic-Tech-Toe ’24, DAIICT", role: "Top 5 of 200+ teams, 48-hour hackathon", when: "2024" },
     { org: "LJ Institute of Engineering & Technology", role: "B.E. Computer Science", when: "2026" },
   ],
+  resume: "Download résumé (PDF)",
+} as const;
+
+export const services = [
+  "Marketing websites",
+  "Web apps and dashboards",
+  "AI features",
+  "Backends and realtime",
+] as const;
+
+export const lens = {
+  lines: ["Design and engineering,", "seen through", "the same lens."],
+  note: "Move across the line",
+  aside: "Two disciplines, one practice",
 } as const;
 
 export const contact = {
-  title: "Got something worth building?",
-  body: "Tell me what you’re making and where it hurts. I’ll tell you honestly how I’d build it.",
+  index: "05",
+  label: "Contact",
+  status: "Available for projects",
+  title: [{ text: "Have a project " }, { text: "in mind?", italic: true }],
+  body: "Tell me what you’re building and what it needs to achieve. I reply with an honest view of scope, timeline and approach.",
+  start: "Start a project",
   copy: "Copy email",
   copied: "Copied",
   backToTop: "Back to top",
-  signature: "Designed and built by Hojefa in Ahmedabad.",
+  signature: "Designed and built by Siddhant Kotak.",
 } as const;
 
 /* ------------------------------------------------------------------ */
@@ -324,21 +540,27 @@ export type CaseStudy = {
   hook: string;
   /** For search results and link previews. */
   description: string;
-  /** Live projects only: the frame on the home page, reused as the cover. */
+  group: "design" | "engineering";
+  /** Design projects: the live site, reused as the cover. */
   live?: LiveProject;
   brief: string;
   approach: { title: string; body: string }[];
   inside: { title: string; body: string; image?: { src: string; alt: string } }[];
   factsTitle: string;
   facts: { value: string; label: string }[];
-  next: string;
 };
 
-const [TRUVOLT, AGENCY] = liveWork.projects;
+const projectOf = (slug: string) => design.projects.find((p) => p.slug === slug);
+const TRUVOLT = projectOf("truvolt");
+const AGENCY = projectOf("agency-concept");
+const SKINROCK = projectOf("skinrock");
+const SEOUL = projectOf("seoulceuticals");
+const PREF = projectOf("prefdigihub");
 
 export const caseStudies: CaseStudy[] = [
   {
     slug: "truvolt",
+    group: "design",
     title: "Truvolt",
     kind: "Client site",
     role: "Design and development",
@@ -380,10 +602,10 @@ export const caseStudies: CaseStudy[] = [
       { value: "9", label: "countries served" },
       { value: "55+", label: "years of the company’s history" },
     ],
-    next: "agency-concept",
   },
   {
     slug: "agency-concept",
+    group: "design",
     title: "Marketing agency",
     kind: "Concept site",
     role: "Design and development",
@@ -417,10 +639,145 @@ export const caseStudies: CaseStudy[] = [
       { value: "3", label: "review platforms on the first screen" },
       { value: "1", label: "action, pinned throughout" },
     ],
-    next: "clinical-messaging",
+  },
+  {
+    slug: "skinrock",
+    group: "design",
+    title: "Skinrock",
+    kind: "Brand website",
+    role: "Design and development",
+    stack: ["Next.js", "TypeScript", "Responsive build"],
+    hook: "Real stone, 1.5 mm thin and translucent when lit, presented the way architects judge a material.",
+    description:
+      "Case study: a website for Skinrock, a Swiss flexible natural stone veneer, built around the material, the collection and the test results architects ask for.",
+    live: SKINROCK,
+    brief:
+      "Skinrock is natural stone split from the block into sheets from 1.5 mm thin, light enough to bend around curves and, in some stones, thin enough to glow when backlit. Architects and designers need to believe three things quickly: it is real stone, it does what it claims, and it has been tested.",
+    approach: [
+      { title: "Let the material speak first", body: "The first screen is a room clad in stone and one line: “Real stone. Thin enough to let light through.” No feature list until the material has made its case." },
+      { title: "Show the bend", body: "A sheet of stone flexes in 3D as you scroll, with the 1.5 mm figure beside it, so the claim is seen rather than read." },
+      { title: "Light it from behind", body: "A backlit section shows the translucent stones as lamps, and lists where they go: walls, bars, furniture, ceilings and installations." },
+      { title: "A collection you can browse", body: "Forty two stones grouped into slate, quartzite, marble and an acoustic panel, each opening its own range." },
+      { title: "Proof for the specifier", body: "Fire, frost, vapour and emission tests from Swiss, German, Austrian and Indian laboratories, set out as a clean table with the standards named." },
+    ],
+    inside: [
+      {
+        title: "The bend, in motion",
+        body: "The flexibility is the product, so the page shows it: a single sheet curving in space, with the thickness stated underneath.",
+        image: { src: "/work/skinrock/bend.webp", alt: "Skinrock “It bends. It is still stone.” section: a sheet of stone veneer curving in 3D above the figure 1.5 mm." },
+      },
+      {
+        title: "Forty two stones",
+        body: "A calm, type-led index of the collection on warm paper, so the stones themselves carry the colour.",
+        image: { src: "/work/skinrock/collection.webp", alt: "Skinrock collection index: Slate, Quartzite, Marble and Acoustic set in large type with stone counts." },
+      },
+      {
+        title: "Seven reasons, one grid",
+        body: "Swiss, thin, flexible, backlit, easy to cut, lighter on resources and long lasting, each one linked to a real project on hover.",
+        image: { src: "/work/skinrock/why.webp", alt: "Skinrock “Real stone. Revolutionary flexibility.” grid of reasons: Swiss, 1.5 mm, Curves, Backlit, Diamond, Less and Lasting." },
+      },
+    ],
+    factsTitle: "What the site carries",
+    facts: [
+      { value: "42", label: "stones in the collection" },
+      { value: "1.5 mm", label: "thinnest sheet, about 2.8 kg/m²" },
+      { value: "7", label: "independent test standards listed" },
+      { value: "10", label: "projects, indoor and outdoor" },
+    ],
+  },
+  {
+    slug: "seoulceuticals",
+    group: "design",
+    title: "SeoulCeuticals",
+    kind: "E-commerce storefront",
+    role: "Design and development",
+    stack: ["HTML", "CSS", "JavaScript", "Responsive build"],
+    hook: "A skincare storefront that sells with editorial calm instead of countdown timers.",
+    description:
+      "Case study: a storefront for SeoulCeuticals, a Korean-inspired skincare brand, pairing editorial typography with the proof shoppers look for.",
+    live: SEOUL,
+    brief:
+      "SeoulCeuticals pairs ingredients from Korean skincare traditions, like snail mucin, PDRN and centella, with modern actives such as retinol, vitamin C and kojic acid. Shoppers comparing serums want to know what is in each formula, whether it works for their skin, and what other people saw, before they add anything to the bag.",
+    approach: [
+      { title: "Editorial, not loud", body: "A serif and sans pairing on warm paper sets a calm, premium tone: “Skincare, reformulated.” sits where a discount banner usually would." },
+      { title: "Explain the pairings", body: "Four formulas, four pairings, each showing the Korean ingredient beside the modern active exactly as it appears in the named product." },
+      { title: "Shop by concern", body: "Dark spots, fine lines, glass skin and dryness as a list that filters the formulas tagged for each one." },
+      { title: "Proof next to the product", body: "Ratings, review counts and customer before-and-after photos sit beside the products they belong to." },
+      { title: "A routine, morning and night", body: "A day and night switch lays out three-step routines, so a single purchase becomes a regimen." },
+    ],
+    inside: [
+      {
+        title: "The approach, stated plainly",
+        body: "Potent, pure, effective, affordable: four promises set as a quiet list under the brand’s one-line position.",
+        image: { src: "/work/seoulceuticals/approach.webp", alt: "SeoulCeuticals approach section: “Korean-inspired ingredients. Modern skincare science.” above a list of four values." },
+      },
+      {
+        title: "Ingredient heritage, modern formulation",
+        body: "A dark interlude walks through each pairing one at a time, with the product it belongs to.",
+        image: { src: "/work/seoulceuticals/formula.webp", alt: "SeoulCeuticals formula section on a dark background: “Ingredient heritage meets contemporary formulation.”" },
+      },
+      {
+        title: "Morning glow, midnight repair",
+        body: "A day and night toggle turns the range into numbered routines you can follow.",
+        image: { src: "/work/seoulceuticals/routine.webp", alt: "SeoulCeuticals routine section: “Morning glow, midnight repair.” with a morning and night switch and numbered steps." },
+      },
+    ],
+    factsTitle: "What the site carries",
+    facts: [
+      { value: "4", label: "ingredient pairings, each tied to a product" },
+      { value: "4", label: "skin concerns to shop by" },
+      { value: "AM / PM", label: "routines, three steps each" },
+      { value: "6,900+", label: "published reviews surfaced" },
+    ],
+  },
+  {
+    slug: "prefdigihub",
+    group: "design",
+    title: "Pref Digi Hub",
+    kind: "Agency website",
+    role: "Design and development",
+    stack: ["Next.js", "TypeScript", "Responsive build"],
+    hook: "A growth agency’s site that shows its result before it asks for the call.",
+    description:
+      "Case study: a website for Pref Digi Hub, a digital growth agency in India and the UAE, with a live enquiry estimate and AI search explained in plain terms.",
+    live: PREF,
+    brief:
+      "Pref Digi Hub runs SEO, AI search visibility, social, paid media, email, web and lead generation for businesses in India and the UAE. Agency sites usually list services and hope. This one needed to show a business owner what growth could look like for them, in their market, before asking them to book an audit.",
+    approach: [
+      { title: "Say the outcome", body: "“Get found. Get chosen. Get more customers.” Three short lines that a business owner can repeat to a partner." },
+      { title: "Make it personal in the hero", body: "Pick an industry and a city, set a monthly budget, and the hero estimates the enquiries that budget could bring, with a clear note that the free audit gives the real numbers." },
+      { title: "Seven services, one system", body: "Each service opens to show what it does and what is included, presented as parts of one growth plan rather than a menu." },
+      { title: "Explain AI search", body: "A side-by-side of traditional search and AI answers shows why visibility in ChatGPT, Perplexity and Google AI Mode now matters." },
+      { title: "A process you can follow", body: "Discover, diagnose, strategise, execute and optimise, shown as five steps that loop." },
+    ],
+    inside: [
+      {
+        title: "Everything you need, as one system",
+        body: "The services read as a single plan, each one expanding in place with its deliverables.",
+        image: { src: "/work/prefdigihub/services.webp", alt: "Pref Digi Hub services section: “Everything you need to build digital growth” with expandable service rows." },
+      },
+      {
+        title: "AI search, made concrete",
+        body: "A sample visibility report ranks a brand against competitors across AI platforms, so a new idea has a picture.",
+        image: { src: "/work/prefdigihub/ai.webp", alt: "Pref Digi Hub AI search section: “AI search is changing how people find businesses.” beside a sample visibility report." },
+      },
+      {
+        title: "From challenge to growth",
+        body: "Five numbered stages turn an agency process into something a client can hold the agency to.",
+        image: { src: "/work/prefdigihub/process.webp", alt: "Pref Digi Hub process: “From digital challenges to measurable growth” with numbered stages Discover, Diagnose and Strategize." },
+      },
+    ],
+    factsTitle: "What the site carries",
+    facts: [
+      { value: "7", label: "services presented as one system" },
+      { value: "5", label: "industries in the live estimate" },
+      { value: "2", label: "markets, India and the UAE" },
+      { value: "5", label: "steps in the growth process" },
+    ],
   },
   {
     slug: "clinical-messaging",
+    group: "engineering",
     title: "Clinical messaging platform",
     kind: "Client work, under NDA",
     role: "Fullstack engineering",
@@ -448,10 +805,10 @@ export const caseStudies: CaseStudy[] = [
       { value: "1,313", label: "automated tests, front and back" },
       { value: "30 min", label: "lifetime of a signed file link" },
     ],
-    next: "fashion-commerce",
   },
   {
     slug: "fashion-commerce",
+    group: "engineering",
     title: "AI fashion e-commerce platform",
     kind: "Client work, under NDA",
     role: "ML/AI and backend engineering",
@@ -480,10 +837,10 @@ export const caseStudies: CaseStudy[] = [
       { value: "<1 s", label: "response time" },
       { value: "1,000+", label: "products tagged automatically" },
     ],
-    next: "trading-risk",
   },
   {
     slug: "trading-risk",
+    group: "engineering",
     title: "Trading risk platform",
     kind: "Client work, under NDA",
     role: "ML/AI and backend engineering",
@@ -510,8 +867,19 @@ export const caseStudies: CaseStudy[] = [
       { value: "19,200+", label: "news articles a day" },
       { value: "99.9%", label: "uptime" },
     ],
-    next: "truvolt",
   },
 ];
 
 export const caseStudyOf = (slug: string) => caseStudies.find((c) => c.slug === slug);
+
+/** The next case in the same group, wrapping round. Design follows home page order. */
+export function nextCase(slug: string) {
+  const study = caseStudyOf(slug);
+  if (!study) return caseStudies[0];
+  const order =
+    study.group === "design"
+      ? design.projects.map((p) => p.slug).filter((s) => caseStudyOf(s))
+      : caseStudies.filter((c) => c.group === "engineering").map((c) => c.slug);
+  const at = order.indexOf(slug);
+  return caseStudyOf(order[(at + 1) % order.length]) ?? caseStudies[0];
+}

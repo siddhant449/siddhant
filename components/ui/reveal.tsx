@@ -3,50 +3,46 @@
 import { m, useInView } from "motion/react";
 import { useRef, type ElementType, type ReactNode } from "react";
 
-const EASE = [0.22, 1, 0.36, 1] as const;
+/* The system's three curves. */
+export const EASE_OUT = [0.22, 1, 0.36, 1] as const;
+export const EASE_REVEAL = [0.18, 0.66, 0.18, 1] as const;
+export const EASE_INOUT = [0.76, 0, 0.24, 1] as const;
 
-type Common = {
-  as?: ElementType;
-  id?: string;
-  className?: string;
-  /** Override the in-view trigger, for sequences that start on cue. */
-  when?: boolean;
-  delay?: number;
-  /** Starting offset as a share of the line height. */
-  from?: string;
-};
-
-function useTrigger(when: boolean | undefined) {
-  const ref = useRef<HTMLElement>(null);
-  const inView = useInView(ref, { once: true, margin: "0px 0px -12% 0px" });
+function useOnce<T extends Element>(when?: boolean, margin = "0px 0px -10% 0px") {
+  const ref = useRef<T>(null);
+  const inView = useInView(ref, { once: true, margin: margin as never });
   return { ref, show: when ?? inView };
 }
 
 /**
- * Lines that rise out of a mask, one after another. Use when the line breaks
- * are part of the design (headlines); use Words for running text.
+ * Heading lines that rise out of a mask, one after another, once.
+ * Pass each line as its own node so the breaks are designed, not wrapped.
  */
-export function Lines({
+export function Rise({
   lines,
+  as: Tag = "h2",
   id,
-  as: Tag = "div",
   className,
-  lineClassName,
-  when,
   delay = 0,
-  stagger = 0.09,
-  from = "110%",
-}: Common & { lines: ReactNode[]; lineClassName?: string; stagger?: number }) {
-  const { ref, show } = useTrigger(when);
+  when,
+}: {
+  lines: ReactNode[];
+  as?: ElementType;
+  id?: string;
+  className?: string;
+  delay?: number;
+  when?: boolean;
+}) {
+  const { ref, show } = useOnce<HTMLElement>(when);
   return (
     <Tag ref={ref} id={id} className={className}>
       {lines.map((line, i) => (
         <span key={i} className="block overflow-hidden pb-[0.08em] -mb-[0.08em]">
           <m.span
-            className={`block ${lineClassName ?? ""}`}
-            initial={{ y: from }}
-            animate={show ? { y: "0%" } : { y: from }}
-            transition={{ duration: 1.1, ease: EASE, delay: delay + i * stagger }}
+            className="block"
+            initial={{ y: "104%" }}
+            animate={show ? { y: "0%" } : { y: "104%" }}
+            transition={{ duration: 0.9, ease: EASE_REVEAL, delay: delay + i * 0.08 }}
           >
             {line}
           </m.span>
@@ -56,67 +52,84 @@ export function Lines({
   );
 }
 
-/**
- * Running text that arrives word by word. The sentence is kept whole for
- * assistive technology; the animated copy is hidden from it.
- */
-export function Words({
-  text,
-  as: Tag = "p",
+/** Supporting elements: a short fade and a 12px settle, once. */
+export function Fade({
+  children,
+  as = "div",
   className,
-  when,
   delay = 0,
-  stagger = 0.014,
-  from = "105%",
-}: Common & { text: string; stagger?: number }) {
-  const { ref, show } = useTrigger(when);
-  const words = text.split(" ");
+  when,
+}: {
+  children: ReactNode;
+  as?: "div" | "p" | "span" | "ul" | "li" | "dl" | "article" | "nav";
+  className?: string;
+  delay?: number;
+  when?: boolean;
+}) {
+  const { ref, show } = useOnce<HTMLDivElement>(when);
+  const Tag = m[as] as typeof m.div;
   return (
-    <Tag ref={ref} className={className}>
-      <span className="sr-only">{text}</span>
-      <span aria-hidden>
-        {words.map((word, i) => (
-          <span key={i} className="inline-block overflow-hidden pb-[0.1em] -mb-[0.1em] align-top">
-            <m.span
-              className="inline-block"
-              initial={{ y: from }}
-              animate={show ? { y: "0%" } : { y: from }}
-              transition={{ duration: 0.9, ease: EASE, delay: delay + i * stagger }}
-            >
-              {word}
-            </m.span>
-            {i < words.length - 1 ? " " : null}
-          </span>
-        ))}
-      </span>
+    <Tag
+      ref={ref as React.RefObject<HTMLDivElement>}
+      className={className}
+      initial={{ opacity: 0, y: 12 }}
+      animate={show ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+      transition={{ duration: 0.6, ease: EASE_OUT, delay }}
+    >
+      {children}
     </Tag>
   );
 }
 
-/** A plain fade-and-settle for supporting elements. */
-export function Fade({
-  children,
-  as: Tag = "div",
-  className,
-  when,
-  delay = 0,
-  y = 16,
-}: Omit<Common, "from" | "as"> & {
-  children: ReactNode;
-  y?: number;
-  as?: "div" | "p" | "span" | "ul" | "li" | "dl";
-}) {
-  const { ref, show } = useTrigger(when);
-  const MotionTag = m[Tag] as typeof m.div;
+/** Images and media open upward from their bottom edge, once. */
+export function Unveil({ children, className, delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
+  const { ref, show } = useOnce<HTMLDivElement>(undefined, "0px 0px -8% 0px");
   return (
-    <MotionTag
-      ref={ref as React.RefObject<HTMLDivElement>}
+    <m.div
+      ref={ref}
       className={className}
-      initial={{ opacity: 0, y }}
-      animate={show ? { opacity: 1, y: 0 } : { opacity: 0, y }}
-      transition={{ duration: 1, ease: EASE, delay }}
+      initial={{ clipPath: "inset(100% 0% 0% 0%)" }}
+      animate={show ? { clipPath: "inset(0% 0% 0% 0%)" } : { clipPath: "inset(100% 0% 0% 0%)" }}
+      transition={{ duration: 1, ease: EASE_REVEAL, delay }}
     >
       {children}
-    </MotionTag>
+    </m.div>
+  );
+}
+
+/**
+ * The row that opens every section: index and name on the left, a count or
+ * note on the right, over a rule that draws across.
+ */
+export function Opener({ index, label, meta, className }: { index: string; label: string; meta?: ReactNode; className?: string }) {
+  const { ref, show } = useOnce<HTMLDivElement>();
+  return (
+    <div ref={ref} className={`relative flex items-baseline justify-between gap-6 pb-3.5 ${className ?? ""}`}>
+      <m.p
+        className="t-label"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: show ? 1 : 0 }}
+        transition={{ duration: 0.6, ease: EASE_OUT }}
+      >
+        [{index}] — {label}
+      </m.p>
+      {meta ? (
+        <m.p
+          className="t-label mute text-right"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: show ? 1 : 0 }}
+          transition={{ duration: 0.6, ease: EASE_OUT, delay: 0.1 }}
+        >
+          {meta}
+        </m.p>
+      ) : null}
+      <m.span
+        aria-hidden
+        className="absolute inset-x-0 bottom-0 h-px origin-left bg-current opacity-40"
+        initial={{ scaleX: 0 }}
+        animate={{ scaleX: show ? 1 : 0 }}
+        transition={{ duration: 0.9, ease: EASE_REVEAL }}
+      />
+    </div>
   );
 }

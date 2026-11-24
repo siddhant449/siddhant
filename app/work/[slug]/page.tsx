@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { CaseStudyView } from "@/components/case/case-study";
 import { Contact } from "@/components/contact";
 import { Nav } from "@/components/nav";
-import { caseStudies, caseStudyOf } from "@/lib/content";
+import { caseStudies, caseStudyOf, nextCase } from "@/lib/content";
 
 export function generateStaticParams() {
   return caseStudies.map((c) => ({ slug: c.slug }));
@@ -28,7 +28,7 @@ export default function CaseStudyPage({ params }: PageProps<"/work/[slug]">) {
       <Nav />
       <main id="main">
         {/* Reading params belongs inside a boundary; known slugs are still prerendered in full. */}
-        <Suspense fallback={<div className="min-h-svh bg-ink" />}>
+        <Suspense fallback={<div className="min-h-svh" />}>
           <Study params={params} />
         </Suspense>
       </main>
@@ -41,6 +41,6 @@ async function Study({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const study = caseStudyOf(slug);
   if (!study) notFound();
-  const next = caseStudyOf(study.next) ?? caseStudies[0];
+  const next = nextCase(study.slug);
   return <CaseStudyView study={study} next={next} />;
 }

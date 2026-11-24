@@ -1,21 +1,19 @@
 "use client";
 
 import { useLenis } from "lenis/react";
-import { AnimatePresence, m, useMotionValueEvent, useScroll } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { nav, site } from "@/lib/content";
-import { useIntro } from "@/lib/intro";
 import { LocalTime } from "./ui/local-time";
-import { Roll } from "./ui/text-effects";
-
-const EASE = [0.22, 1, 0.36, 1] as const;
+import { EASE_INOUT, EASE_OUT } from "./ui/reveal";
 
 /** The nav entry whose section crosses the middle of the viewport, if any. */
-function useActiveSection() {
+function useActiveSection(enabled: boolean) {
   const [active, setActive] = useState<string | null>(null);
   useEffect(() => {
+    if (!enabled) return;
     let raf = 0;
     const compute = () => {
       raf = 0;
@@ -23,10 +21,7 @@ function useActiveSection() {
       let found: string | null = null;
       for (const el of document.querySelectorAll<HTMLElement>("[data-nav]")) {
         const r = el.getBoundingClientRect();
-        if (r.top <= mid && r.bottom >= mid) {
-          found = el.dataset.nav ?? null;
-          break;
-        }
+        if (r.top <= mid && r.bottom >= mid) found = el.dataset.nav ?? null;
       }
       setActive(found);
     };
@@ -41,49 +36,37 @@ function useActiveSection() {
       window.removeEventListener("scroll", schedule);
       window.removeEventListener("resize", schedule);
     };
-  }, []);
-  return active;
+  }, [enabled]);
+  return enabled ? active : null;
 }
 
-/** On the home page a plain anchor (smooth-scrolled by Lenis); elsewhere a client-side link home. */
-function SectionLink({ onHome, ...props }: React.ComponentProps<"a"> & { onHome: boolean; href: string }) {
-  return onHome ? <a {...props} /> : <Link {...props} />;
+const pad = (n: number) => String(n).padStart(2, "0");
+
+/** On the home page a plain anchor (smooth-scrolled by Lenis); elsewhere a link home. */
+function SectionLink({ onHome, href, ...props }: React.ComponentProps<"a"> & { onHome: boolean; href: string }) {
+  return onHome ? <a href={href} {...props} /> : <Link href={`/${href}`} {...props} />;
 }
 
 export function Nav() {
-  const { done } = useIntro();
-  const lenis = useLenis();
   const onHome = usePathname() === "/";
-  const sectionActive = useActiveSection();
-  const active = onHome ? sectionActive : null;
-  // Off the home page, section links lead back to the home page's sections.
-  const hrefOf = (hash: string) => (onHome ? hash : `/${hash}`);
-  const [hidden, setHidden] = useState(false);
+  const active = useActiveSection(onHome);
+  const lenis = useLenis();
+  const list = useRef<HTMLDivElement>(null);
+  const [pill, setPill] = useState<{ x: number; w: number } | null>(null);
   const [open, setOpen] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
-  const list = useRef<HTMLUListElement>(null);
-  const [pill, setPill] = useState<{ left: number; width: number } | null>(null);
-  const { scrollY } = useScroll();
 
-  // Measure the active link so the pill can slide to it.
+  // Slide the indicator to the active link (measured, no layout animation).
   useEffect(() => {
     const measure = () => {
-      const link = active ? list.current?.querySelector<HTMLElement>(`[data-section="${active}"]`) : null;
-      setPill(link ? { left: link.offsetLeft, width: link.offsetWidth } : null);
+      const el = active ? list.current?.querySelector<HTMLElement>(`[data-section="${active}"]`) : null;
+      setPill(el ? { x: el.offsetLeft, w: el.offsetWidth } : null);
     };
     measure();
     window.addEventListener("resize", measure);
     document.fonts?.ready.then(measure);
     return () => window.removeEventListener("resize", measure);
   }, [active]);
-
-  // Step aside while reading down the page; come back on the first scroll up.
-  useMotionValueEvent(scrollY, "change", (y) => {
-    const prev = scrollY.getPrevious() ?? 0;
-    if (y < 120) setHidden(false);
-    else if (y > prev + 4) setHidden(true);
-    else if (y < prev - 4) setHidden(false);
-  });
 
   useEffect(() => {
     if (!lenis) return;
@@ -105,80 +88,72 @@ export function Nav() {
 
   return (
     <>
-      <m.header
-        initial={{ y: -24, opacity: 0 }}
-        animate={done ? { y: hidden && !open ? -110 : 0, opacity: 1 } : { y: -24, opacity: 0 }}
-        transition={{ duration: 0.8, ease: EASE, delay: done && !hidden ? 0.35 : 0 }}
-        className="fixed inset-x-0 top-0 z-50 px-gutter pt-4 md:pt-5"
-      >
-        <div className="flex items-center justify-between gap-4">
-          {onHome ? (
-            <a href="#top" className="group relative z-10 text-[15px] font-semibold leading-none wdth-75" aria-label={`${site.name}, back to top`}>
-              <Roll>{site.name}</Roll>
-            </a>
-          ) : (
-            <Link href="/" className="group relative z-10 text-[15px] font-semibold leading-none wdth-75" aria-label={`${site.name}, home`}>
-              <Roll>{site.name}</Roll>
-            </Link>
-          )}
+      <header className="intro-up fixed inset-x-0 top-0 z-50 flex h-[76px] items-center justify-between px-gutter" style={{ "--d": "0.1s" } as React.CSSProperties}>
+        {onHome ? (
+          <a href="#top" className="relative z-10 text-[15px] font-medium tracking-[-0.02em]" aria-label={`${site.name}, back to top`}>
+            {site.name}
+          </a>
+        ) : (
+          <Link href="/" className="relative z-10 text-[15px] font-medium tracking-[-0.02em]" aria-label={`${site.name}, home`}>
+            {site.name}
+          </Link>
+        )}
 
-          <nav
-            aria-label="Sections"
-            className="absolute left-1/2 hidden -translate-x-1/2 rounded-full border border-line bg-ink/60 p-1.5 backdrop-blur-xl md:block"
-          >
-            <ul ref={list} className="relative flex items-center">
-              {/* One pill that slides to the active link (measured, so no layout animation is needed). */}
-              <m.li
-                aria-hidden
-                className="pointer-events-none absolute left-0 top-0 h-full rounded-full bg-chalk"
-                initial={false}
-                animate={pill ? { x: pill.left, width: pill.width, opacity: 1 } : { opacity: 0 }}
-                transition={{ type: "spring", stiffness: 380, damping: 34 }}
-              />
-              {nav.map((item) => {
-                const isActive = active === item.href.slice(1);
-                return (
-                  <li key={item.href} className="relative">
-                    <SectionLink
-                      onHome={onHome}
-                      href={hrefOf(item.href)}
-                      data-section={item.href.slice(1)}
-                      aria-current={isActive ? "location" : undefined}
-                      className={`group relative block rounded-full px-4 py-2 text-[14px] font-medium leading-none transition-colors duration-300 ${
-                        isActive ? "text-ink" : "text-ash hover:text-chalk"
-                      }`}
-                    >
-                      <Roll>{item.label}</Roll>
-                    </SectionLink>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
-
-          <div className="relative z-10 flex items-center gap-5">
-            <p className="hidden text-[13px] leading-none text-ash lg:block">
-              Ahmedabad <LocalTime className="text-chalk" />
-            </p>
-            <a
-              href={`mailto:${site.email}`}
-              className="group hidden rounded-full bg-chalk px-5 py-3 text-[14px] font-semibold leading-none text-ink md:inline-flex"
-            >
-              <Roll>Let’s talk</Roll>
-            </a>
-            <button
-              ref={menuButton}
-              type="button"
-              onClick={() => setOpen((o) => !o)}
-              aria-expanded={open}
-              aria-controls="mobile-menu"
-              className="group rounded-full border border-line-strong bg-ink/60 px-5 py-3 text-[14px] font-semibold leading-none backdrop-blur-xl md:hidden"
-            >
-              <Roll>{open ? "Close" : "Menu"}</Roll>
-            </button>
+        <nav
+          aria-label="Sections"
+          className="absolute left-1/2 top-1/2 hidden h-10 -translate-x-1/2 -translate-y-1/2 rounded-full border border-fg/12 bg-bg/60 p-[3px] backdrop-blur-xl md:block"
+        >
+          <div ref={list} className="relative flex h-full items-center">
+            <m.span
+              aria-hidden
+              className="absolute inset-y-0 left-0 rounded-full bg-fg"
+              initial={false}
+              animate={pill ? { x: pill.x, width: pill.w, opacity: 1 } : { opacity: 0 }}
+              transition={{ duration: 0.42, ease: EASE_OUT }}
+            />
+            {nav.map((item) => {
+              const id = item.href.slice(1);
+              const on = active === id;
+              return (
+                <SectionLink
+                  key={item.href}
+                  onHome={onHome}
+                  href={item.href}
+                  data-section={id}
+                  aria-current={on ? "location" : undefined}
+                  className={`relative flex h-full items-center rounded-full px-[15px] text-[14px] font-medium transition-colors duration-300 ${
+                    on ? "text-bg" : "text-fg/62 hover:text-fg"
+                  }`}
+                >
+                  {item.label}
+                  {"count" in item ? (
+                    <sup className="ml-0.5 font-mono text-[9px] font-medium tracking-normal">{pad(item.count)}</sup>
+                  ) : null}
+                </SectionLink>
+              );
+            })}
           </div>
+        </nav>
+
+        <div className="relative z-10 flex items-center gap-5">
+          <p className="t-label mute hidden lg:block">
+            <LocalTime className="text-fg" /> IST
+          </p>
+          <SectionLink onHome={onHome} href="#contact" className="btn btn-solid hidden md:inline-flex">
+            Start a project
+          </SectionLink>
+          <button
+            ref={menuButton}
+            type="button"
+            onClick={() => setOpen((o) => !o)}
+            aria-expanded={open}
+            aria-controls="mobile-menu"
+            className="btn btn-line bg-bg/60 backdrop-blur-xl md:hidden"
+          >
+            {open ? "Close" : "Menu"}
+          </button>
         </div>
-      </m.header>
+      </header>
 
       <AnimatePresence>
         {open && (
@@ -190,41 +165,39 @@ export function Nav() {
             initial={{ clipPath: "inset(0% 0% 100% 0%)" }}
             animate={{ clipPath: "inset(0% 0% 0% 0%)" }}
             exit={{ clipPath: "inset(0% 0% 100% 0%)" }}
-            transition={{ duration: 0.7, ease: [0.76, 0, 0.24, 1] }}
-            className="fixed inset-0 z-40 flex flex-col justify-between bg-ink px-gutter pb-8 pt-28 md:hidden"
+            transition={{ duration: 0.7, ease: EASE_INOUT }}
+            className="fixed inset-0 z-40 flex flex-col justify-between bg-ink px-gutter pb-8 pt-28 text-paper md:hidden"
           >
-            <nav aria-label="Sections">
-              <ul>
-                {nav.map((item, i) => (
-                  <li key={item.href} className="overflow-hidden border-b border-line">
-                    <m.a
-                      href={hrefOf(item.href)}
+            <ul>
+              {[...nav, { label: "Contact", href: "#contact" } as const].map((item, i) => (
+                <li key={item.href} className="overflow-hidden border-b border-paper/12">
+                  <m.span
+                    className="block"
+                    initial={{ y: "100%" }}
+                    animate={{ y: "0%" }}
+                    transition={{ duration: 0.8, ease: EASE_OUT, delay: 0.2 + i * 0.05 }}
+                  >
+                    <SectionLink
+                      onHome={onHome}
+                      href={item.href}
                       onClick={() => setOpen(false)}
-                      initial={{ y: "100%" }}
-                      animate={{ y: "0%" }}
-                      transition={{ duration: 0.8, ease: EASE, delay: 0.25 + i * 0.06 }}
-                      className="block py-3 text-[clamp(44px,15vw,88px)] font-extrabold leading-[0.95] tracking-[-0.02em] wdth-62"
+                      className="flex items-baseline justify-between py-3"
                       autoFocus={i === 0}
                     >
-                      {item.label}
-                    </m.a>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-            <m.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.55, duration: 0.6 }}
-              className="space-y-4 text-[15px]"
-            >
-              <a href={`mailto:${site.email}`} className="block break-all text-chalk underline decoration-line-strong underline-offset-4">
+                      <span className="t-h1">{item.label}</span>
+                      {"count" in item ? <span className="t-label mute">{pad(item.count)}</span> : null}
+                    </SectionLink>
+                  </m.span>
+                </li>
+              ))}
+            </ul>
+            <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, duration: 0.6 }} className="space-y-3 t-small">
+              <a href={`mailto:${site.email}`} className="block break-all">
                 {site.email}
               </a>
-              <div className="flex gap-6 text-ash">
-                <a href={site.links.linkedin} target="_blank" rel="noreferrer">LinkedIn</a>
-                <a href={site.links.github} target="_blank" rel="noreferrer">GitHub</a>
-              </div>
+              <p className="t-label mute">
+                {site.location} · <LocalTime /> IST
+              </p>
             </m.div>
           </m.div>
         )}

@@ -1,30 +1,14 @@
 "use client";
 
 import { useLenis } from "lenis/react";
-import { m, useInView, useScroll, useTransform } from "motion/react";
+import { m, useScroll, useTransform } from "motion/react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { contact, site } from "@/lib/content";
-import { flowState, notifyFlow } from "@/lib/flow-state";
+import { contact, nav, services, site } from "@/lib/content";
+import { FitLine } from "./ui/fit-line";
 import { LocalTime } from "./ui/local-time";
-import { Fade, Lines } from "./ui/reveal";
-import { Magnetic, Roll, useScramble } from "./ui/text-effects";
-
-function EmailLink() {
-  const { output, run } = useScramble(site.email, 700);
-  return (
-    <a
-      href={`mailto:${site.email}`}
-      onPointerEnter={run}
-      onFocus={run}
-      data-cursor-label="Write to me"
-      className="group relative inline-block max-w-full break-all text-[clamp(26px,5.2vw,92px)] font-semibold leading-[1.02] tracking-[-0.02em] wdth-75"
-    >
-      <span className="sr-only">{site.email}</span>
-      <span aria-hidden>{output}</span>
-      <span className="absolute inset-x-0 -bottom-1 h-[2px] origin-right scale-x-0 bg-chalk transition-transform duration-700 ease-out-expo group-hover:origin-left group-hover:scale-x-100" />
-    </a>
-  );
-}
+import { Fade, Opener, Rise } from "./ui/reveal";
 
 /** The current year, filled in on the client so the page can be prerendered. */
 function Year() {
@@ -36,14 +20,13 @@ function Year() {
   return <span suppressHydrationWarning>{year ?? 2026}</span>;
 }
 
-function CopyButton() {
+function CopyEmail() {
   const [copied, setCopied] = useState(false);
   useEffect(() => {
     if (!copied) return;
     const id = window.setTimeout(() => setCopied(false), 2200);
     return () => window.clearTimeout(id);
   }, [copied]);
-
   return (
     <button
       type="button"
@@ -55,9 +38,9 @@ function CopyButton() {
           window.location.href = `mailto:${site.email}`;
         }
       }}
-      className="group inline-flex rounded-full border border-line-strong bg-ink/40 px-5 py-3.5 text-[14px] font-semibold leading-none backdrop-blur-md transition-colors duration-500 hover:border-chalk"
+      className="btn btn-line"
     >
-      <Roll>{copied ? contact.copied : contact.copy}</Roll>
+      {copied ? contact.copied : contact.copy}
       <span className="sr-only" aria-live="polite">
         {copied ? "Email address copied to clipboard" : ""}
       </span>
@@ -65,89 +48,130 @@ function CopyButton() {
   );
 }
 
-export function Contact() {
-  const ref = useRef<HTMLElement>(null);
-  const lenis = useLenis();
-  const inView = useInView(ref, { margin: "0px 0px 0px 0px" });
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end end"] });
-  const lift = useTransform(scrollYProgress, [0, 1], [120, 0]);
+function Column({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <p className="t-label mute">{title}</p>
+      <ul className="t-small mt-4 space-y-2">{children}</ul>
+    </div>
+  );
+}
 
-  useEffect(() => {
-    flowState.footerVisible = inView;
-    notifyFlow();
-  }, [inView]);
+export function Contact() {
+  const lenis = useLenis();
+  const onHome = usePathname() === "/";
+  const ref = useRef<HTMLElement>(null);
+  // The wordmark rises out from behind the baseline as the page runs out.
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["end 1.35", "end end"] });
+  const rise = useTransform(scrollYProgress, [0, 1], ["62%", "0%"]);
 
   return (
-    <footer
-      ref={ref}
-      id="contact"
-      aria-labelledby="contact-title"
-      className="relative z-10 flex min-h-svh flex-col justify-between px-gutter pb-6 pt-[clamp(140px,18vh,220px)]"
-    >
-      {/* Ease the black page into the field behind the footer. */}
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[38vh] bg-gradient-to-b from-ink to-transparent" />
+    <footer ref={ref} id="contact" data-theme="ink" aria-labelledby="contact-title" className="relative overflow-hidden px-gutter pt-[var(--section)]">
+      {/* The red wave behind the call to action, drawn by the WebGL stage. */}
+      <div aria-hidden data-gl="liquid" data-base="0.42" data-amp="0.17" className="pointer-events-none absolute inset-x-0 top-0 h-[115svh]" />
 
-      <m.div style={{ y: lift }} className="relative">
-        <Lines
-          as="h2"
-          id="contact-title"
-          lines={["Got something", "worth building?"]}
-          className="text-[clamp(52px,10.4vw,196px)] font-extrabold leading-[0.84] tracking-[-0.03em] wdth-62"
+      <div className="relative">
+        <Opener
+          index={contact.index}
+          label={contact.label}
+          meta={
+            <span className="inline-flex items-center gap-2">
+              <span className="dot" /> {contact.status}
+            </span>
+          }
         />
-        <div className="mt-[clamp(32px,4vw,64px)] grid gap-x-6 gap-y-8 md:grid-cols-12">
-          <Fade as="p" className="max-w-[34ch] text-[clamp(17px,1.35vw,21px)] leading-[1.5] text-ash md:col-span-4">
+        <div className="mt-12 grid gap-x-6 gap-y-8 md:grid-cols-12">
+          <Rise
+            id="contact-title"
+            lines={[
+              <span key="a">{contact.title[0].text}</span>,
+              <span key="b" className="t-it">
+                {contact.title[1].text}
+              </span>,
+            ]}
+            className="t-display md:col-span-8"
+          />
+          <Fade as="p" className="t-lead mute max-w-[40ch] self-end md:col-span-4">
             {contact.body}
           </Fade>
-          <Fade delay={0.1} className="flex flex-col items-start gap-6 md:col-span-8">
-            <EmailLink />
-            <div className="flex flex-wrap items-center gap-3">
-              <Magnetic>
-                <a
-                  href={`mailto:${site.email}?subject=${encodeURIComponent("A project for you")}`}
-                  className="group inline-flex rounded-full bg-chalk px-6 py-3.5 text-[14px] font-semibold leading-none text-ink"
-                >
-                  <Roll>Start a project</Roll>
-                </a>
-              </Magnetic>
-              <CopyButton />
-            </div>
-          </Fade>
         </div>
-      </m.div>
+        <Fade className="mt-10 flex flex-col items-start gap-6">
+          <a href={`mailto:${site.email}`} className="t-h2 link break-all pb-1">
+            {site.email}
+          </a>
+          <div className="flex flex-wrap gap-2.5">
+            <a href={`mailto:${site.email}?subject=${encodeURIComponent("A project for you")}`} className="btn btn-solid">
+              {contact.start} <span className="nudge">→</span>
+            </a>
+            <CopyEmail />
+          </div>
+        </Fade>
 
-      <div className="relative mt-24 grid gap-x-6 gap-y-10 border-t border-line pt-8 text-[14px] sm:grid-cols-2 md:grid-cols-12">
-        <div className="md:col-span-3">
-          <p className="text-ash">Elsewhere</p>
-          <ul className="mt-3 space-y-1.5">
+        <div className="mt-[clamp(80px,10vw,144px)] grid grid-cols-2 gap-x-6 gap-y-10 border-t border-fg/12 pt-8 md:grid-cols-4">
+          <Column title="Contact">
             <li>
-              <a href={site.links.linkedin} target="_blank" rel="noreferrer" className="group inline-flex">
-                <Roll>LinkedIn</Roll>
+              <a href={`mailto:${site.email}`} className="link break-all">
+                {site.email}
               </a>
             </li>
-            <li>
-              <a href={site.links.github} target="_blank" rel="noreferrer" className="group inline-flex">
-                <Roll>GitHub</Roll>
-              </a>
+            <li className="mute">{site.location}</li>
+            <li className="mute">
+              <LocalTime className="text-fg" /> IST
             </li>
-          </ul>
+          </Column>
+          <Column title="Elsewhere">
+            {[
+              ["LinkedIn", site.links.linkedin],
+              ["GitHub", site.links.github],
+              ["Résumé (PDF)", site.links.resume],
+            ].map(([label, href]) => (
+              <li key={label}>
+                <a href={href} target="_blank" rel="noreferrer" className="link">
+                  {label} <span className="nudge nudge-up">↗</span>
+                </a>
+              </li>
+            ))}
+          </Column>
+          <Column title="Services">
+            {services.map((s) => (
+              <li key={s} className="text-fg/85">
+                {s}
+              </li>
+            ))}
+          </Column>
+          <Column title="Index">
+            {nav.map((n) => (
+              <li key={n.href}>
+                {onHome ? (
+                  <a href={n.href} className="link">
+                    {n.label}
+                  </a>
+                ) : (
+                  <Link href={`/${n.href}`} className="link">
+                    {n.label}
+                  </Link>
+                )}
+              </li>
+            ))}
+          </Column>
         </div>
-        <div className="md:col-span-3">
-          <p className="text-ash">Local time</p>
-          <p className="mt-3">
-            Ahmedabad, <LocalTime /> IST
-          </p>
+
+        <div aria-hidden className="mt-[clamp(56px,7vw,104px)] overflow-hidden">
+          <m.div style={{ y: rise }}>
+            <FitLine text={site.name} weight={500} tracking="-0.065em" fallback="15vw" innerClassName="leading-[0.8]" />
+          </m.div>
         </div>
-        <div className="flex flex-col justify-between gap-6 sm:col-span-2 md:col-span-6 md:items-end md:text-right">
-          <button
-            type="button"
-            onClick={() => (lenis ? lenis.scrollTo(0, { duration: 2.2 }) : window.scrollTo({ top: 0 }))}
-            className="group inline-flex self-start rounded-full border border-line-strong px-5 py-3 font-semibold leading-none md:self-end"
-          >
-            <Roll>{contact.backToTop}</Roll>
-          </button>
-          <p className="text-ash">
+        <div className="t-label mute flex flex-wrap items-center justify-between gap-4 border-t border-fg/12 py-6">
+          <p>
             © <Year /> {site.name}. {contact.signature}
           </p>
+          <button
+            type="button"
+            onClick={() => (lenis ? lenis.scrollTo(0, { duration: 2 }) : window.scrollTo({ top: 0 }))}
+            className="link text-fg"
+          >
+            {contact.backToTop} ↑
+          </button>
         </div>
       </div>
     </footer>

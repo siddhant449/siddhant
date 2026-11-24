@@ -1,111 +1,87 @@
-"use client";
-
-import { m, useInView, useMotionValueEvent, useScroll, useTransform } from "motion/react";
-import { useEffect, useRef } from "react";
 import { hero, site } from "@/lib/content";
-import { flowState, notifyFlow } from "@/lib/flow-state";
-import { useIntro } from "@/lib/intro";
-import { FitLine } from "./ui/fit-line";
-import { Fade, Lines, Words } from "./ui/reveal";
-import { Magnetic, Roll } from "./ui/text-effects";
+import { MoltenWordmark } from "./molten-wordmark";
+import { LocalTime } from "./ui/local-time";
 
-export function Hero() {
-  const ref = useRef<HTMLElement>(null);
-  const { done } = useIntro();
-  const inView = useInView(ref, { margin: "0px 0px -2% 0px" });
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
+const d = (s: number) => ({ "--d": `${s}s` }) as React.CSSProperties;
 
-  // Scrolling away pulls the field into straight lines and squeezes the name.
-  useMotionValueEvent(scrollYProgress, "change", (p) => {
-    flowState.heroOrder = Math.min(1, p * 1.15);
-  });
-  useEffect(() => {
-    flowState.heroVisible = inView;
-    notifyFlow();
-  }, [inView]);
-  // Leaving the home page: the field no longer has a hero to show through.
-  useEffect(
-    () => () => {
-      flowState.heroVisible = false;
-      notifyFlow();
-    },
-    [],
+function Title({ runs }: { runs: readonly { text: string; italic?: boolean }[] }) {
+  return (
+    <>
+      {runs.map((r, i) =>
+        r.italic ? (
+          <span key={i} className="t-it">
+            {r.text}
+          </span>
+        ) : (
+          <span key={i}>{r.text}</span>
+        ),
+      )}
+    </>
   );
+}
 
-  const nameWidth = useTransform(scrollYProgress, [0, 0.75], [100, 62]);
-  const nameVariation = useTransform(nameWidth, (w) => `"wdth" ${w.toFixed(1)}`);
-  const nameY = useTransform(scrollYProgress, [0, 1], ["0%", "-18%"]);
-  const copyY = useTransform(scrollYProgress, [0, 1], [0, -140]);
-  const copyOpacity = useTransform(scrollYProgress, [0, 0.55], [1, 0]);
-
+/**
+ * The first screen, after Monolith and Melon: four short columns of facts,
+ * the name edge to edge in molten red (WebGL), one line, and two doors.
+ * No loader: the type is server-rendered and assembles with CSS, and the name
+ * pours in as soon as the page can draw it.
+ */
+export function Hero() {
   return (
     <section
-      ref={ref}
       id="top"
-      aria-label="Introduction"
-      className="relative z-10 flex min-h-[640px] flex-col justify-between px-gutter pb-[clamp(12px,2vw,28px)] pt-[clamp(112px,17vh,176px)] h-svh"
+      data-theme="ink"
+      aria-labelledby="hero-title"
+      className="relative flex min-h-[max(100svh,680px)] flex-col overflow-hidden pb-8 pt-[clamp(92px,12vh,112px)] md:pb-10"
     >
-      {/* Let the field sink into the black page below. */}
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-[34vh] bg-gradient-to-b from-transparent to-ink" />
-      <m.div style={{ y: copyY, opacity: copyOpacity }} className="await-font relative grid gap-y-10 md:grid-cols-12">
-        <Lines
-          as="p"
-          when={done}
-          delay={0.15}
-          stagger={0.12}
-          className="text-[clamp(38px,6vw,104px)] leading-[0.98] tracking-[-0.025em] md:col-span-12"
-          lines={[
-            <span key="surface" className="font-extralight wdth-125">
-              {hero.surface}
-            </span>,
-            <span key="depth" className="font-extrabold wdth-62">
-              {hero.depth}
-            </span>,
-          ]}
-        />
+      <h1 id="hero-title" className="sr-only">
+        {site.name}, {site.role}
+      </h1>
 
-        <div className="md:col-span-5 md:col-start-8 lg:col-span-4 lg:col-start-9">
-          <Words
-            text={hero.intro}
-            when={done}
-            delay={0.55}
-            className="max-w-[36ch] text-[clamp(17px,1.35vw,21px)] leading-[1.5] text-ash"
-          />
-          <Fade when={done} delay={0.9} className="mt-8 flex flex-wrap items-center gap-x-7 gap-y-4">
-            <Magnetic>
-              <a
-                href={`mailto:${site.email}?subject=${encodeURIComponent("A project for you")}`}
-                className="group inline-flex rounded-full bg-chalk px-6 py-4 text-[15px] font-semibold leading-none text-ink"
-              >
-                <Roll>{hero.primaryCta}</Roll>
-              </a>
-            </Magnetic>
-            <a
-              href="#work"
-              className="group relative py-2 text-[15px] font-medium leading-none text-chalk"
-            >
-              <Roll>{hero.secondaryCta}</Roll>
-              <span className="absolute inset-x-0 bottom-0 h-px origin-left bg-line-strong transition-transform duration-500 ease-out-expo group-hover:scale-x-0" />
-            </a>
-          </Fade>
-        </div>
-      </m.div>
+      <div className="grid grid-cols-2 gap-x-6 gap-y-4 px-gutter md:grid-cols-4">
+        {hero.meta.map((m, i) => (
+          <p
+            key={m.strong}
+            className={`t-label intro-up ${"align" in m && m.align === "right" ? "text-right" : ""} ${i > 1 ? "hidden md:block" : ""}`}
+            style={d(0.1 + i * 0.05)}
+          >
+            {"dot" in m && m.dot ? <span className="dot mr-2 align-[1px]" /> : null}
+            {m.strong}
+            <br />
+            <span className="mute">{m.soft === "time" ? <><LocalTime /> IST</> : m.soft}</span>
+          </p>
+        ))}
+      </div>
 
-      <m.div style={{ y: nameY }} className="relative">
-        <h1 className="leading-[0.8] tracking-[-0.03em]">
-          <span className="sr-only">
-            {site.name}, {site.role.toLowerCase()} in {site.location}
-          </span>
-          {/* Fallback sizes are the measured fit as a share of the container, so nothing shifts. */}
-          <span aria-hidden className="hidden [container-type:inline-size] sm:block">
-            <FitLine text={site.name} fallback="11.316cqw" variation={nameVariation} show={done} delay={0.3} />
-          </span>
-          <span aria-hidden className="block [container-type:inline-size] sm:hidden">
-            <FitLine text="Hojefa" measure="Lakdawala" fallback="18.539cqw" variation={nameVariation} show={done} delay={0.3} />
-            <FitLine text="Lakdawala" fallback="18.539cqw" variation={nameVariation} show={done} delay={0.38} />
-          </span>
-        </h1>
-      </m.div>
+      <MoltenWordmark text={site.name} className="mt-[clamp(28px,8vh,96px)]" />
+
+      <p className="t-lead mute intro-up mt-[clamp(12px,2vh,24px)] max-w-[52ch] px-gutter" style={d(0.5)}>
+        {hero.lead}
+      </p>
+
+      {/* Two doors: the split is the first thing a visitor reads. */}
+      <div className="mt-auto grid gap-x-6 gap-y-6 px-gutter pt-12 md:grid-cols-2">
+        {[hero.doors.design, hero.doors.engineering].map((door, i) => (
+          <a
+            key={door.index}
+            href={i === 0 ? "#design" : "#engineering"}
+            className="intro-up group block border-t border-fg/22 pt-4"
+            style={d(0.65 + i * 0.12)}
+          >
+            <span className="flex items-baseline justify-between">
+              <span className="t-label">
+                [{door.index}] {door.label}
+              </span>
+              <span className="t-label">
+                {door.meta} <span className="nudge">→</span>
+              </span>
+            </span>
+            <span className="t-h2 mt-4 block">
+              <Title runs={door.title} />
+            </span>
+          </a>
+        ))}
+      </div>
     </section>
   );
 }

@@ -1,4 +1,4 @@
-# Hojefa Lakdawala — portfolio
+# Siddhant Kotak — portfolio
 
 One-page portfolio built with Next.js 16 (App Router), Motion and Lenis.
 

@@ -1,31 +1,28 @@
 import { About } from "@/components/about";
 import { Contact } from "@/components/contact";
+import { DesignWork } from "@/components/design-work";
+import { Engineering } from "@/components/engineering";
 import { Hero } from "@/components/hero";
-import { Manifesto } from "@/components/manifesto";
+import { Lens } from "@/components/lens";
 import { Nav } from "@/components/nav";
-import { PrivateWork } from "@/components/private-work";
-import { Services } from "@/components/services";
-import { Stack } from "@/components/stack";
-import { TowerFigure } from "@/components/figures/tower/figure";
-import { Work } from "@/components/work";
+import { Toolbox } from "@/components/toolbox";
 
 export default function Home() {
   return (
     <>
       <a
         href="#main"
-        className="fixed left-4 top-4 z-[110] -translate-y-24 rounded-full bg-chalk px-5 py-3 text-[14px] font-semibold text-ink focus:translate-y-0"
+        className="btn btn-solid fixed left-4 top-4 z-[110] -translate-y-24 focus:translate-y-0"
       >
         Skip to content
       </a>
       <Nav />
       <main id="main">
         <Hero />
-        <Manifesto />
-        <Work />
-        <PrivateWork />
-        <Stack figure={<TowerFigure />} />
-        <Services />
+        <DesignWork />
+        <Lens />
+        <Engineering />
+        <Toolbox />
         <About />
       </main>
       <Contact />

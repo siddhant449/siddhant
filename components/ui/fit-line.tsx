@@ -18,6 +18,7 @@ export function FitLine({
   innerClassName,
   show = true,
   delay = 0,
+  tracking = "0em",
 }: {
   text: string;
   /** Size to fit this string instead, so stacked lines can share one size. */
@@ -31,6 +32,8 @@ export function FitLine({
   innerClassName?: string;
   show?: boolean;
   delay?: number;
+  /** Letter-spacing, applied to the measurement as well so the fit is exact. */
+  tracking?: string;
 }) {
   const box = useRef<HTMLSpanElement>(null);
   const probe = useRef<HTMLSpanElement>(null);
@@ -57,7 +60,7 @@ export function FitLine({
         <span
           ref={probe}
           className="absolute left-0 top-0 whitespace-nowrap"
-          style={{ fontSize: "100px", fontWeight: weight, fontVariationSettings: `"wdth" ${wdth}` }}
+          style={{ fontSize: "100px", fontWeight: weight, fontVariationSettings: `"wdth" ${wdth}`, letterSpacing: tracking }}
         >
           {measure ?? text}
         </span>
@@ -69,6 +72,7 @@ export function FitLine({
             fontSize: size,
             fontWeight: weight,
             fontVariationSettings: variation ?? `"wdth" ${wdth}`,
+            letterSpacing: tracking,
           }}
           initial={{ y: "102%" }}
           animate={{ y: show ? "0%" : "102%" }}

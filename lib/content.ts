@@ -11,7 +11,7 @@ export const site = {
   role: "Fullstack & AI Engineer",
   location: "Ahmedabad, India",
   timeZone: "Asia/Kolkata",
-  email: "siddharthkotak280@gmail.com",
+  email: "lhojefa@gmail.com",
   url: "https://hojefa-lakdawala.vercel.app",
   links: {
     linkedin: "https://www.linkedin.com/in/siddhant-kotak-07116a208",

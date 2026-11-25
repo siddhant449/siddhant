@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Newsreader } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import { Providers } from "@/components/providers";
 import { ThemeWatcher } from "@/components/ui/theme";
 import { GLRoot } from "@/components/gl/gl-root";
@@ -20,13 +21,16 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
-// The one serif accent: italic only, light, with optical sizing.
-const newsreader = Newsreader({
-  subsets: ["latin"],
+// The one serif accent: italic only, light, with optical sizing. Newsreader Italic (Google
+// Fonts, OFL 1.1), Latin subset, pinned at weight 300 with the opsz axis kept: every use is
+// light, and dropping the weight axis halves the file.
+const newsreader = localFont({
+  src: "./fonts/newsreader-italic-300.woff2",
+  weight: "300",
   style: "italic",
-  axes: ["opsz"],
   variable: "--font-newsreader",
   display: "swap",
+  adjustFontFallback: "Times New Roman",
 });
 
 const title = `${site.name}, ${site.role}`;

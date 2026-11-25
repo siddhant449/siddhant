@@ -1,11 +1,8 @@
 /**
- * Copy for the two practices section and the Design and Engineering chapter
- * openers. Facts come from lib/content.ts; lines written for these sections
- * are marked "owner to confirm".
+ * Copy for the two practices section and the Engineering chapter opener. Facts come from
+ * lib/content.ts; lines written for these sections are marked "owner to confirm".
  */
-import { design, engineering, type LiveProject } from "@/lib/content";
-
-const live = (slug: string) => design.projects.find((p) => p.slug === slug) as LiveProject;
+import { design, engineering } from "@/lib/content";
 
 /* ------------------------------------------------------------------ */
 /* Two practices: big statement words in Seth Lukin's style             */
@@ -28,31 +25,6 @@ export const practices = {
 } as const;
 
 /* ------------------------------------------------------------------ */
-/* Design chapter (14islands.com home)                                  */
-/* ------------------------------------------------------------------ */
-
-export const designChapter = {
-  label: design.label,
-  sublabel: "Websites for manufacturers, brands and agencies",
-  /** Two rows, the ampersand in the soft tone. From "Designed and built end to end". */
-  title: { first: "Designed", amp: "&", second: "built" }, // owner to confirm
-  /** Rotating statement pairs, adapted from the case-study lines. */
-  pairs: [
-    ["For manufacturers", "the spec, in the open"],
-    ["For brands", "the material speaks first"],
-    ["For agencies", "proof before the pitch"],
-  ], // owner to confirm
-  intro: design.intro,
-  introLink: { label: "All five websites", href: "#design-work" }, // owner to confirm
-  reelLabel: "The five live sites, one after another",
-  reel: design.projects.map((p) => p.images.hero),
-  featured: [
-    { project: live("truvolt"), device: "monitor" as const, backdrop: "/chapters/plant.webp" },
-    { project: live("skinrock"), device: "tablet" as const, backdrop: "/chapters/slate.webp" },
-  ],
-} as const;
-
-/* ------------------------------------------------------------------ */
 /* Engineering chapter (area17.com home)                                */
 /* ------------------------------------------------------------------ */
 
@@ -65,26 +37,3 @@ export const engineeringChapter = {
   systems: engineering.projects,
   nda: engineering.stamp,
 } as const;
-
-/* ------------------------------------------------------------------ */
-/* Credits for third-party assets                                        */
-/* ------------------------------------------------------------------ */
-
-export const credits = [
-  {
-    asset: "/chapters/plant.webp",
-    title: "Peppermint Powerplant (HDRI, tonemapped preview)",
-    author: "Andreas Mischok",
-    source: "https://polyhaven.com/a/peppermint_powerplant",
-    licence: "CC0",
-    changes: "Cropped, blurred, Ember duotone and grain",
-  },
-  {
-    asset: "/chapters/slate.webp",
-    title: "Castle Wall Slates (texture, diffuse)",
-    author: "Rob Tuytel",
-    source: "https://polyhaven.com/a/castle_wall_slates",
-    licence: "CC0",
-    changes: "Cropped, Ember duotone and grain",
-  },
-] as const;

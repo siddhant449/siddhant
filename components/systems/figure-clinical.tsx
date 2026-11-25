@@ -101,8 +101,10 @@ export default function FigureClinical({ active, reduced, deck, label }: FigureP
       c.roundRect((i % C) * P, Math.floor(i / C) * P, S, S, 1.6);
       c.fill();
     }
-    if (pass.current) pass.current.textContent = Math.min(total, Math.round(p * total)).toLocaleString("en-US");
-    if (bar.current) bar.current.style.transform = `scaleX(${p})`;
+    const txt = Math.min(total, Math.round(p * total)).toLocaleString("en-US");
+    if (pass.current && pass.current.textContent !== txt) pass.current.textContent = txt;
+    const tf = `scaleX(${p})`;
+    if (bar.current && bar.current.style.transform !== tf) bar.current.style.transform = tf;
   };
 
   useEffect(() => {

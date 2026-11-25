@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { onReady } from "@/components/loader";
 import type { SystemKind } from "@/lib/copy/systems";
 import s from "./systems.module.css";
-import { useReducedMotion, type FigureProps } from "./use-figure";
+import { invalidateFit, useReducedMotion, type FigureProps } from "./use-figure";
 
 /* Each figure is its own chunk, fetched only when its chapter nears the viewport. */
 const figures: Record<SystemKind, React.ComponentType<FigureProps>> = {
@@ -73,6 +73,9 @@ export function FigureSlot({ kind, label }: { kind: SystemKind; label: string })
       mq.removeEventListener("change", measure);
     };
   }, []);
+
+  // Once the stage is rescaled (or becomes a deck), canvases measure their on-screen size again.
+  useEffect(() => invalidateFit(), [scale, deck]);
 
   if (deck) {
     return (

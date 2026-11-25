@@ -20,7 +20,7 @@ export async function NowWidget() {
         {played ? (
           <a className={s.item} href={played.url} target="_blank" rel="noopener noreferrer">
             <span className={s.cover}>
-              {played.albumArt ? <Image src={played.albumArt} alt="" fill sizes="(max-width: 720px) 48px, 104px" /> : null}
+              {played.albumArt ? <Image src={played.albumArt} alt="" fill sizes="(max-width: 720px) 48px, 54px" /> : null}
             </span>
             <span className={s.meta}>
               <span className={s.kicker}>
@@ -44,7 +44,7 @@ export async function NowWidget() {
           <div className={s.item}>
             {book.cover ? (
               <span className={`${s.cover} ${s.book}`}>
-                <Image src={book.cover} alt={`Cover of ${book.title}`} fill sizes="(max-width: 720px) 48px, 104px" />
+                <Image src={book.cover} alt={`Cover of ${book.title}`} fill sizes="(max-width: 720px) 48px, 54px" />
               </span>
             ) : (
               <span className={`${s.cover} ${s.book}`} aria-hidden>

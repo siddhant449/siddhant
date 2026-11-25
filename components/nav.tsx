@@ -1,6 +1,7 @@
 "use client";
 
 import { useLenis } from "lenis/react";
+import { frame } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -8,15 +9,14 @@ import { hero, nav, site } from "@/lib/content";
 import { onReady } from "./loader";
 import s from "./nav.module.css";
 import { LocalTime } from "./ui/local-time";
+import { onScrollFrame } from "./ui/theme";
 
 /** The nav entry whose section crosses the middle of the viewport, if any. */
 function useActiveSection(enabled: boolean) {
   const [active, setActive] = useState<string | null>(null);
   useEffect(() => {
     if (!enabled) return;
-    let raf = 0;
-    const compute = () => {
-      raf = 0;
+    return onScrollFrame(() => {
       const mid = window.innerHeight * 0.5;
       let found: string | null = null;
       for (const el of document.querySelectorAll<HTMLElement>("[data-nav]")) {
@@ -24,18 +24,7 @@ function useActiveSection(enabled: boolean) {
         if (r.top <= mid && r.bottom >= mid) found = el.dataset.nav ?? null;
       }
       setActive(found);
-    };
-    const schedule = () => {
-      if (!raf) raf = requestAnimationFrame(compute);
-    };
-    compute();
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
-    };
+    });
   }, [enabled]);
   return enabled ? active : null;
 }
@@ -44,23 +33,10 @@ function useActiveSection(enabled: boolean) {
 function useAtFooter() {
   const [at, setAt] = useState(false);
   useEffect(() => {
-    let raf = 0;
-    const compute = () => {
-      raf = 0;
+    return onScrollFrame(() => {
       const left = document.documentElement.scrollHeight - (window.scrollY + window.innerHeight);
       setAt(left < window.innerHeight * 0.55);
-    };
-    const schedule = () => {
-      if (!raf) raf = requestAnimationFrame(compute);
-    };
-    compute();
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
-    };
+    });
   }, []);
   return at;
 }
@@ -70,24 +46,14 @@ function useScrollAway() {
   const [away, setAway] = useState(false);
   useEffect(() => {
     let last = window.scrollY;
-    let raf = 0;
-    const compute = () => {
-      raf = 0;
+    return onScrollFrame(() => {
       const y = window.scrollY;
       const d = y - last;
       if (y < 120) setAway(false);
       else if (d > 6) setAway(true);
       else if (d < -6) setAway(false);
       if (Math.abs(d) > 6 || y < 120) last = y;
-    };
-    const schedule = () => {
-      if (!raf) raf = requestAnimationFrame(compute);
-    };
-    window.addEventListener("scroll", schedule, { passive: true });
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("scroll", schedule);
-    };
+    });
   }, []);
   return away;
 }
@@ -106,42 +72,69 @@ function luminance(color: string) {
  * --bg (set from html[data-theme] by ThemeWatcher) while pinned screens paint their own, so the
  * first opaque background beneath the header row is read directly; html[data-theme] is the fallback.
  */
-function useToneUnder(header: React.RefObject<HTMLElement | null>) {
+function useToneUnder(header: React.RefObject<HTMLElement | null>, hidden: boolean) {
   const [tone, setTone] = useState<"ink" | "paper">("ink");
+  const away = useRef(hidden);
+  const again = useRef<() => void>(() => {});
   useEffect(() => {
-    let raf = 0;
+    away.current = hidden;
+    // Back in view: read at once.
+    if (!hidden) again.current();
+  }, [hidden]);
+  useEffect(() => {
+    let pad = 0;
     let settle = 0;
-    const compute = () => {
-      raf = 0;
+    let lastY = NaN;
+    let lastTheme: string | undefined;
+    const read = () => {
       const el = header.current;
-      if (!el) return;
-      const y = parseFloat(getComputedStyle(el).paddingTop) + 22;
+      // The hit test is the costliest read here; while the header is hidden (scrolling down) it waits.
+      if (!el || away.current) return;
+      const y = window.scrollY;
+      const theme = document.documentElement.dataset.theme;
+      // Nor while nothing under the chips can have changed.
+      if (Math.abs(y - lastY) < 8 && theme === lastTheme) return;
+      lastY = y;
+      lastTheme = theme;
+      if (!pad) pad = parseFloat(getComputedStyle(el).paddingTop);
       let lum: number | null = null;
-      for (const hit of document.elementsFromPoint(window.innerWidth * 0.5, y)) {
+      for (const hit of document.elementsFromPoint(window.innerWidth * 0.5, pad + 22)) {
         if (el.contains(hit)) continue;
         lum = luminance(getComputedStyle(hit).backgroundColor);
         if (lum !== null) break;
       }
-      const next = lum !== null ? (lum > 0.5 ? "paper" : "ink") : document.documentElement.dataset.theme === "paper" ? "paper" : "ink";
-      setTone(next);
+      setTone(lum !== null ? (lum > 0.5 ? "paper" : "ink") : theme === "paper" ? "paper" : "ink");
     };
-    const schedule = () => {
-      if (!raf) raf = requestAnimationFrame(compute);
+    const offScroll = onScrollFrame(() => {
+      read();
       // The page eases between themes over 350ms; read again once it has settled.
       window.clearTimeout(settle);
-      settle = window.setTimeout(() => requestAnimationFrame(compute), 420);
+      settle = window.setTimeout(() => {
+        lastY = NaN;
+        frame.read(read);
+      }, 420);
+    });
+    const onResize = () => {
+      pad = 0;
+      lastY = NaN;
     };
-    schedule();
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
-    const mo = new MutationObserver(schedule);
+    again.current = () => {
+      lastY = NaN;
+      frame.read(read);
+    };
+    window.addEventListener("resize", onResize);
+    const mo = new MutationObserver(() => {
+      lastY = NaN;
+      window.clearTimeout(settle);
+      settle = window.setTimeout(() => frame.read(read), 420);
+    });
     mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
     return () => {
-      cancelAnimationFrame(raf);
+      again.current = () => {};
+      offScroll();
       window.clearTimeout(settle);
       mo.disconnect();
-      window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
+      window.removeEventListener("resize", onResize);
     };
   }, [header]);
   return tone;
@@ -165,7 +158,6 @@ export function Nav() {
   const header = useRef<HTMLElement>(null);
   const menuButton = useRef<HTMLButtonElement>(null);
   const menu = useRef<HTMLElement>(null);
-  const tone = useToneUnder(header);
   const [openState, setOpen] = useState(false);
   // The header leaves at the pinned footer; a menu left open there closes with it.
   const open = openState && !atFooter;
@@ -226,6 +218,7 @@ export function Nav() {
   };
 
   const hidden = (atFooter || (scrollAway && !focusIn)) && !open;
+  const tone = useToneUnder(header, hidden);
   const cls = [s.header, entered ? s.in : "", open ? s.open : "", hidden ? s.away : ""].join(" ");
 
   return (

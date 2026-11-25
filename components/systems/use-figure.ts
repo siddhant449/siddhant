@@ -100,22 +100,40 @@ export function useEvery(active: boolean, ms: number, fn: () => void) {
   }, [active, ms]);
 }
 
+/*
+ * fit() runs on every animation frame, so the on-screen scale of each canvas is cached: reading
+ * it means a getBoundingClientRect, which forces a layout mid-frame. The cache is dropped when
+ * the window resizes or a figure stage is rescaled (invalidateFit()).
+ */
+let fitGen = 0;
+const fitCache = new WeakMap<HTMLCanvasElement, { gen: number; w: number; h: number; k: number }>();
+/** Forget every canvas's measured scale (call when a figure stage's scale changes). */
+export function invalidateFit() {
+  fitGen++;
+}
+if (typeof window !== "undefined") window.addEventListener("resize", invalidateFit, { capture: true });
+
 /**
  * Size a canvas for its on-screen box (the stage may be scaled) and return a
  * context that draws in design pixels. DPR is capped at 2, 1.5 on phones.
  */
 export function fit(cv: HTMLCanvasElement, w: number, h: number) {
-  const cap = window.innerWidth <= 820 ? 1.5 : 2;
-  const dpr = Math.min(cap, window.devicePixelRatio || 1);
-  // CSS size in design pixels; the stage transform scales it on screen.
-  if (cv.style.width !== `${w}px`) {
-    cv.style.width = `${w}px`;
-    cv.style.height = `${h}px`;
+  let m = fitCache.get(cv);
+  if (!m || m.gen !== fitGen || m.w !== w || m.h !== h) {
+    const cap = window.innerWidth <= 820 ? 1.5 : 2;
+    const dpr = Math.min(cap, window.devicePixelRatio || 1);
+    // CSS size in design pixels; the stage transform scales it on screen.
+    if (cv.style.width !== `${w}px`) {
+      cv.style.width = `${w}px`;
+      cv.style.height = `${h}px`;
+    }
+    const r = cv.getBoundingClientRect();
+    m = { gen: fitGen, w, h, k: ((r.width || w) / w) * dpr };
+    // An unlaid-out canvas (width 0) is measured again next time.
+    if (r.width) fitCache.set(cv, m);
   }
-  const r = cv.getBoundingClientRect();
-  const k = ((r.width || w) / w) * dpr;
-  const bw = Math.max(1, Math.round(w * k));
-  const bh = Math.max(1, Math.round(h * k));
+  const bw = Math.max(1, Math.round(w * m.k));
+  const bh = Math.max(1, Math.round(h * m.k));
   if (cv.width !== bw || cv.height !== bh) {
     cv.width = bw;
     cv.height = bh;

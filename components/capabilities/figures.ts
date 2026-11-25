@@ -135,15 +135,27 @@ const web: Draw = (g, w, h, t, S, P, F) => {
   const im = imgs[n % imgs.length];
   const page = PAGES[n % PAGES.length];
   if (im.complete && im.naturalWidth) {
+    // The proof filter runs once per page into a cached canvas, not on every frame.
+    const grays = (S.grays ??= new Map()) as Map<HTMLImageElement, HTMLCanvasElement>;
+    let gray = grays.get(im);
+    if (!gray) {
+      gray = document.createElement("canvas");
+      gray.width = im.naturalWidth;
+      gray.height = im.naturalHeight;
+      const gg = gray.getContext("2d");
+      if (gg) {
+        gg.filter = "grayscale(1) contrast(1.04)";
+        gg.drawImage(im, 0, 0);
+      }
+      grays.set(im, gray);
+    }
     const a = clamp((c - 0.38) / 0.1, 0, 1) * (1 - clamp((c - 0.93) / 0.07, 0, 1));
     if (a > 0) {
       const sh = (vh / vw) * page.width;
       const travel = page.height - sh;
       const sy = inout(clamp((c - 0.5) / 0.4, 0, 1)) * Math.min(travel, page.width * 1.6);
       g.globalAlpha = a;
-      g.filter = "grayscale(1) contrast(1.04)";
-      g.drawImage(im, 0, sy, page.width, sh, vx, vy, vw, vh);
-      g.filter = "none";
+      g.drawImage(gray, 0, sy, page.width, sh, vx, vy, vw, vh);
       g.globalAlpha = 1;
     }
   }

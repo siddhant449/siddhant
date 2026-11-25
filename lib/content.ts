@@ -41,14 +41,6 @@ export const hero = {
     { strong: "Ahmedabad, India", soft: "time" },
     { strong: "Available for projects", soft: "Websites and systems", dot: true },
   ],
-  lead: "I design websites for manufacturers, brands and agencies, and engineer production systems for healthcare, commerce and finance.",
-  doors: {
-    design: { label: "Design", title: [{ text: "Websites that earn trust." }] },
-    engineering: {
-      label: "Engineering",
-      title: [{ text: "Systems that " }, { text: "hold up.", italic: true }],
-    },
-  },
 } as const;
 
 /* ------------------------------------------------------------------ */
@@ -480,7 +472,6 @@ export const toolbox = {
 /* ------------------------------------------------------------------ */
 
 export const about = {
-  index: "04",
   label: "About",
   title: "About",
   paragraphs: [
@@ -496,30 +487,10 @@ export const about = {
   resume: "Download résumé (PDF)",
 } as const;
 
-export const services = [
-  "Marketing websites",
-  "Web apps and dashboards",
-  "AI features",
-  "Backends and realtime",
-] as const;
-
-export const lens = {
-  lines: ["Design and engineering,", "seen through", "the same lens."],
-  note: "Move across the line",
-  aside: "Two disciplines, one practice",
-} as const;
-
 export const contact = {
-  index: "05",
-  label: "Contact",
-  status: "Available for projects",
-  title: [{ text: "Have a project " }, { text: "in mind?", italic: true }],
-  body: "Tell me what you’re building and what it needs to achieve. I reply with an honest view of scope, timeline and approach.",
   start: "Start a project",
   copy: "Copy email",
   copied: "Copied",
-  backToTop: "Back to top",
-  signature: "Designed and built by Siddhant Kotak.",
 } as const;
 
 /* ------------------------------------------------------------------ */

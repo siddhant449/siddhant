@@ -3,7 +3,6 @@
 import { ReactLenis, type LenisRef } from "lenis/react";
 import { cancelFrame, frame, LazyMotion, MotionConfig } from "motion/react";
 import { useEffect, useRef } from "react";
-import { IntroProvider } from "@/lib/intro";
 
 // Motion's animation features arrive in their own chunk after hydration.
 const loadFeatures = () => import("@/lib/motion-features").then((mod) => mod.default);
@@ -42,9 +41,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <LazyMotion features={loadFeatures} strict>
       <MotionConfig reducedMotion="user">
-        <IntroProvider>
-          <SmoothScroll>{children}</SmoothScroll>
-        </IntroProvider>
+        <SmoothScroll>{children}</SmoothScroll>
       </MotionConfig>
     </LazyMotion>
   );

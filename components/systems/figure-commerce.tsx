@@ -171,13 +171,17 @@ export default function FigureCommerce({ active, reduced, deck, label }: FigureP
     c.fill();
 
     const on = Math.min(8, Math.floor(qt * 6));
+    // Attributes are written only when they change: each write restyles the element.
+    const set = (e: HTMLElement, k: "on" | "top", v: string) => {
+      if (e.dataset[k] !== v) e.dataset[k] = v;
+    };
     tiers.current?.querySelectorAll("i").forEach((e, i) => {
-      e.dataset.on = i < on ? (i === on - 1 && qt < 1.6 ? "hot" : "on") : "";
+      set(e, "on", i < on ? (i === on - 1 && qt < 1.6 ? "hot" : "on") : "");
     });
     const ro = Math.min(garments.length, Math.floor(Math.max(0, qt - 0.5) * 7));
     results.current?.querySelectorAll<HTMLElement>("[data-res]").forEach((e, i) => {
-      e.dataset.on = i < ro ? "1" : "";
-      e.dataset.top = i === 0 && ro > 0 ? "1" : "";
+      set(e, "on", i < ro ? "1" : "");
+      set(e, "top", i === 0 && ro > 0 ? "1" : "");
     });
   };
 

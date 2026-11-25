@@ -225,7 +225,9 @@ class Renderer {
   }
   resize(W: number, H: number, kind: SceneKind) {
     const gl = this.gl, phone = W <= 720;
-    const dpr = Math.min(window.devicePixelRatio || 1, phone ? 1.5 : 2);
+    // The dots are drawn analytically (anti-aliased to a device pixel), so they stay round at 1.5x
+    // and 1.25x; the full-screen pass costs about half the fragments of 2x.
+    const dpr = Math.min(window.devicePixelRatio || 1, phone ? 1.25 : 1.5);
     this.W = W;
     this.H = H;
     this.canvas.width = Math.round(W * dpr);

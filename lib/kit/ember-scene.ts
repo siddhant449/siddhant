@@ -1,10 +1,14 @@
 /**
  * The ember: a cooling molten body. Dark glossy crust, heat in the seams in the brand's
- * signal red, lit by Poly Haven's "Studio Small 09" (CC0), stored in /kit/hdri-studio.png as
- * y = (x / (1 + x))^(1/2.2) so it can be served as a PNG. Loaded on demand by <Ember>.
+ * signal red, lit by Poly Haven's "Studio Small 09" (CC0), stored in /kit/hdri-studio.webp as
+ * y = (x / (1 + x))^(1/2.2) so it can be served as an 8-bit image (lossless WebP, 256 × 128:
+ * the clearcoat's sharpest reflection samples the environment at about a 90px cube face, so a
+ * larger map renders the same; it was downsampled in linear radiance). Loaded on demand by <Ember>.
  */
 import {
   ACESFilmicToneMapping,
+  BufferAttribute,
+  BufferGeometry,
   Color,
   DataTexture,
   DataUtils,
@@ -110,15 +114,51 @@ async function loadEnv(renderer: WebGLRenderer, url: string): Promise<Texture> {
   return env;
 }
 
+/**
+ * An icosphere with shared vertices. three's IcosahedronGeometry repeats every vertex for each of
+ * the (up to six) triangles that meet there, and the displacement runs per vertex (three noise
+ * lookups each), so indexing it draws the same surface with about a sixth of the vertex work.
+ * Normals of a unit icosphere are its positions; uvs are unused by this material.
+ */
+function icosphere(detail: number) {
+  const src = new IcosahedronGeometry(1, detail);
+  const p = src.getAttribute("position");
+  const seen = new Map<string, number>();
+  const pos: number[] = [];
+  const index = new Uint32Array(p.count);
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+    const key = `${Math.round(x * 1e5)},${Math.round(y * 1e5)},${Math.round(z * 1e5)}`;
+    let k = seen.get(key);
+    if (k === undefined) {
+      k = pos.length / 3;
+      seen.set(key, k);
+      pos.push(x, y, z);
+    }
+    index[i] = k;
+  }
+  src.dispose();
+  const geo = new BufferGeometry();
+  const arr = new Float32Array(pos);
+  geo.setAttribute("position", new BufferAttribute(arr, 3));
+  geo.setAttribute("normal", new BufferAttribute(arr.slice(), 3));
+  geo.setIndex(new BufferAttribute(index, 1));
+  geo.computeBoundingSphere();
+  return geo;
+}
+
 export type EmberHandle = { setHeat: (h: number) => void; dispose: () => void };
 
 export function mountEmber(
   host: HTMLElement,
-  opts: { heat?: number; still?: boolean; env?: string; onReady?: () => void } = {},
+  opts: { heat?: number; still?: boolean; env?: string; onReady?: () => void; watch?: HTMLElement } = {},
 ): EmberHandle {
   const phone = window.innerWidth < 700;
+  // Throws without WebGL; <Ember> keeps its still image then.
   const renderer = new WebGLRenderer({ antialias: !phone, alpha: true, powerPreference: "high-performance" });
-  renderer.setPixelRatio(Math.min(phone ? 1.5 : 2, window.devicePixelRatio || 1));
+  // A physical material with noise in both shaders: 1.5x on desktop and 1.25x on phones look the
+  // same at this size and cost about half the fragments of 2x.
+  renderer.setPixelRatio(Math.min(phone ? 1.25 : 1.5, window.devicePixelRatio || 1));
   renderer.toneMapping = ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
   renderer.outputColorSpace = SRGBColorSpace;
@@ -179,7 +219,7 @@ export function mountEmber(
         totalEmissiveRadiance += glow * heat * 2.4;`);
   };
 
-  const geo = new IcosahedronGeometry(1, phone ? 40 : 64);
+  const geo = icosphere(phone ? 40 : 64);
   const mesh = new Mesh(geo, mat);
   scene.add(mesh);
   const key = new DirectionalLight(0xffe2d6, 0.35);
@@ -245,16 +285,17 @@ export function mountEmber(
   ro.observe(host);
   resize();
 
+  // `watch` decides visibility when the host sits in a pinned screen that can be covered.
   const io = new IntersectionObserver(([e]) => {
     on = e.isIntersecting;
     run();
   });
-  io.observe(host);
+  io.observe(opts.watch ?? host);
   const onVis = () => run();
   document.addEventListener("visibilitychange", onVis);
 
   let disposed = false;
-  loadEnv(renderer, opts.env ?? "/kit/hdri-studio.png")
+  loadEnv(renderer, opts.env ?? "/kit/hdri-studio.webp")
     .catch(() => null)
     .then((env) => {
       if (disposed) {

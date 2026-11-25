@@ -1,9 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { useReducedMotion } from "motion/react";
+import { frame, useReducedMotion } from "motion/react";
 import { useEffect, useRef } from "react";
 import { onReady } from "@/components/loader";
+import { onScrollFrame } from "@/components/ui/theme";
 import { capabilities, capabilitiesIntro as I } from "@/lib/copy/capabilities";
 import { mountFigure, type FigureHandle } from "./figures";
 import s from "./capabilities.module.css";
@@ -41,6 +42,8 @@ export function Capabilities() {
       head: el.querySelector<HTMLElement>("[data-head]")!,
       space: el.querySelector<HTMLElement>("[data-figspace]")!,
       shown: -1,
+      /** content height, cached by measure() so applying a frame never reads layout */
+      ch: 0,
     }));
     const figs: FigureHandle[] = parts.map((p, i) =>
       mountFigure(p.el.querySelector("canvas")!, capabilities[i].figure, reduced),
@@ -53,18 +56,26 @@ export function Capabilities() {
       part.fill.style.background = mix(INK2, PAPER, c);
       part.el.style.color = mix(PAPER, INK, c);
       part.media.style.opacity = h.toFixed(3);
-      part.acc.style.height = `${(part.content.offsetHeight * h).toFixed(1)}px`;
+      part.acc.style.height = `${(part.ch * h).toFixed(1)}px`;
       figs[i].setActive(h > 0.02);
       part.shown = p;
     };
     const measure = () => {
-      parts.forEach((p) => {
-        const pad = parseFloat(getComputedStyle(p.el).paddingTop);
-        p.el.style.setProperty("--oh", `${pad * 2 + p.head.offsetHeight + p.content.offsetHeight}px`);
+      // all reads first, then the writes
+      const m = parts.map((p) => ({
+        pad: parseFloat(getComputedStyle(p.el).paddingTop),
+        head: p.head.offsetHeight,
+        ch: p.content.offsetHeight,
+        space: p.space.offsetTop,
+      }));
+      parts.forEach((p, i) => {
+        const { pad, head, ch, space } = m[i];
+        p.ch = ch;
+        p.el.style.setProperty("--oh", `${pad * 2 + head + ch}px`);
         // Phones: pin the figure to the space reserved under the tags (not the card's bottom),
         // so while a card is half open the figure is clipped from below and never covers the text.
         if (window.innerWidth <= 760) {
-          p.media.style.top = `${p.space.offsetTop}px`;
+          p.media.style.top = `${space}px`;
           p.media.style.bottom = "auto";
         } else {
           p.media.style.top = p.media.style.bottom = "";
@@ -72,30 +83,44 @@ export function Capabilities() {
         p.shown = -1;
       });
     };
-    let raf = 0;
+    // Per frame: read every row's top (layout is clean in the read step), then apply the
+    // writes in Motion's render step. A row opening pushes the rows below it down, so each
+    // later top is corrected by the height the rows above it gained this frame.
     const update = () => {
-      raf = 0;
-      const vh = window.innerHeight;
+      const H = window.innerHeight;
+      const tops = parts.map((part, i) => (i === 0 || reduced ? 0 : part.el.getBoundingClientRect().top));
+      const next: [number, number][] = [];
+      let shift = 0;
       parts.forEach((part, i) => {
         if (i === 0 || reduced) {
-          if (part.shown !== 1) apply(i, 1);
+          if (part.shown !== 1) next.push([i, 1]);
           return;
         }
-        const top = part.el.getBoundingClientRect().top;
-        const p = clamp01((vh * START - top) / (vh * RANGE));
-        if (Math.abs(p - part.shown) > 0.0005) apply(i, p);
+        const p = clamp01((H * START - (tops[i] + shift)) / (H * RANGE));
+        if (Math.abs(p - part.shown) > 0.0005) {
+          const was = part.shown < 0 ? null : part.ch * (1 - Math.pow(1 - part.shown, 1.25));
+          if (was !== null) shift += part.ch * (1 - Math.pow(1 - p, 1.25)) - was;
+          next.push([i, p]);
+        }
       });
-    };
-    const schedule = () => {
-      if (!raf) raf = requestAnimationFrame(update);
+      if (next.length) frame.render(() => next.forEach(([i, p]) => apply(i, p)));
     };
     const remeasure = () => {
       measure();
-      schedule();
+      update();
     };
     measure();
     update();
-    window.addEventListener("scroll", schedule, { passive: true });
+    // Rows are measured only while the list is near the viewport.
+    let offScroll = () => {};
+    const near = new IntersectionObserver(
+      ([e]) => {
+        offScroll();
+        offScroll = e.isIntersecting ? onScrollFrame(update) : () => {};
+      },
+      { rootMargin: "50% 0px" },
+    );
+    near.observe(ol);
     window.addEventListener("resize", remeasure);
     let alive = true;
     void document.fonts?.ready.then(() => alive && remeasure());
@@ -120,8 +145,8 @@ export function Capabilities() {
       alive = false;
       off();
       io?.disconnect();
-      cancelAnimationFrame(raf);
-      window.removeEventListener("scroll", schedule);
+      near.disconnect();
+      offScroll();
       window.removeEventListener("resize", remeasure);
       figs.forEach((f) => f.destroy());
     };

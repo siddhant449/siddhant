@@ -131,7 +131,8 @@ export default function FigureRisk({ active, reduced, deck, label }: FigureProps
     }
     drawHeat();
     score.current += (target.current - score.current) * Math.min(1, dt * 2.2);
-    if (scoreEl.current) scoreEl.current.textContent = score.current.toFixed(2);
+    const txt = score.current.toFixed(2);
+    if (scoreEl.current && scoreEl.current.textContent !== txt) scoreEl.current.textContent = txt;
   });
 
   const newsBody = (

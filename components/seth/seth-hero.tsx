@@ -207,7 +207,7 @@ export function SethHero() {
 
           {/* The molten ember (kit) in the slot where Seth's pixel character stands. */}
           <div ref={ember} className={s.sprite} aria-hidden>
-            <Ember className={s.ember} />
+            <Ember className={s.ember} watch={watch} />
           </div>
 
           <p className={`${s.foot} ${s.footL} ${s.lbl}`}>

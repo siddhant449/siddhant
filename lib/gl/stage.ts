@@ -185,6 +185,8 @@ void main() {
 
 type Plane = {
   el: HTMLElement;
+  /** Loads the texture; cleared once started. */
+  load?: () => void;
   mesh: Mesh<PlaneGeometry, ShaderMaterial>;
   ready: boolean;
   hover: number;
@@ -224,17 +226,29 @@ function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, x: numb
   ctx.drawImage(img, (img.width - sw) / 2, 0, sw, sh, x, y, w, h);
 }
 
-/** A presentation board: the project's colour, its desktop site, and a phone in front. */
-async function showcaseTexture(el: HTMLElement) {
-  const W = 1800;
-  const H = 900;
+/** Widths next/image serves (its default imageSizes and deviceSizes). */
+const WIDTHS = [256, 384, 640, 750, 828, 1080, 1200, 1920, 2048];
+const widthFor = (px: number) => WIDTHS.find((w) => w >= px) ?? WIDTHS[WIDTHS.length - 1];
+
+/**
+ * A presentation board: the project's colour, its desktop site, and a phone in front. Drawn at
+ * `W` px wide (the board's on-screen width × the stage's pixel ratio, at most 1800, the size it
+ * was designed at), from screenshots fetched at the size they are drawn.
+ */
+async function showcaseTexture(el: HTMLElement, width: number) {
+  const W = Math.round(Math.min(1800, Math.max(640, width)) / 2) * 2;
+  const H = W / 2;
+  const k = W / 1800;
   const canvas = document.createElement("canvas");
   canvas.width = W;
   canvas.height = H;
   const ctx = canvas.getContext("2d")!;
+  // Reuse the DOM fallback's own files when the browser has picked them (no second download);
+  // otherwise fetch each shot at the size it is drawn.
+  const dom = el.querySelectorAll<HTMLImageElement>(".gl-fallback img");
   const [desk, phone] = await Promise.all([
-    loadImage(optimised(el.dataset.desktop ?? "", 1920)),
-    loadImage(optimised(el.dataset.mobile ?? "", 828)),
+    loadImage(dom[0]?.currentSrc || optimised(el.dataset.desktop ?? "", widthFor(W * 0.64))),
+    loadImage(dom[1]?.currentSrc || optimised(el.dataset.mobile ?? "", widthFor(H * 0.86 * 0.47))),
   ]);
   ctx.fillStyle = el.dataset.bg ?? "#1a1a1a";
   ctx.fillRect(0, 0, W, H);
@@ -245,21 +259,21 @@ async function showcaseTexture(el: HTMLElement) {
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, W, H);
 
-  // Desktop window.
+  // Desktop window. (The shadows are drawn once, here, never per frame.)
   const dw = W * 0.64;
   const dh = dw * 0.625;
   const dx = W * 0.075;
   const dy = (H - dh) / 2 - H * 0.02;
   ctx.save();
   ctx.shadowColor = "rgba(0,0,0,0.45)";
-  ctx.shadowBlur = 60;
-  ctx.shadowOffsetY = 24;
-  roundRect(ctx, dx, dy, dw, dh, 14);
+  ctx.shadowBlur = 60 * k;
+  ctx.shadowOffsetY = 24 * k;
+  roundRect(ctx, dx, dy, dw, dh, 14 * k);
   ctx.fillStyle = "#111";
   ctx.fill();
   ctx.restore();
   ctx.save();
-  roundRect(ctx, dx, dy, dw, dh, 14);
+  roundRect(ctx, dx, dy, dw, dh, 14 * k);
   ctx.clip();
   drawCover(ctx, desk, dx, dy, dw, dh);
   ctx.restore();
@@ -271,20 +285,20 @@ async function showcaseTexture(el: HTMLElement) {
   const py = (H - ph) / 2 + H * 0.02;
   ctx.save();
   ctx.shadowColor = "rgba(0,0,0,0.55)";
-  ctx.shadowBlur = 70;
-  ctx.shadowOffsetY = 30;
-  roundRect(ctx, px, py, pw, ph, 52);
+  ctx.shadowBlur = 70 * k;
+  ctx.shadowOffsetY = 30 * k;
+  roundRect(ctx, px, py, pw, ph, 52 * k);
   ctx.fillStyle = "#0b0b0c";
   ctx.fill();
   ctx.restore();
-  const b = 12;
+  const b = 12 * k;
   ctx.save();
-  roundRect(ctx, px + b, py + b, pw - b * 2, ph - b * 2, 42);
+  roundRect(ctx, px + b, py + b, pw - b * 2, ph - b * 2, 42 * k);
   ctx.clip();
   drawCover(ctx, phone, px + b, py + b, pw - b * 2, ph - b * 2);
   ctx.restore();
   // Speaker notch.
-  roundRect(ctx, px + pw / 2 - 46, py + b + 12, 92, 26, 13);
+  roundRect(ctx, px + pw / 2 - 46 * k, py + b + 12 * k, 92 * k, 26 * k, 13 * k);
   ctx.fillStyle = "#0b0b0c";
   ctx.fill();
 
@@ -317,15 +331,20 @@ export class Stage {
   private velocity = 0;
   private time = 0;
   private pointer = { x: -1e4, y: -1e4, fine: false };
-  private observer: MutationObserver;
-  private scanQueued = false;
   private reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   /** Draw only when something changed (for captures and very slow machines). */
   private still: boolean;
-  private lastKey = "";
   /** Adaptive quality: if frames run long, the canvas drops to a lower resolution. */
   private slowFrames = 0;
-  private dpr = Math.min(1.75, window.devicePixelRatio || 1);
+  // The planes are flat images under a light shader: 1.5x is indistinguishable from 2x there.
+  private dpr = Math.min(1.5, window.devicePixelRatio || 1);
+  /** Called when something changes outside a frame (a texture finished), so a stopped loop can restart. */
+  onChange: () => void = () => {};
+  /** What the last drawn frame looked like; an unchanged frame is not drawn again. */
+  private drawnKey = "";
+  private cleared = true;
+  /** Box of each element, read once per frame (before anything writes to the DOM). */
+  private boxes = new Map<HTMLElement, DOMRect>();
 
   constructor(private canvas: HTMLCanvasElement, options: { still?: boolean } = {}) {
     this.still = Boolean(options.still);
@@ -355,8 +374,6 @@ export class Stage {
     this.resize();
     window.addEventListener("resize", this.resize);
     window.addEventListener("pointermove", this.onPointer, { passive: true });
-    this.observer = new MutationObserver(() => this.queueScan());
-    this.observer.observe(document.body, { childList: true, subtree: true });
     this.scan();
   }
 
@@ -366,16 +383,8 @@ export class Stage {
     this.pointer.fine = e.pointerType === "mouse";
   };
 
-  private queueScan() {
-    if (this.scanQueued) return;
-    this.scanQueued = true;
-    requestAnimationFrame(() => {
-      this.scanQueued = false;
-      this.scan();
-    });
-  }
-
-  private scan() {
+  /** Picks up boards added or removed (the root calls this after navigations). */
+  scan() {
     const seen = new Set<HTMLElement>();
     for (const el of document.querySelectorAll<HTMLElement>('[data-gl="image"], [data-gl="showcase"]')) {
       seen.add(el);
@@ -387,6 +396,8 @@ export class Stage {
       plane.mesh.material.uniforms.uMap.value?.dispose();
       plane.mesh.material.dispose();
       this.planes.delete(el);
+      this.boxes.delete(el);
+      this.soon.unobserve(el);
     }
     this.liquids = [...document.querySelectorAll<HTMLElement>('[data-gl="liquid"]')].slice(0, MAX_LIQUID);
   }
@@ -422,20 +433,39 @@ export class Stage {
       material.uniforms.uAspect.value = aspect;
       plane.ready = true;
       el.dataset.glOn = "";
+      this.onChange();
     };
 
-    if (el.dataset.gl === "showcase") {
-      showcaseTexture(el).then(({ tex, aspect }) => done(tex, aspect)).catch(() => {});
-    } else {
-      const src = el.dataset.src;
-      if (!src) return;
-      this.loader.load(optimised(src, this.w > 900 ? 1920 : 1080), (tex) => {
-        tex.colorSpace = SRGBColorSpace;
-        const img = tex.image as HTMLImageElement;
-        done(tex, img.width / img.height);
-      });
-    }
+    // The texture loads only when the board comes within a screen of the viewport.
+    plane.load = () => {
+      const width = el.getBoundingClientRect().width * this.dpr;
+      if (el.dataset.gl === "showcase") {
+        showcaseTexture(el, width).then(({ tex, aspect }) => done(tex, aspect)).catch(() => {});
+      } else {
+        const src = el.dataset.src;
+        if (!src) return;
+        this.loader.load(optimised(src, widthFor(width)), (tex) => {
+          tex.colorSpace = SRGBColorSpace;
+          const img = tex.image as HTMLImageElement;
+          done(tex, img.width / img.height);
+        });
+      }
+    };
+    this.soon.observe(el);
   }
+
+  private soon = new IntersectionObserver(
+    (entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        this.soon.unobserve(e.target);
+        const plane = this.planes.get(e.target as HTMLElement);
+        plane?.load?.();
+        if (plane) plane.load = undefined;
+      }
+    },
+    { rootMargin: "100% 0px" },
+  );
 
   private resize = () => {
     this.w = window.innerWidth;
@@ -449,6 +479,7 @@ export class Stage {
     this.liquidMat.uniforms.uView.value.set(this.w, this.h);
     this.field.uView.value.set(this.w, this.h);
     this.field.uDepth.value = this.h * 0.16;
+    this.drawnKey = "";
   };
 
   /** Lets the stage read how far smooth scrolling lags behind the wheel. */
@@ -456,7 +487,16 @@ export class Stage {
     this.lag = source;
   }
 
-  /** Called once per frame, after smooth scroll has moved the page. */
+  /**
+   * Reads every element's box. Called once per frame after smooth scroll has moved the page and
+   * before anything writes to the DOM, so the reads never force a layout.
+   */
+  measure() {
+    for (const el of this.liquids) this.boxes.set(el, el.getBoundingClientRect());
+    for (const [el, plane] of this.planes) if (plane.ready) this.boxes.set(el, el.getBoundingClientRect());
+  }
+
+  /** Called once per frame, after measure(). Returns true while something is still moving. */
   render(dt: number) {
     if (!this.still) {
       // Keep the page smooth on weak GPUs: after a run of long frames, render at 1x.
@@ -467,10 +507,6 @@ export class Stage {
         this.resize();
       }
     } else {
-      const ready = [...this.planes.values()].filter((p) => p.ready).length;
-      const key = `${Math.round(window.scrollY)}|${this.w}|${this.h}|${ready}|${this.pointer.x},${this.pointer.y}`;
-      if (key === this.lastKey) return;
-      this.lastKey = key;
       dt = 0;
       this.liquidMat.uniforms.uIntro.value = 1;
       this.time = 4;
@@ -484,6 +520,7 @@ export class Stage {
     this.velocity += (target - this.velocity) * ease(0.3);
     if (Math.abs(this.velocity) < 1e-4) this.velocity = 0;
     this.field.uVel.value = this.velocity;
+    let moving = this.velocity !== 0 || target !== 0;
 
     // Liquid boxes.
     const u = this.liquidMat.uniforms;
@@ -494,11 +531,11 @@ export class Stage {
     let liquidOn = false;
     for (let i = 0; i < MAX_LIQUID; i++) {
       const el = this.liquids[i];
-      if (!el) {
+      const r = el && this.boxes.get(el);
+      if (!el || !r) {
         params[i].w = 0;
         continue;
       }
-      const r = el.getBoundingClientRect();
       const visible = r.bottom > -r.height * 0.25 && r.top < this.h + r.height * 0.25;
       params[i].w = visible ? 1 : 0;
       if (!visible) continue;
@@ -514,12 +551,13 @@ export class Stage {
 
     // Planes.
     let planesOn = false;
+    let key = `${this.w}x${this.h}@${this.dpr}|${this.velocity.toFixed(5)}`;
     const { x: px, y: py, fine } = this.pointer;
     for (const plane of this.planes.values()) {
-      const r = plane.el.getBoundingClientRect();
-      const visible = plane.ready && r.bottom > -200 && r.top < this.h + 200 && r.width > 0;
+      const r = this.boxes.get(plane.el);
+      const visible = !!r && plane.ready && r.bottom > -200 && r.top < this.h + 200 && r.width > 0;
       plane.mesh.visible = visible;
-      if (!visible) continue;
+      if (!visible || !r) continue;
       planesOn = true;
       const m = plane.mesh.material.uniforms;
       m.uSize.value.set(r.width, r.height);
@@ -530,19 +568,41 @@ export class Stage {
       const inside = fine && !this.reduced && px >= r.left && px <= r.right && py >= r.top && py <= r.bottom;
       if (inside) plane.mouse.lerp(new Vector2((px - r.left) / r.width, 1 - (py - r.top) / r.height), ease(0.35));
       plane.hover += ((inside ? 1 : 0) - plane.hover) * ease(0.08);
+      if (!inside && plane.hover < 1e-3) plane.hover = 0;
       m.uMouse.value.copy(plane.mouse);
       m.uHover.value = plane.hover;
+      if (m.uAlpha.value < 1 || inside || plane.hover > 0) moving = true;
+      key += `|${r.left.toFixed(1)},${r.top.toFixed(1)},${r.width.toFixed(1)},${r.height.toFixed(1)},${m.uAlpha.value.toFixed(3)},${plane.hover.toFixed(4)},${plane.mouse.x.toFixed(4)},${plane.mouse.y.toFixed(4)}`;
     }
 
+    // The liquid moves with time, so it always draws; the planes only when something changed.
+    if (liquidOn) {
+      moving = true;
+      key = "";
+    } else if (!planesOn) {
+      key = "empty";
+    }
+    if (key && key === this.drawnKey) return moving;
+    this.drawnKey = key;
     this.renderer.clear();
     if (liquidOn) this.renderer.render(this.liquidScene, this.flat);
     if (planesOn) this.renderer.render(this.planeScene, this.camera);
+    this.cleared = !liquidOn && !planesOn;
+    return moving;
+  }
+
+  /** Clears the canvas once (when the root stops the loop because nothing is near the viewport). */
+  idle() {
+    if (this.cleared) return;
+    this.renderer.clear();
+    this.cleared = true;
+    this.drawnKey = "empty";
   }
 
   dispose() {
     window.removeEventListener("resize", this.resize);
     window.removeEventListener("pointermove", this.onPointer);
-    this.observer.disconnect();
+    this.soon.disconnect();
     for (const plane of this.planes.values()) {
       plane.mesh.material.uniforms.uMap.value?.dispose();
       plane.mesh.material.dispose();

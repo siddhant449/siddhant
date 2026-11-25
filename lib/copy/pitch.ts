@@ -1,82 +1,14 @@
 /**
- * Copy for the client-pitch sections: at a glance, why hire me, process,
- * ways to work, questions and the mid-page call to action.
+ * Copy for the client-pitch sections: why hire me, how a project runs and
+ * the chapter titles.
  *
  * Facts come from lib/content.ts. Nothing here states a price, a duration,
  * a reply time or a client that isn't named in content.ts.
  */
-import { caseStudyOf, design, engineering, site } from "@/lib/content";
+import { engineering } from "@/lib/content";
 
 const sys = (slug: string) => engineering.projects.find((p) => p.slug === slug);
 const fact = (slug: string, i: number) => sys(slug)?.facts[i]?.value ?? "";
-const host = (slug: string) => design.projects.find((p) => p.slug === slug)?.host ?? "";
-
-/** "627 backend and 686 frontend tests" lives in the clinical case study's prose. */
-const testSplit = (() => {
-  const body = caseStudyOf("clinical-messaging")?.inside.map((i) => i.body).join(" ") ?? "";
-  const hit = body.match(/([\d,]+) backend and ([\d,]+) frontend tests/);
-  if (!hit) return null;
-  const n = (s: string) => Number(s.replace(/,/g, ""));
-  return { backend: n(hit[1]), frontend: n(hit[2]), label: `${hit[1]} backend, ${hit[2]} frontend` };
-})();
-
-const subject = (s: string) => `mailto:${site.email}?subject=${encodeURIComponent(s)}`;
-
-export const mail = {
-  project: subject("New project"),
-  question: subject("A question before we start"),
-};
-
-/* ------------------------------------------------------------------ */
-/* At a glance (after Rejouice, "at a Glance")                          */
-/* ------------------------------------------------------------------ */
-
-export const glance = {
-  title: "Siddhant at a glance.",
-  email: site.email,
-  sites: {
-    title: `${design.projects.length} live websites`,
-    note: "written, designed and built by me, end to end.",
-    hosts: design.projects.map((p) => p.host),
-  },
-  sectors: [
-    ...design.projects.map((p) => p.sector),
-    ...engineering.projects.filter((p) => p.nda).map((p) => p.domain),
-  ],
-  truvolt: {
-    host: host("truvolt"),
-    src: "/work/truvolt-hero.webp",
-    alt: "Truvolt home page, a website for a transformer manufacturer.",
-  },
-  tests: {
-    title: `${fact("clinical-messaging", 2)} automated tests`,
-    note: "guarding one HIPAA-compliant messaging platform.",
-    split: testSplit,
-  },
-  systems: {
-    title: `${engineering.projects.filter((p) => p.nda).length} production systems`,
-    note: "for healthcare, commerce and finance. Names under NDA, walkthrough on request.",
-  },
-  disciplines: { title: "Two disciplines", note: "Design / Engineering", link: "See the services" },
-  risk: {
-    title: "Trading risk platform",
-    note: `${fact("trading-risk", 1)} news articles read a day, with mirror feeds and circuit breakers.`,
-    big: fact("trading-risk", 2),
-    bigLabel: "uptime",
-  },
-  markets: {
-    title: "India to Switzerland",
-    note: "Sites for businesses in India, Switzerland, the United States and the UAE.",
-    src: "/work/skinrock/mobile.webp",
-    alt: "Skinrock website on a phone.",
-  },
-  place: {
-    title: site.location,
-    note: "Working in IST, with calls in your hours.",
-    here: "Ahmedabad",
-    there: "Your time",
-  },
-} as const;
 
 /* ------------------------------------------------------------------ */
 /* Why hire me (after area17.com/culture, the values)                     */
@@ -150,110 +82,6 @@ export const processCopy = {
     ] as const,
     footer: `${fact("clinical-messaging", 2)} tests passing`,
   },
-} as const;
-
-/* ------------------------------------------------------------------ */
-/* Ways to work together (after Rejouice /services, engagement models)  */
-/* ------------------------------------------------------------------ */
-
-export type WayRow = {
-  name: string;
-  thumb?: string;
-  mark?: "messaging" | "search" | "risk";
-  middle: string;
-  right: string;
-  details?: [string, string][];
-};
-
-export type Way = {
-  id: string;
-  tab: string;
-  tabNote: string;
-  theme: "paper" | "ink" | "deep";
-  word: string;
-  sub: [string, string, string];
-  name: [string, string];
-  body: string;
-  rows: WayRow[];
-};
-
-const site3 = (slug: string): WayRow => {
-  const p = design.projects.find((x) => x.slug === slug)!;
-  return {
-    name: p.name,
-    thumb: p.images.hero,
-    middle: p.sector,
-    right: p.place,
-    details: [
-      ["Role", p.role],
-      ["Stack", p.stack.join(", ")],
-      ["Live", p.host],
-    ],
-  };
-};
-
-/** "Tables under…" reads mid-sentence as "tables under…"; "FastAPI" keeps its capitals. */
-const lowerFirst = (s: string) => (/^[A-Z][a-z]/.test(s) ? s[0].toLowerCase() + s.slice(1) : s);
-
-const sys3 = (slug: string, mark: WayRow["mark"], a: string, b: string): WayRow => {
-  const p = sys(slug)!;
-  return {
-    name: p.title.replace(" platform", ""),
-    mark,
-    middle: p.domain,
-    right: "Under NDA",
-    details: [
-      ["Built", `${p.facts[0].value} ${lowerFirst(p.facts[0].label)}`],
-      [a, b],
-    ],
-  };
-};
-
-export const waysCopy = {
-  title: "Three ways to work together.",
-  ways: [
-    {
-      id: "way-website",
-      tab: "Website project",
-      tabNote: "Scoped before it starts.",
-      theme: "paper",
-      word: "Website",
-      sub: ["One site, written and built", "to win the ", "enquiry."],
-      name: ["Website project.", "Scoped up front."],
-      body: "For manufacturers, brands and agencies that need a site buyers trust. It starts with a call and a written brief that sets the scope. I write the copy, design the pages and build the site, and you review real pages in the browser before anything goes live.",
-      rows: [site3("truvolt"), site3("skinrock"), site3("prefdigihub")],
-    },
-    {
-      id: "way-product",
-      tab: "Product build",
-      tabNote: "Shipped in phases.",
-      theme: "ink",
-      word: "Product",
-      sub: ["A system that holds up", "when it ", "matters."],
-      name: ["Product build.", "Scoped in phases."],
-      body: "For teams that need a backend, a realtime layer or an AI feature in production. Each phase starts with a short scoping note, ships something that runs, and ends with tests and a handover. Start with one phase and decide on the next from there.",
-      rows: [
-        sys3("clinical-messaging", "messaging", "Tested", `${fact("clinical-messaging", 2)} automated tests`),
-        sys3("fashion-commerce", "search", "Result", `${fact("fashion-commerce", 1)} search accuracy, under a second`),
-        sys3("trading-risk", "risk", "Uptime", `${fact("trading-risk", 2)}, with circuit breakers`),
-      ],
-    },
-    {
-      id: "way-partner",
-      tab: "Ongoing partner",
-      tabNote: "Regular time, every month.",
-      theme: "deep",
-      word: "Partner",
-      sub: ["Someone who already knows", "how it all ", "works."],
-      name: ["Ongoing partner.", "Time every month."],
-      body: "For sites and systems after launch: changes, new pages and new features without briefing someone new each time. We agree the time each month and one simple way to send requests, then look back at what shipped before planning the next month.",
-      rows: [
-        { name: "Website care", middle: "Updates, new pages, speed and search checks", right: "On request" },
-        { name: "System care", middle: "Monitoring, fixes and dependency upgrades", right: "Ongoing" },
-        { name: "Product time", middle: "New features on a steady cadence", right: "Planned monthly" },
-      ],
-    },
-  ] satisfies Way[] as Way[],
 } as const;
 
 /* ------------------------------------------------------------------ */

@@ -1,11 +1,12 @@
 "use client";
 
-import { m, useScroll, useTransform, type MotionValue } from "motion/react";
+import { frame, m, useScroll, useTransform, type MotionValue } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
-import { caseStudyOf, design, type LiveProject } from "@/lib/content";
+import { design, type LiveProject } from "@/lib/content";
 import { Board } from "./board";
+import { onScrollFrame } from "./ui/theme";
 import { Fade, Opener, Rise } from "./ui/reveal";
 
 /* ------------------------------------------------------------------ */
@@ -13,8 +14,9 @@ import { Fade, Opener, Rise } from "./ui/reveal";
 /* ------------------------------------------------------------------ */
 
 function Project({ project }: { project: LiveProject }) {
-  const study = caseStudyOf(project.slug);
-  const href = study ? `/work/${project.slug}` : project.url;
+  // Every design project has a case study (lib/content.ts caseStudies). Linking by slug keeps
+  // the case-study text out of the home page's JavaScript.
+  const href = `/work/${project.slug}`;
   return (
     <article data-tone={project.tone} aria-labelledby={`site-${project.slug}`} className="board-row grid gap-x-6 gap-y-5 lg:grid-cols-12">
       {/* Below lg the details sit above the board; a 3-of-12 column there wraps every label. */}
@@ -28,11 +30,9 @@ function Project({ project }: { project: LiveProject }) {
         <div className="md:text-right">
           <p className="t-label mute mt-4">{project.place}</p>
           <p className="t-label mt-4 flex gap-5 md:justify-end">
-            {study ? (
-              <Link href={href} className="link">
-                Case study
-              </Link>
-            ) : null}
+            <Link href={href} className="link">
+              Case study
+            </Link>
             <a href={project.url} target="_blank" rel="noreferrer" className="link">
               Live site
               <span className="sr-only">(opens in a new tab)</span>
@@ -40,7 +40,7 @@ function Project({ project }: { project: LiveProject }) {
           </p>
         </div>
       </Fade>
-      <Link href={href} aria-label={`${project.name}: ${study ? "case study" : "live site"}`} className="block lg:col-span-9">
+      <Link href={href} aria-label={`${project.name}: case study`} className="block lg:col-span-9">
         <Board project={project} />
       </Link>
     </article>
@@ -53,42 +53,50 @@ function Project({ project }: { project: LiveProject }) {
  */
 function useBoardTint(section: React.RefObject<HTMLElement | null>) {
   useEffect(() => {
-    const root = document.documentElement;
-    const ink = [15, 11, 10];
-    const mix = (hex: string, k: number) => {
-      const n = parseInt(hex.slice(1), 16);
-      const c = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-      return `rgb(${c.map((v, i) => Math.round(ink[i] * (1 - k) + v * k)).join(" ")})`;
-    };
-    let raf = 0;
+    // The tint layer sits over the page background (see GLRoot): the row's colour at 22% over
+    // ink, which is the same colour as mixing it into --bg, but changes only one layer.
+    const tint = document.querySelector<HTMLElement>("[data-page-tint]");
     let current = "";
-    const compute = () => {
-      raf = 0;
+    let near = false;
+    const rows = section.current ? [...section.current.querySelectorAll<HTMLElement>(".board-row")] : [];
+    const read = () => {
       const el = section.current;
-      if (!el) return;
-      const mid = window.innerHeight / 2;
-      const box = el.getBoundingClientRect();
+      if (!el || !tint) return;
       let tone = "";
-      if (box.top < mid && box.bottom > mid) {
-        for (const row of el.querySelectorAll<HTMLElement>(".board-row")) {
-          const r = row.getBoundingClientRect();
-          if (r.top < mid + 120 && r.bottom > mid - 120) tone = row.dataset.tone ?? "";
+      // Only while the section is on screen (an observer says so) are its rows measured.
+      if (near) {
+        const mid = window.innerHeight / 2;
+        const box = el.getBoundingClientRect();
+        if (box.top < mid && box.bottom > mid) {
+          for (const row of rows) {
+            const r = row.getBoundingClientRect();
+            if (r.top < mid + 120 && r.bottom > mid - 120) tone = row.dataset.tone ?? "";
+          }
         }
       }
       if (tone === current) return;
+      const from = current;
       current = tone;
-      if (tone) root.style.setProperty("--bg", mix(tone, 0.22));
-      else root.style.removeProperty("--bg");
+      frame.render(() => {
+        if (tone && !from) {
+          // From no tint: take the new colour at once (only the opacity eases), then fade in.
+          tint.style.transition = "opacity .35s ease-in-out";
+          requestAnimationFrame(() => (tint.style.transition = ""));
+        }
+        if (tone) tint.style.backgroundColor = tone;
+        tint.style.opacity = tone ? "0.22" : "0";
+      });
     };
-    const schedule = () => {
-      if (!raf) raf = requestAnimationFrame(compute);
-    };
-    compute();
-    window.addEventListener("scroll", schedule, { passive: true });
+    const io = new IntersectionObserver(([e]) => {
+      near = e.isIntersecting;
+      read();
+    });
+    if (section.current) io.observe(section.current);
+    const off = onScrollFrame(read);
     return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("scroll", schedule);
-      root.style.removeProperty("--bg");
+      off();
+      io.disconnect();
+      if (tint) tint.style.opacity = "0";
     };
   }, [section]);
 }

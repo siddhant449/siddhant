@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { onScrollFrame } from "@/components/ui/theme";
 import { processCopy as c } from "@/lib/copy/pitch";
 import s from "./process.module.css";
 
@@ -46,25 +47,23 @@ export function Process() {
     if (!el) return;
     const io = new IntersectionObserver(([e]) => e.isIntersecting && setReady(true), { threshold: 0.05 });
     io.observe(el);
-    let raf = 0;
     const update = () => {
-      raf = 0;
       const r = el.getBoundingClientRect();
       const run = r.height - window.innerHeight;
       const p = run > 0 ? Math.min(0.999, Math.max(0, -r.top / run)) : 0;
       setStep(Math.floor(p * c.steps.length));
     };
-    const schedule = () => {
-      if (!raf) raf = requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
+    // The pin is measured on scroll only while the section is on screen.
+    let off = () => {};
+    const near = new IntersectionObserver(([e]) => {
+      off();
+      off = e.isIntersecting ? onScrollFrame(update) : () => {};
+    });
+    near.observe(el);
     return () => {
       io.disconnect();
-      cancelAnimationFrame(raf);
-      window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
+      near.disconnect();
+      off();
     };
   }, []);
 

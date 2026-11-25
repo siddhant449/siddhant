@@ -32,11 +32,8 @@
   --bg: var(--ink);
   --fg: var(--paper);
   --surface: var(--ink-2);
-  /* Instrument's section switch, measured: 350ms ease-in-out. */
-  transition:
-    --bg 0.35s ease-in-out,
-    --fg 0.35s ease-in-out,
-    --surface 0.35s ease-in-out;
+  /* Theme switches are instant on the variables (transitioning them restyled the whole page every
+     frame); the page background alone eases on <body>, Instrument's measured 350ms ease-in-out. */
 }
 
 :root[data-theme="paper"] {
@@ -77,6 +74,7 @@
   }
   body {
     background: var(--bg);
+    transition: background-color 0.35s ease-in-out;
     color: var(--fg);
     font-family: var(--font-sans);
     font-size: 17px;
@@ -194,19 +192,6 @@
   .btn-line:hover {
     border-color: currentColor;
   }
-  /* An arrow that leans the way it points. */
-  .nudge {
-    display: inline-block;
-    transition: transform 0.32s var(--ease-out);
-  }
-  a:hover .nudge,
-  button:hover .nudge {
-    transform: translateX(4px);
-  }
-  a:hover .nudge-up,
-  button:hover .nudge-up {
-    transform: translate(2px, -2px);
-  }
   .dot {
     display: inline-block;
     width: 7px;
@@ -226,8 +211,7 @@
 }
 
 /* ------------------------------------------------------------------ */
-/* Intro: no loader. The hero assembles itself on first paint.          */
-/* Repeat visits in the same tab run it three times faster.             */
+/* Case-study entrances. Repeat visits in the same tab run them faster.  */
 /* ------------------------------------------------------------------ */
 .intro-mask {
   display: block;
@@ -247,12 +231,6 @@
   animation: intro-up 0.6s var(--ease-out) forwards;
   animation-delay: var(--d, 0s);
 }
-.intro-draw {
-  transform: scaleX(0);
-  transform-origin: left;
-  animation: intro-draw 0.5s var(--ease-reveal) forwards;
-  animation-delay: var(--d, 0s);
-}
 /* Melon's heading heat: the line arrives red and soft, then cools into the text colour. */
 .intro-mask > span.intro-heat {
   color: var(--signal);
@@ -270,8 +248,7 @@ html[data-seen] .intro-mask > span.intro-heat {
   animation-delay: calc(var(--d, 0s) / 3), calc(var(--d, 0s) / 3);
 }
 html[data-seen] .intro-mask > span,
-html[data-seen] .intro-up,
-html[data-seen] .intro-draw {
+html[data-seen] .intro-up {
   animation-duration: 0.35s;
   animation-delay: calc(var(--d, 0s) / 3);
 }
@@ -281,19 +258,10 @@ html[data-seen] .intro-draw {
 @keyframes intro-up {
   to { opacity: 1; transform: none; }
 }
-@keyframes intro-draw {
-  to { transform: scaleX(1); }
-}
 
 /* Entrances wait for the entry curtain to start lifting (first visit only). */
-html:not([data-seen]):not([data-loaded]) :is(.intro-mask > span, .intro-up, .intro-draw) {
+html:not([data-seen]):not([data-loaded]) :is(.intro-mask > span, .intro-up) {
   animation-play-state: paused;
-}
-
-/* The molten wordmark's plain-type stand-in shows only if WebGL never starts. */
-.molten-fallback {
-  opacity: 0;
-  animation: intro-up 0.6s var(--ease-out) 2.2s forwards;
 }
 
 /* ------------------------------------------------------------------ */

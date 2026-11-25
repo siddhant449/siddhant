@@ -1,6 +1,6 @@
 /**
  * The ember: a cooling molten body. Dark glossy crust, heat in the seams in the brand's
- * signal red, lit by Poly Haven's "Studio Small 09" (CC0), stored in /kit/hdri-studio.webp as
+ * violet signal, lit by Poly Haven's "Studio Small 09" (CC0), stored in /kit/hdri-studio.webp as
  * y = (x / (1 + x))^(1/2.2) so it can be served as an 8-bit image (lossless WebP, 256 × 128:
  * the clearcoat's sharpest reflection samples the environment at about a 90px cube face, so a
  * larger map renders the same; it was downsampled in linear radiance). Loaded on demand by <Ember>.
@@ -171,7 +171,7 @@ export function mountEmber(
 
   const uniforms = { uTime: { value: 8 }, uHeat: { value: opts.heat ?? 1 } };
   const mat = new MeshPhysicalMaterial({
-    color: new Color("#1b1513"),
+    color: new Color("#1a1723"),
     roughness: 0.34,
     metalness: 0,
     clearcoat: 1,
@@ -211,9 +211,9 @@ export function mountEmber(
         heat *= 0.82 + 0.18 * sin(uTime * 1.3 + vObj.y * 3.0);
         roughnessFactor = mix(roughnessFactor, 0.12, clamp(heat, 0.0, 1.0));`)
       .replace("#include <emissivemap_fragment>", `#include <emissivemap_fragment>
-        vec3 kDeep = vec3(0.152, 0.0042, 0.0015);   // #6e0d05 linear
-        vec3 kSig  = vec3(1.0, 0.042, 0.010);       // #ff3a1a linear
-        vec3 kHot  = vec3(1.0, 0.42, 0.18);
+        vec3 kDeep = vec3(0.042, 0.019, 0.168);    // #3a2672 linear
+        vec3 kSig  = vec3(0.338, 0.201, 1.0);      // #9d7cff linear
+        vec3 kHot  = vec3(0.70, 0.60, 1.0);
         vec3 glow = mix(kDeep, kSig, smoothstep(0.0, 0.7, heat));
         glow = mix(glow, kHot, smoothstep(0.85, 1.5, heat));
         totalEmissiveRadiance += glow * heat * 2.4;`);
@@ -222,7 +222,7 @@ export function mountEmber(
   const geo = icosphere(phone ? 40 : 64);
   const mesh = new Mesh(geo, mat);
   scene.add(mesh);
-  const key = new DirectionalLight(0xffe2d6, 0.35);
+  const key = new DirectionalLight(0xe6e0ff, 0.35);
   key.position.set(2, 3, 4);
   scene.add(key);
 

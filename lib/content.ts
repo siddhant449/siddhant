@@ -10,7 +10,6 @@ export const site = {
   shortName: "Siddhant",
   role: "Designer & fullstack AI engineer",
   location: "Ahmedabad, India",
-  timeZone: "Asia/Kolkata",
   email: "siddharthkotak280@gmail.com",
   url: "https://siddhant-xi.vercel.app",
   links: {
@@ -27,6 +26,7 @@ export const nav = [
   { label: "Design", href: "#design" },
   { label: "Engineering", href: "#engineering" },
   { label: "Why me", href: "#why" },
+  { label: "Tech stack", href: "#toolbox" },
   { label: "About", href: "#about" },
 ] as const;
 
@@ -76,7 +76,7 @@ export const design = {
   index: "01",
   label: "Design",
   meta: "Designed and built end to end",
-  title: "Websites",
+  title: "Design case studies",
   intro:
     "Five live sites for a transformer maker, a Swiss stone brand, a skincare label and two growth agencies. Each one written, designed and built by me.",
   projects: [
@@ -264,7 +264,7 @@ export const engineering = {
   index: "02",
   label: "Engineering",
   meta: "Three under NDA, one personal",
-  title: "Systems",
+  title: "Engineering software case studies",
   intro:
     "Production systems for clients in healthcare, commerce and finance. Their names stay private; the architecture and the numbers don’t.",
   stamp: "Under NDA · walkthrough on request",

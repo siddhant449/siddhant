@@ -5,7 +5,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "re
 import { sethFooter, sethLinks } from "@/lib/copy/seth";
 import c from "./cursor.module.css";
 import { attachDotField, type HandsLayout } from "./dot-field";
-import { PixelDoc, PixelMail, SethClock, SethYear, useCopyEmail } from "./parts";
+import { PixelDoc, PixelMail, SethYear, useCopyEmail } from "./parts";
 import s from "./seth-footer.module.css";
 
 const useIso = typeof window === "undefined" ? useEffect : useLayoutEffect;
@@ -143,12 +143,6 @@ export function SethFooterView({ now }: { now?: ReactNode }) {
 
           {now}
 
-          <p className={`${s.meta} ${s.city} ${s.lbl}`}>
-            {sethFooter.place}
-            <span className={s.clock}>
-              <SethClock colonClass={s.colon} /> IST
-            </span>
-          </p>
           <p className={`${s.meta} ${s.avail} ${s.lbl}`}>
             <span className={s.dot} aria-hidden />
             {sethFooter.status}

@@ -63,7 +63,7 @@ void main(){
   float g = band*.34 + edge*.38;
   g *= .55 + .45*smoothstep(.3,.7, fbm(a*.6 - t*.01));
   float ember = smoothstep(.55,.85, w2.y) * band;
-  vec3 stone = vec3(.769,.718,.706), red = vec3(1.,.227,.102), deep = vec3(.431,.051,.02);
+  vec3 stone = vec3(.635,.616,.710), red = vec3(.616,.486,1.), deep = vec3(.227,.149,.447);
   vec3 col = stone*g;
   col = mix(col, mix(deep, red, smoothstep(.65,.95,w2.y))*(g*1.3+.15), ember*.75);
   col += red*k*.18*band;
@@ -83,7 +83,7 @@ ${NOISE}
 const vec2 IMG = vec2(${HANDS_IMG[0]}., ${HANDS_IMG[1]}.), GAP = vec2(${HANDS_GAP[0]}., ${HANDS_GAP[1]}.);
 const float TAU = 6.2831853;
 vec3 ramp(float t){
-  vec3 ink=vec3(.059,.043,.039), deep=vec3(.431,.051,.02), red=vec3(1.,.227,.102), hot=vec3(1.,.55,.36), paper=vec3(.965,.937,.929);
+  vec3 ink=vec3(.067,.059,.090), deep=vec3(.227,.149,.447), red=vec3(.616,.486,1.), hot=vec3(.80,.72,1.), paper=vec3(.925,.914,.953);
   if(t<.3) return mix(ink,deep,t/.3);
   if(t<.62) return mix(deep,red,(t-.3)/.32);
   if(t<.88) return mix(red,hot,(t-.62)/.26);
@@ -132,9 +132,9 @@ void main(){
   vec3 col = ramp(clamp(heat, 0., 1.))*on;
   // a spark in the gap itself, strongest as the fingertips close
   float sp = exp(-gd*gd/(.008*.008)*.5)*(.55 + .45*b)*(1. - on);
-  col += mix(vec3(.431,.051,.02), vec3(1.,.227,.102), b)*sp;
+  col += mix(vec3(.227,.149,.447), vec3(.616,.486,1.), b)*sp;
   // faint rings in the empty ink around the pointer
-  col += vec3(.431,.051,.02)*k*smoothstep(.55,1.,wave)*(1. - on)*.9;
+  col += vec3(.227,.149,.447)*k*smoothstep(.55,1.,wave)*(1. - on)*.9;
   // alpha carries the dot size for the dots pass
   float size = on > 0. ? .42 + .58*shade + .1*sweep : .55;
   o = vec4(col*uHas, clamp(size, 0., 1.));
@@ -151,7 +151,7 @@ void main(){
   // uVar > 0 scales each dot by the size the scene wrote to alpha (a halftone)
   float d = length(css-(cell+.5)*uPitch), r = uPitch*uR*mix(1., c.a, uVar);
   float a = smoothstep(r+1./uDpr, r-1./uDpr, d) * smoothstep(uLo, uLo*3., lum);
-  vec3 bg = vec3(.059,.043,.039);
+  vec3 bg = vec3(.067,.059,.090);
   o = vec4(mix(bg, max(bg, s*1.08), a), 1.);
 }`;
 

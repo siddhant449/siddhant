@@ -2,8 +2,8 @@
 .title {
   position: relative;
   padding: 88px 40px 120px;
-  background: var(--paper);
-  color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
   overflow: hidden;
 }
 .ink {

@@ -17,7 +17,7 @@
   overflow: hidden;
   background: var(--ink);
   color: var(--paper);
-  background-image: radial-gradient(circle at center, rgb(196 183 180 / 0.05) 1.6px, transparent 2px);
+  background-image: radial-gradient(circle at center, rgb(162 157 181 / 0.05) 1.6px, transparent 2px);
   background-size: 7.5px 7.5px;
 }
 .ui {
@@ -176,23 +176,8 @@
   bottom: 0.833vw;
   margin: 0;
 }
-.city {
-  left: 55vw;
-}
 .avail {
   left: 83.54vw;
-}
-.clock {
-  display: block;
-  letter-spacing: -0.02em;
-}
-.colon {
-  animation: blink 1s steps(1) infinite;
-}
-@keyframes blink {
-  50% {
-    opacity: 0;
-  }
 }
 .dot {
   display: inline-block;
@@ -206,13 +191,13 @@
 }
 @keyframes pulse {
   0% {
-    box-shadow: 0 0 0 0 rgb(255 58 26 / 0.55);
+    box-shadow: 0 0 0 0 rgb(157 124 255 / 0.55);
   }
   70% {
-    box-shadow: 0 0 0 0.5em rgb(255 58 26 / 0);
+    box-shadow: 0 0 0 0.5em rgb(157 124 255 / 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgb(255 58 26 / 0);
+    box-shadow: 0 0 0 0 rgb(157 124 255 / 0);
   }
 }
 
@@ -282,9 +267,6 @@
   .meta {
     bottom: 40px;
   }
-  .city {
-    left: 2.8vw;
-  }
   .avail {
     left: auto;
     right: 2.8vw;
@@ -298,7 +280,6 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .colon,
   .dot {
     animation: none;
   }

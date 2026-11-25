@@ -2,24 +2,27 @@
 @import "lenis/dist/lenis.css";
 
 /*
-  Ember
-  Ink page, paper type, one vermilion. Two families (Geist, Geist Mono) and
+  Deep violet
+  Ink page, paper type, one violet. Two families (Geist, Geist Mono) and
   one italic accent (Newsreader). One spacing token per role, three radii,
   three easings. Sections set data-theme="ink" or "paper" and the page eases
   between them; --bg, --fg and --surface are the live values.
 */
-@property --bg { syntax: "<color>"; inherits: true; initial-value: #0f0b0a; }
-@property --fg { syntax: "<color>"; inherits: true; initial-value: #f6efed; }
-@property --surface { syntax: "<color>"; inherits: true; initial-value: #1b1513; }
+@property --bg { syntax: "<color>"; inherits: true; initial-value: #110f17; }
+@property --fg { syntax: "<color>"; inherits: true; initial-value: #ece9f3; }
+@property --surface { syntax: "<color>"; inherits: true; initial-value: #1a1723; }
 
 :root {
-  --ink: #0f0b0a;
-  --ink-2: #1b1513;
-  --paper: #f6efed;
-  --paper-2: #ece4e1;
-  --stone: #c4b7b4;
-  --signal: #ff3a1a;
-  --deep: #6e0d05;
+  /* Deep violet (owner's pick): one dark page throughout, no light sections.
+     ink = page, ink-2 = cards, ink-3 = raised; paper = text; signal = the violet accent. */
+  --ink: #110f17;
+  --ink-2: #1a1723;
+  --ink-3: #242031;
+  --paper: #ece9f3;
+  --paper-2: #d9d4e6;
+  --stone: #a29db5;
+  --signal: #9d7cff;
+  --deep: #3a2672;
 
   --m: clamp(16px, 2.8vw, 40px);
   --gap: 24px;
@@ -37,14 +40,16 @@
 }
 
 :root[data-theme="paper"] {
-  --bg: var(--paper);
-  --fg: var(--ink);
-  --surface: var(--paper-2);
+  /* Retired: the site stays dark. Kept so stray data-theme="paper" never flashes light. */
+  --bg: var(--ink);
+  --fg: var(--paper);
+  --surface: var(--ink-2);
 }
 
 @theme inline {
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
   --color-paper: var(--paper);
   --color-stone: var(--stone);
   --color-signal: var(--signal);
@@ -292,11 +297,11 @@ footer {
     transition: color 0.25s var(--ease-out);
   }
   .toolbox-cell[data-lit="on"] .toolbox-mark {
-    color: var(--brand, var(--ink));
+    color: var(--brand, var(--fg));
   }
   .toolbox-cell[data-lit="on"] .toolbox-text,
   .toolbox-cell[data-lit="on"] span.toolbox-mark {
-    color: var(--ink);
+    color: var(--fg);
   }
 }
 

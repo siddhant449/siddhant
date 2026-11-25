@@ -19,9 +19,10 @@ import s from "./capabilities.module.css";
  */
 const START = 0.68;
 const RANGE = 0.425;
-const INK2 = [27, 21, 19];
-const PAPER = [246, 239, 237];
-const INK = [15, 11, 10];
+// The open card lifts to a violet-tinted raised dark; text stays light (the site is all dark).
+const INK2 = [26, 23, 35];
+const PAPER = [236, 233, 243];
+const INK = [38, 32, 56];
 const mix = (a: number[], b: number[], k: number) => `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * k)).join(",")})`;
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 
@@ -53,8 +54,8 @@ export function Capabilities() {
       const part = parts[i];
       const h = 1 - Math.pow(1 - p, 1.25);
       const c = 1 - Math.pow(1 - p, 2.4);
-      part.fill.style.background = mix(INK2, PAPER, c);
-      part.el.style.color = mix(PAPER, INK, c);
+      part.fill.style.background = mix(INK2, INK, c);
+      part.el.style.color = mix(PAPER, PAPER, c);
       part.media.style.opacity = h.toFixed(3);
       part.acc.style.height = `${(part.ch * h).toFixed(1)}px`;
       figs[i].setActive(h > 0.02);

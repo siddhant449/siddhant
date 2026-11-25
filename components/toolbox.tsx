@@ -44,14 +44,20 @@ type Icon = { path: string; hex: string; title: string };
 const ICONS: Record<string, Icon> = { siApachekafka, siCelery, siClaude, siDocker, siDrizzle, siElasticsearch, siExpress, siFastapi, siFigma, siGithubactions, siGooglegemini, siGrafana, siLangchain, siMlflow, siMongodb, siNextdotjs, siNodedotjs, siPostgresql, siPython, siPytorch, siReact, siRedis, siScikitlearn, siSentry, siSocketdotio, siTailwindcss, siThreedotjs, siTurborepo, siTypescript, siVercel, siVite, siVitest, siWebgl };
 const iconOf = (name: string | null) => (name ? (ICONS[name] ?? null) : null);
 
-/** Brand colours too dark to read on white fall back to ink. */
+/** Brand colours too dark to read on the dark lit cell fall back to the text colour. */
 function brand(hex: string) {
   const n = parseInt(hex, 16);
   const l = (0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
-  return l < 0.12 ? "#0d0302" : `#${hex}`;
+  return l < 0.22 ? "var(--fg)" : `#${hex}`;
 }
 
-const BLOCK = 5;
+const BLOCK = 4;
+
+const smooth = (a: number, b: number, x: number) => {
+  const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
+  return t * t * (3 - 2 * t);
+};
+
 
 /**
  * Touch screens have no hover: a cell catches as it scrolls through the middle band of the
@@ -95,13 +101,18 @@ function Cell({ tool }: { tool: (typeof toolbox.tools)[number] }) {
     let origin = { x: 0, y: 0 };
     let raf = 0;
     let last = 0;
+    /** The lit colour, from --tool-lit on the grid ("r g b"), so it follows the palette. */
+    let lit: [number, number, number] = [34, 29, 48];
 
     /** Creates the canvas (first catch) and sizes it to the cell. */
     const wake = (r: DOMRect) => {
       if (!cv) {
+        const css = getComputedStyle(el).getPropertyValue("--tool-lit").trim().split(/[\s,]+/).map(Number);
+        if (css.length === 3 && css.every((n) => Number.isFinite(n))) lit = css as [number, number, number];
         cv = document.createElement("canvas");
         cv.setAttribute("aria-hidden", "true");
-        cv.className = "pointer-events-none absolute inset-0 h-full w-full [image-rendering:pixelated]";
+        // Drawn small and scaled up smoothly: the browser's filtering softens the front into a glow.
+        cv.className = "pointer-events-none absolute inset-0 h-full w-full";
         el.prepend(cv);
         ctx = cv.getContext("2d");
       }
@@ -113,8 +124,38 @@ function Cell({ tool }: { tool: (typeof toolbox.tools)[number] }) {
         cv.width = cols;
         cv.height = rows;
         img = ctx ? ctx.createImageData(cols, rows) : null;
-        noise = new Float32Array(cols * rows);
-        for (let i = 0; i < noise.length; i++) noise[i] = Math.random();
+        // Soft noise: random values blurred twice, so the front is ragged in waves, not in pixels.
+        const raw = new Float32Array(cols * rows);
+        for (let i = 0; i < raw.length; i++) raw[i] = Math.random();
+        noise = raw;
+        for (let pass = 0; pass < 2; pass++) {
+          const out = new Float32Array(cols * rows);
+          for (let y = 0; y < rows; y++) {
+            for (let x = 0; x < cols; x++) {
+              let sum = 0;
+              let n = 0;
+              for (let dy = -2; dy <= 2; dy++) {
+                for (let dx = -2; dx <= 2; dx++) {
+                  const xx = x + dx;
+                  const yy = y + dy;
+                  if (xx < 0 || yy < 0 || xx >= cols || yy >= rows) continue;
+                  sum += noise[yy * cols + xx];
+                  n++;
+                }
+              }
+              out[y * cols + x] = sum / n;
+            }
+          }
+          noise = out;
+        }
+        // Stretch back to 0..1 after the blur flattened it.
+        let lo = 1;
+        let hi = 0;
+        for (const v of noise) {
+          lo = Math.min(lo, v);
+          hi = Math.max(hi, v);
+        }
+        for (let i = 0; i < noise.length; i++) noise[i] = (noise[i] - lo) / Math.max(1e-3, hi - lo);
       }
     };
     /** Burnt out: the canvas goes, so a cold grid holds no canvases at all. */
@@ -133,23 +174,28 @@ function Cell({ tool }: { tool: (typeof toolbox.tools)[number] }) {
       const d = img.data;
       d.fill(0);
       const dmax = Math.hypot(cols, rows);
-      const front = p * 1.45;
-      const edge = 0.16;
+      const front = p * 1.62; // reaches past the far corner (distance 1 + noise + edge) at p = 1
+      const edge = 0.34;
+      const [lr, lg, lb] = lit;
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
           const i = y * cols + x;
-          const v = Math.hypot(x - origin.x, y - origin.y) / dmax + noise[i] * 0.38;
+          const v = Math.hypot(x - origin.x, y - origin.y) / dmax + noise[i] * 0.32;
+          const a = (front - v) / edge; // 0 at the leading edge, 1 where the cell is fully lit
+          if (a <= 0) continue;
           const o = i * 4;
-          if (v < front - edge) {
-            d[o] = 250; d[o + 1] = 246; d[o + 2] = 243; d[o + 3] = 255;
-          } else if (v < front) {
-            // Ember: yellow at the inside of the front, red at the outside.
-            const t = (front - v) / edge;
-            d[o] = 255;
-            d[o + 1] = Math.round(36 + t * 200);
-            d[o + 2] = Math.round(16 + t * t * 160);
-            d[o + 3] = Math.round(140 + t * 115);
-          }
+          // A soft violet glow at the edge (never full strength), lavender behind it, settling
+          // into the lit colour: a slightly lifted violet dark, so nothing flashes bright.
+          const hot = smooth(0, 0.6, a);
+          const cool = smooth(0.35, 1, a);
+          const er = 140 + hot * 46;
+          const eg = 104 + hot * 58;
+          const eb = 236 + hot * 19;
+          const ea = 0.42 * smooth(0, 0.4, a);
+          d[o] = Math.round(er + (lr - er) * cool);
+          d[o + 1] = Math.round(eg + (lg - eg) * cool);
+          d[o + 2] = Math.round(eb + (lb - eb) * cool);
+          d[o + 3] = Math.round(255 * (ea + (1 - ea) * cool));
         }
       }
       ctx.putImageData(img, 0, 0);
@@ -159,8 +205,10 @@ function Cell({ tool }: { tool: (typeof toolbox.tools)[number] }) {
       // (a frame's timestamp can precede the performance.now() taken when it was requested)
       const dt = Math.min(0.05, Math.max(0, (now - last) / 1000) || 0.016);
       last = now;
-      const speed = target > p ? 2.6 : 2.1;
-      p = target > p ? Math.min(target, p + dt * speed) : Math.max(target, p - dt * speed);
+      // Eases out in both directions: it glides toward the target and settles softly, and a
+      // change of direction mid-burn just turns around, with no jump.
+      p += (target - p) * (1 - Math.exp(-dt * (target > p ? 2.2 : 2.6)));
+      if (Math.abs(target - p) < 0.003) p = target;
       draw();
       if (p !== target) raf = requestAnimationFrame(tick);
       else raf = 0;

@@ -74,20 +74,20 @@ function poseOf(i: number, t: number, view: View) {
 
 const status = {
   todo: (
-    <svg viewBox="0 0 14 14" fill="none" stroke="#645b58" strokeWidth="1.4" aria-hidden>
+    <svg viewBox="0 0 14 14" fill="none" stroke="#615c77" strokeWidth="1.4" aria-hidden>
       <circle cx="7" cy="7" r="5.5" />
     </svg>
   ),
   prog: (
     <svg viewBox="0 0 14 14" fill="none" aria-hidden>
-      <circle cx="7" cy="7" r="5.5" stroke="#ff3a1a" strokeWidth="1.4" />
-      <path d="M7 7V1.5A5.5 5.5 0 0 1 12.5 7Z" fill="#ff3a1a" />
+      <circle cx="7" cy="7" r="5.5" stroke="#9d7cff" strokeWidth="1.4" />
+      <path d="M7 7V1.5A5.5 5.5 0 0 1 12.5 7Z" fill="#9d7cff" />
     </svg>
   ),
   done: (
     <svg viewBox="0 0 14 14" aria-hidden>
-      <circle cx="7" cy="7" r="6.2" fill="#c4b7b4" />
-      <path d="M4.3 7.2 6.2 9l3.6-3.8" stroke="#161210" strokeWidth="1.5" fill="none" />
+      <circle cx="7" cy="7" r="6.2" fill="#a29db5" />
+      <path d="M4.3 7.2 6.2 9l3.6-3.8" stroke="#16131e" strokeWidth="1.5" fill="none" />
     </svg>
   ),
 };
@@ -171,7 +171,7 @@ function drawRig(c: CanvasRenderingContext2D, cx: number, cy: number, k: number,
   const cA = CAMS[ci];
   const camX = cx + Math.cos(-cA + 0.62 - Math.PI / 2) * R;
   const camY = cy + Math.sin(-cA + 0.62 - Math.PI / 2) * R * Math.sin(0.55);
-  c.strokeStyle = "rgba(255,58,26,.5)";
+  c.strokeStyle = "rgba(157, 124, 255,.5)";
   c.beginPath();
   c.moveTo(camX, camY);
   c.lineTo(cx - 40 * k, cy);
@@ -180,11 +180,11 @@ function drawRig(c: CanvasRenderingContext2D, cx: number, cy: number, k: number,
   c.stroke();
   // The rig sits behind the cast; the camera body stays on top so it is always readable.
   drawScene(c, cx, cy, 30 * k, MAIN, 0.55, 1, t);
-  c.fillStyle = "#ff3a1a";
+  c.fillStyle = "#9d7cff";
   c.beginPath();
   c.roundRect(camX - 7, camY - 5, 14, 10, 2);
   c.fill();
-  c.fillStyle = "#8e8481";
+  c.fillStyle = "#8c87a2";
   c.font = monoFont(12);
   c.fillText(`${copy.camera.toUpperCase()} ${ci + 1} / 4`, lx, ly);
 }
@@ -214,15 +214,15 @@ function drawPage(c: CanvasRenderingContext2D, px: number, py: number, pw: numbe
     if (k > 0)
       drawScene(c, x + w / 2, y + h * (shot.focus ? 0.5 : 0.62), (Math.min(w, h) / 9.5) * shot.zoom, CAMS[i], 0.5, k, t, shot.focus);
     if (i === ci && k < 1) {
-      c.fillStyle = "rgba(255,58,26,.12)";
+      c.fillStyle = "rgba(157, 124, 255,.12)";
       c.fillRect(x, y + h * k - 2, w, 2);
     }
     c.restore();
-    c.strokeStyle = i === ci ? "rgba(255,58,26,.7)" : "rgba(246,239,237,.35)";
+    c.strokeStyle = i === ci ? "rgba(157, 124, 255,.7)" : "rgba(246,239,237,.35)";
     c.lineWidth = 1.5;
     c.strokeRect(x + 0.75, y + 0.75, w - 1.5, h - 1.5);
   });
-  c.fillStyle = "#8e8481";
+  c.fillStyle = "#8c87a2";
   c.font = monoFont(12);
   c.fillText(copy.page.toUpperCase(), px, py + ph + 26);
 }

@@ -8,7 +8,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { hero, nav, site } from "@/lib/content";
 import { onReady } from "./loader";
 import s from "./nav.module.css";
-import { LocalTime } from "./ui/local-time";
 import { onScrollFrame } from "./ui/theme";
 
 /** The nav entry whose section crosses the middle of the viewport, if any. */
@@ -244,9 +243,6 @@ export function Nav() {
           </Link>
         )}
         <div className={s.right}>
-          <span className={`${s.chip} ${s.small} ${s.status}`} role="img" aria-label={available} title={available}>
-            <i />
-          </span>
           <SectionLink onHome={onHome} href="#contact" className={`${s.chip} ${s.small} ${s.talk}`}>
             <span className={s.lead} aria-hidden="true" />
             <span className={s.talkText}>Start a project</span>
@@ -303,12 +299,6 @@ export function Nav() {
         </div>
         <div className={`${s.card} ${s.avail}`}>
           <h3>{available}</h3>
-          <p className={s.field}>
-            <span>{site.location.split(",")[0]}</span>
-            <b>
-              <LocalTime /> IST
-            </b>
-          </p>
         </div>
         <SectionLink onHome={onHome} href="#contact" onClick={(e) => go(e, "#contact")} className={`${s.card} ${s.talkCard}`}>
           <span>Start a project</span>

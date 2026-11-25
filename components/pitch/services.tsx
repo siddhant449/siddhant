@@ -39,7 +39,7 @@ export function Services() {
   }, []);
 
   return (
-    <section ref={root} id="why" data-nav="why" data-theme="paper" aria-labelledby="why-title" className={s.section}>
+    <section ref={root} id="why" data-nav="why" data-theme="ink" aria-labelledby="why-title" className={s.section}>
       <header>
         <h2 id="why-title" className={`${s.h1} ${s.tertiary}`}>
           {whyCopy.title}

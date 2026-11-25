@@ -27,7 +27,7 @@
   transform-origin: 50% 50%;
   will-change: transform;
   /* static fallback / pre-WebGL: a faint dot grid */
-  background-image: radial-gradient(circle at center, rgb(196 183 180 / 0.08) 1.6px, transparent 2px);
+  background-image: radial-gradient(circle at center, rgb(162 157 181 / 0.08) 1.6px, transparent 2px);
   background-size: 6.5px 6.5px;
 }
 .stage > canvas {
@@ -65,7 +65,7 @@
   letter-spacing: -0.035em;
   text-transform: uppercase;
   white-space: nowrap;
-  color: #8a8180;
+  color: #8a85a0;
   opacity: 0;
   transform: translateY(10.56vw);
   transition:
@@ -191,26 +191,6 @@
 .footR {
   left: 78.47vw;
 }
-.footC {
-  left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
-  white-space: nowrap;
-  color: var(--stone);
-  opacity: 0;
-  transition: opacity 0.6s var(--ease-out) 1.2s;
-}
-.on .footC {
-  opacity: 1;
-}
-.colon {
-  animation: blink 1s steps(1) infinite;
-}
-@keyframes blink {
-  50% {
-    opacity: 0;
-  }
-}
 
 /* phone: the reference stacks the two words at the top, bubble and sprite mid, labels centred */
 @media (max-width: 720px) {
@@ -256,31 +236,17 @@
   .footR {
     top: 673px;
   }
-  .footC {
-    top: 740px;
-    transform: none;
-    font-size: 14px;
-  }
-}
-@media (max-width: 720px) and (max-height: 780px) {
-  .footC {
-    display: none;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .word,
   .sprite,
-  .footC,
   .stage > canvas {
     transition: none !important;
     animation: none !important;
   }
   .sprite {
     opacity: 1;
-  }
-  .colon {
-    animation: none;
   }
 }
 
@@ -327,10 +293,5 @@
   }
   .footR {
     top: calc(78svh + 68px);
-  }
-  .footC {
-    top: calc(78svh + 146px);
-    transform: none;
-    font-size: 16px;
   }
 }

@@ -594,7 +594,7 @@ export function mountFigure(canvas: HTMLCanvasElement, figure: CapabilityFigure,
   if (!g) return { setActive: () => {}, destroy: () => {} };
   const css = getComputedStyle(document.documentElement);
   const col = (v: string, f: string) => css.getPropertyValue(v).trim() || f;
-  const P: Pal = { fg: col("--ink", "#0f0b0a"), sig: col("--signal", "#ff3a1a"), bg: col("--paper", "#f6efed") };
+  const P: Pal = { fg: col("--paper", "#ece9f3"), sig: col("--signal", "#9d7cff"), bg: col("--ink-3", "#242031") };
   const F: Fonts = {
     sans: getComputedStyle(document.body).fontFamily,
     mono: `${col("--font-geist-mono", "ui-monospace")}, ui-monospace, monospace`,

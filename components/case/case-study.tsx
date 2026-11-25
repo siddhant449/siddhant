@@ -71,11 +71,11 @@ function Cover({ study }: { study: CaseStudy }) {
   }
   const system = engineering.projects.find((p) => p.slug === study.slug);
   return (
-    <section aria-label="Architecture" data-theme="paper" className="px-gutter py-[clamp(56px,7vw,104px)]">
-      <div className="rounded-2xl bg-[#fbf8f6] p-[clamp(20px,2.6vw,40px)] text-ink ring-1 ring-ink/12">
+    <section aria-label="Architecture" data-theme="ink" className="px-gutter py-[clamp(56px,7vw,104px)]">
+      <div className="rounded-2xl bg-ink-2 p-[clamp(20px,2.6vw,40px)] text-paper ring-1 ring-paper/10">
         <p className="t-label mute">Architecture, simplified · names withheld</p>
         <div className="mt-6">{system ? <Diagram data={system.diagram} label={`${study.title}: architecture`} /> : null}</div>
-        <dl className="mt-8 grid grid-cols-2 gap-x-6 gap-y-8 border-t border-ink/12 pt-6 lg:grid-cols-4">
+        <dl className="mt-8 grid grid-cols-2 gap-x-6 gap-y-8 border-t border-paper/10 pt-6 lg:grid-cols-4">
           {study.facts.map((f) => (
             <div key={f.label}>
               <dt className="sr-only">{f.label}</dt>
@@ -177,7 +177,7 @@ function Inside({ study }: { study: CaseStudy }) {
 function Facts({ study }: { study: CaseStudy }) {
   if (!study.live) return null;
   return (
-    <section data-theme="paper" aria-labelledby="facts-title" className="mt-[var(--section)] px-gutter py-[var(--section)]">
+    <section data-theme="ink" aria-labelledby="facts-title" className="mt-[var(--section)] px-gutter py-[var(--section)]">
       <Opener label={study.factsTitle} />
       <h2 id="facts-title" className="sr-only">
         {study.factsTitle}

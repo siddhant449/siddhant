@@ -22,10 +22,10 @@ const Y0 = 66;
 const ROW = 108;
 
 const icons = [
-  <svg key="o" viewBox="0 0 14 14" fill="none" stroke="#8e8481" strokeWidth="1.4" aria-hidden><circle cx="7" cy="7" r="5.5" /></svg>,
-  <svg key="h" viewBox="0 0 14 14" fill="none" aria-hidden><circle cx="7" cy="7" r="5.5" stroke="#c4b7b4" strokeWidth="1.4" /><path d="M7 7V1.5A5.5 5.5 0 0 1 12.5 7Z" fill="#c4b7b4" /></svg>,
-  <svg key="d" viewBox="0 0 14 14" aria-hidden><circle cx="7" cy="7" r="6.2" fill="#c4b7b4" /><path d="M4.3 7.2 6.2 9l3.6-3.8" stroke="#161210" strokeWidth="1.5" fill="none" /></svg>,
-  <svg key="x" viewBox="0 0 14 14" fill="none" aria-hidden><circle cx="7" cy="7" r="5.5" stroke="#ff3a1a" strokeWidth="1.4" strokeDasharray="2 2" /></svg>,
+  <svg key="o" viewBox="0 0 14 14" fill="none" stroke="#8c87a2" strokeWidth="1.4" aria-hidden><circle cx="7" cy="7" r="5.5" /></svg>,
+  <svg key="h" viewBox="0 0 14 14" fill="none" aria-hidden><circle cx="7" cy="7" r="5.5" stroke="#a29db5" strokeWidth="1.4" /><path d="M7 7V1.5A5.5 5.5 0 0 1 12.5 7Z" fill="#a29db5" /></svg>,
+  <svg key="d" viewBox="0 0 14 14" aria-hidden><circle cx="7" cy="7" r="6.2" fill="#a29db5" /><path d="M4.3 7.2 6.2 9l3.6-3.8" stroke="#16131e" strokeWidth="1.5" fill="none" /></svg>,
+  <svg key="x" viewBox="0 0 14 14" fill="none" aria-hidden><circle cx="7" cy="7" r="5.5" stroke="#9d7cff" strokeWidth="1.4" strokeDasharray="2 2" /></svg>,
 ];
 
 function seedBoard(): { board: Board; seq: number } {
@@ -96,7 +96,7 @@ export default function FigureClinical({ active, reduced, deck, label }: FigureP
     c.clearRect(0, 0, W, H);
     for (let i = 0; i < total; i++) {
       const v = rank.current[i];
-      c.fillStyle = v < p - 0.012 ? "rgba(196,183,180,.78)" : v < p ? "#ff3a1a" : "rgba(255,255,255,.07)";
+      c.fillStyle = v < p - 0.012 ? "rgba(196,183,180,.78)" : v < p ? "#9d7cff" : "rgba(255,255,255,.07)";
       c.beginPath();
       c.roundRect((i % C) * P, Math.floor(i / C) * P, S, S, 1.6);
       c.fill();

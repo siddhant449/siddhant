@@ -2,7 +2,7 @@ import { About } from "@/components/about";
 import { EngineeringChapter, TwoPractices } from "@/components/chapters";
 import { DesignWork } from "@/components/design-work";
 import { Nav } from "@/components/nav";
-import { ChapterTitle, Process, Services } from "@/components/pitch";
+import { ChapterTitle, Services } from "@/components/pitch";
 import { SethFooter, SethHero } from "@/components/seth";
 import { Systems } from "@/components/systems/systems";
 import { Toolbox } from "@/components/toolbox";
@@ -27,7 +27,7 @@ export default function Home() {
             <TwoPractices />
           </div>
           {/* Each practice opens on a giant word (after Rejouice), then its own section. */}
-          <ChapterTitle {...chapterTitles.design} theme="paper" />
+          <ChapterTitle {...chapterTitles.design} theme="ink" />
           {/* Design work: the Melon-style 3D cards (owner's pick). */}
           <DesignWork />
           <ChapterTitle {...chapterTitles.engineering} theme="ink" />
@@ -35,7 +35,6 @@ export default function Home() {
             <Systems />
           </EngineeringChapter>
           <Services />
-          <Process />
           <Toolbox />
           <About />
         </div>

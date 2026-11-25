@@ -8,17 +8,17 @@
 
 /** The Ember palette plus the in-between tones the shading needs. */
 export const PAL = {
-  k: "#0f0b0a", // ink (outline)
-  g: "#1b1513", // ink-2
+  k: "#110f17", // ink (outline)
+  g: "#1a1723", // ink-2
   m: "#3a2f2c", // bezel
-  n: "#645b58", // stone-4
-  t: "#8e8481", // stone-3
-  s: "#c4b7b4", // stone
-  p: "#f6efed", // paper
+  n: "#615c77", // stone-4
+  t: "#8c87a2", // stone-3
+  s: "#a29db5", // stone
+  p: "#ece9f3", // paper
   w: "#ffffff",
-  d: "#6e0d05", // deep
+  d: "#3a2672", // deep
   q: "#b3200e", // signal, shaded
-  r: "#ff3a1a", // signal
+  r: "#9d7cff", // signal
   o: "#ff7a5c", // signal, lit
   b: "#f2a48f", // blush
 } as const;

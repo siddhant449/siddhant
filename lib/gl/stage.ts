@@ -365,8 +365,8 @@ export class Stage {
         uRect: { value: Array.from({ length: MAX_LIQUID }, () => new Vector4()) },
         uParam: { value: Array.from({ length: MAX_LIQUID }, () => new Vector4()) },
         uMode: { value: Array.from({ length: MAX_LIQUID }, () => new Vector2()) },
-        uRed: { value: [1, 0.227, 0.102] },   // --signal #ff3a1a
-        uDeep: { value: [0.431, 0.051, 0.02] }, // --deep #6e0d05
+        uRed: { value: [0.616, 0.486, 1] },   // --signal #9d7cff
+        uDeep: { value: [0.227, 0.149, 0.447] }, // --deep #3a2672
       },
     });
     this.liquidScene.add(new Mesh(new PlaneGeometry(2, 2), this.liquidMat));

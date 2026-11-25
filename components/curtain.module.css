@@ -11,7 +11,7 @@ html[data-seen] .loader {
 .screen {
   position: absolute;
   inset: 0;
-  background: #1d1715;
+  background: #1b1725;
   will-change: transform;
 }
 .words {
@@ -62,7 +62,7 @@ html[data-seen] .loader {
   height: 750%;
   transform: translateX(-50%);
   border-radius: 50%;
-  background: #1d1715;
+  background: #1b1725;
 }
 @media (max-width: 600px) {
   .words p {

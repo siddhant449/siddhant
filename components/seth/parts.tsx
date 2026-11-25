@@ -3,34 +3,6 @@
 import { useEffect, useState } from "react";
 import { site } from "@/lib/content";
 
-/** IST in the reference's format, "11 : 35 PM", with the colon blinking. Renders after mount. */
-export function SethClock({ colonClass }: { colonClass?: string }) {
-  const [parts, setParts] = useState<{ h: string; m: string; p: string } | null>(null);
-  useEffect(() => {
-    const f = new Intl.DateTimeFormat("en-US", { timeZone: site.timeZone, hour: "numeric", minute: "2-digit", hour12: true });
-    const tick = () => {
-      const o = Object.fromEntries(f.formatToParts(new Date()).map((x) => [x.type, x.value]));
-      setParts({ h: o.hour, m: o.minute, p: o.dayPeriod });
-    };
-    tick();
-    const id = window.setInterval(tick, 10_000);
-    return () => window.clearInterval(id);
-  }, []);
-  return (
-    <time className="tabular-nums" suppressHydrationWarning>
-      {parts ? (
-        <>
-          {parts.h}
-          <span className={colonClass}> : </span>
-          {parts.m} {parts.p}
-        </>
-      ) : (
-        "-- : --"
-      )}
-    </time>
-  );
-}
-
 /** The current year, filled in on the client so the page can be prerendered. */
 export function SethYear() {
   const [year, setYear] = useState<number | null>(null);

@@ -27,7 +27,6 @@ export const sethHero = {
   left: ["Designed for companies", "that sell on trust."] as const,
   right: ["Engineered for systems", "that can’t go down."] as const,
   bubble: contact.start, // "Start a project"
-  place: "Ahmedabad, IN",
 };
 
 /* ------------------------------------------------------------------ */
@@ -51,7 +50,6 @@ export const sethFooter = {
   start: contact.start, // "Start a project"
   copy: contact.copy, // "Copy email"
   copied: contact.copied, // "Copied"
-  place: "Ahmedabad, IN",
   status: "Available",
   links: [
     { label: "LinkedIn", href: site.links.linkedin, external: true },

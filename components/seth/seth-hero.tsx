@@ -6,7 +6,6 @@ import { onReady } from "@/components/loader";
 import { sethHero, sethLinks } from "@/lib/copy/seth";
 import c from "./cursor.module.css";
 import { attachDotField } from "./dot-field";
-import { SethClock } from "./parts";
 import { Ember } from "@/components/kit";
 import s from "./seth-hero.module.css";
 
@@ -214,9 +213,6 @@ export function SethHero() {
             {sethHero.left[0]}
             <br />
             {sethHero.left[1]}
-          </p>
-          <p className={`${s.foot} ${s.footC} ${s.lbl}`}>
-            {sethHero.place} <SethClock colonClass={s.colon} />
           </p>
           <p className={`${s.foot} ${s.footR} ${s.lbl}`}>
             {sethHero.right[0]}

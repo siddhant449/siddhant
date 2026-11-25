@@ -142,7 +142,7 @@ export default function FigureCommerce({ active, reduced, deck, label }: FigureP
     const k = Math.min(1, qt / 0.9);
     const qp = proj(query.q, a, cw, chh);
     if (k > 0) {
-      c.strokeStyle = `rgba(255,58,26,${0.5 * k})`;
+      c.strokeStyle = `rgba(157, 124, 255,${0.5 * k})`;
       c.lineWidth = 1;
       query.nn.forEach((i, j) => {
         if (j / 8 < k) {
@@ -155,7 +155,7 @@ export default function FigureCommerce({ active, reduced, deck, label }: FigureP
     }
     P.forEach((p, i) => {
       const h = hot.has(i) && k > 0.2;
-      c.fillStyle = h ? "#ff3a1a" : `rgba(196,183,180,${0.22 + (0.5 * (p[3] + 1)) / 2})`;
+      c.fillStyle = h ? "#9d7cff" : `rgba(196,183,180,${0.22 + (0.5 * (p[3] + 1)) / 2})`;
       c.beginPath();
       c.arc(p[0], p[1], (h ? 3.2 : 1.8) * p[2], 0, 7);
       c.fill();
@@ -165,7 +165,7 @@ export default function FigureCommerce({ active, reduced, deck, label }: FigureP
     c.beginPath();
     c.arc(qp[0], qp[1], 8 + ring * 14, 0, 7);
     c.stroke();
-    c.fillStyle = "#f6efed";
+    c.fillStyle = "#ece9f3";
     c.beginPath();
     c.arc(qp[0], qp[1], 4, 0, 7);
     c.fill();

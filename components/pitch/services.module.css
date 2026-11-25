@@ -12,10 +12,10 @@
   --pad: 16px;
   --gut: 16px;
   --col: calc((100vw - var(--pad) * 2 - var(--gut) * 11) / 12);
-  --tertiary: #968b88; /* A17 #949494, warmed to Ember */
-  --secondary: #7a6e6b; /* A17 #757575, warmed */
-  background: var(--paper);
-  color: var(--ink);
+  --tertiary: #8c86a1; /* A17's greys, on the dark violet ground */
+  --secondary: #a29db5;
+  background: var(--ink);
+  color: var(--paper);
   padding: 96px var(--pad) 96px;
 }
 
@@ -52,16 +52,16 @@
   color: var(--ink);
 }
 .stone {
-  background: var(--stone);
-  color: var(--ink);
+  background: var(--ink-3);
+  color: var(--paper);
 }
 .deep {
   background: var(--deep);
   color: var(--paper);
 }
 .ink {
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--paper);
+  color: var(--ink);
 }
 .h2 {
   font-size: 24px;
@@ -81,8 +81,8 @@
   margin-top: 56px;
 }
 .cta {
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--paper);
+  color: var(--ink);
   height: 48px;
   padding: 0 24px;
   font-size: 15px;

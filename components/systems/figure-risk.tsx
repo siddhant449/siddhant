@@ -88,7 +88,7 @@ export default function FigureRisk({ active, reduced, deck, label }: FigureProps
     const PH = P * 0.8;
     for (let i = 0; i < cells; i++) {
       const v = heat.current[i];
-      c.fillStyle = v > 0.88 ? "#ff3a1a" : `rgba(196,183,180,${0.06 + v * 0.62})`;
+      c.fillStyle = v > 0.88 ? "#9d7cff" : `rgba(196,183,180,${0.06 + v * 0.62})`;
       c.beginPath();
       c.roundRect((i % C) * P + 1, Math.floor(i / C) * PH + 1, P - 4, PH - 4, 3);
       c.fill();

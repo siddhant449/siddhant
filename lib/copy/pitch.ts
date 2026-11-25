@@ -5,7 +5,7 @@
  * Facts come from lib/content.ts. Nothing here states a price, a duration,
  * a reply time or a client that isn't named in content.ts.
  */
-import { caseStudyOf, contact, design, engineering, site } from "@/lib/content";
+import { caseStudyOf, design, engineering, site } from "@/lib/content";
 
 const sys = (slug: string) => engineering.projects.find((p) => p.slug === slug);
 const fact = (slug: string, i: number) => sys(slug)?.facts[i]?.value ?? "";
@@ -254,56 +254,6 @@ export const waysCopy = {
       ],
     },
   ] satisfies Way[] as Way[],
-} as const;
-
-/* ------------------------------------------------------------------ */
-/* Questions (after Ramotion /faq)                                      */
-/* ------------------------------------------------------------------ */
-
-export const faqCopy = {
-  title: "Questions before we start",
-  cta: contact.start,
-  items: [
-    {
-      q: "What do you need from me to start?",
-      a: "A short note on the business, who you sell to and what the site or system has to do. Brand files, existing copy and access to the current site help, but none of it is required to begin.",
-    },
-    {
-      q: "Do you write the copy?",
-      a: "Yes. Every site in the portfolio was written, designed and built by me. I’ll ask for your documents, spec sheets and a call with whoever knows the product best.",
-    },
-    {
-      q: "How long does a project take?",
-      a: "It depends on the scope. The proposal sets the scope and the timeline before any work starts, and any change to either is agreed in writing first.",
-    },
-    {
-      q: "Can you work inside our existing product?",
-      a: "Yes. I can start from your repository, learn how it’s built and add to it, or take over one part of it, such as a service, a data pipeline or the front end.",
-    },
-    {
-      q: "Can I see the engineering work?",
-      a: "Three of the systems are under NDA, so their names stay private. The architecture and the numbers are on this site, and I’m happy to walk you through them on a call.",
-    },
-    {
-      q: "What happens after launch?",
-      a: "You own the code, the content and the accounts. I hand over with a walkthrough, and can stay on for changes as an ongoing partner if you want that.",
-    },
-    {
-      q: "Do you work with clients outside India?",
-      a: "Yes. I’ve built sites for businesses in India, Switzerland, the United States and the UAE. I’m based in Ahmedabad and schedule calls in your time zone.",
-    },
-  ],
-} as const;
-
-/* ------------------------------------------------------------------ */
-/* Mid-page call to action (after Dennis Snellenberg's footer)          */
-/* ------------------------------------------------------------------ */
-
-export const ctaCopy = {
-  title: contact.title,
-  start: contact.start,
-  email: site.email,
-  linkedin: site.links.linkedin,
 } as const;
 
 /* ------------------------------------------------------------------ */

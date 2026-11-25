@@ -65,6 +65,33 @@ function useAtFooter() {
   return at;
 }
 
+/** True while the reader is scrolling down (past the first screen's top); false as soon as they scroll up. */
+function useScrollAway() {
+  const [away, setAway] = useState(false);
+  useEffect(() => {
+    let last = window.scrollY;
+    let raf = 0;
+    const compute = () => {
+      raf = 0;
+      const y = window.scrollY;
+      const d = y - last;
+      if (y < 120) setAway(false);
+      else if (d > 6) setAway(true);
+      else if (d < -6) setAway(false);
+      if (Math.abs(d) > 6 || y < 120) last = y;
+    };
+    const schedule = () => {
+      if (!raf) raf = requestAnimationFrame(compute);
+    };
+    window.addEventListener("scroll", schedule, { passive: true });
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", schedule);
+    };
+  }, []);
+  return away;
+}
+
 /** Relative luminance of a computed colour string, or null when it is transparent. */
 function luminance(color: string) {
   const m = color.match(/[\d.]+/g);
@@ -131,6 +158,9 @@ export function Nav() {
   const onHome = usePathname() === "/";
   const active = useActiveSection(onHome);
   const atFooter = useAtFooter();
+  // Hides while scrolling down so it never blocks the view; any upward scroll brings it back.
+  const scrollAway = useScrollAway();
+  const [focusIn, setFocusIn] = useState(false);
   const lenis = useLenis();
   const header = useRef<HTMLElement>(null);
   const menuButton = useRef<HTMLButtonElement>(null);
@@ -195,11 +225,20 @@ export function Nav() {
     history.replaceState(null, "", href);
   };
 
-  const hidden = atFooter && !open;
+  const hidden = (atFooter || (scrollAway && !focusIn)) && !open;
   const cls = [s.header, entered ? s.in : "", open ? s.open : "", hidden ? s.away : ""].join(" ");
 
   return (
-    <header ref={header} className={cls} data-on={tone} inert={hidden}>
+    <header
+      ref={header}
+      className={cls}
+      data-on={tone}
+      inert={hidden}
+      onFocus={() => setFocusIn(true)}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocusIn(false);
+      }}
+    >
       <div className={s.backdrop} onClick={() => close(false)} aria-hidden="true" />
       <div className={s.row}>
         {onHome ? (

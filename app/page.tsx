@@ -2,7 +2,7 @@ import { About } from "@/components/about";
 import { EngineeringChapter, TwoPractices } from "@/components/chapters";
 import { DesignWork } from "@/components/design-work";
 import { Nav } from "@/components/nav";
-import { ChapterTitle, Faq, Process, Services } from "@/components/pitch";
+import { ChapterTitle, Process, Services } from "@/components/pitch";
 import { SethFooter, SethHero } from "@/components/seth";
 import { Systems } from "@/components/systems/systems";
 import { Toolbox } from "@/components/toolbox";
@@ -38,7 +38,6 @@ export default function Home() {
           <Process />
           <Toolbox />
           <About />
-          <Faq />
         </div>
       </main>
       <SethFooter />

@@ -68,13 +68,6 @@
 }
 .thumb img {
   object-fit: cover;
-  object-position: top;
-}
-.thumb svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
 }
 .cardTitle {
   display: -webkit-box;
@@ -246,53 +239,135 @@
     line-height: 20px;
   }
   .cardNote {
-    font-size: 13px;
-    line-height: 17px;
+    font-size: 14px;
+    line-height: 18px;
+  }
+  /* The four panels share the space left under the cards; the current step's panel
+     widens and shows its label, the others stay as coloured slivers that crop their device. */
+  .pin {
+    display: flex;
+    flex-direction: column;
   }
   .panels {
-    height: 300px;
+    display: flex;
+    flex: 1 1 0;
+    height: auto;
+    min-height: 220px;
     margin-top: 26px;
-    border-radius: 12px;
+    border-radius: 12px 12px 0 0;
+  }
+  .panel {
+    --dw: min(132px, 46cqh);
+    flex: 1 1 0;
+    min-width: 0;
+    container-type: size;
+    transition: flex-grow 0.7s cubic-bezier(0.2, 1, 0.2, 1);
+  }
+  .panel[data-cur] {
+    flex-grow: 3.6;
   }
   .panelLabel {
-    top: 14px;
-    font-size: 12px;
-    line-height: 14px;
+    top: 16px;
+    font-size: 15px;
+    line-height: 18px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.4s cubic-bezier(0.2, 1, 0.2, 1);
   }
+  .panel[data-cur] .panelLabel {
+    opacity: 1;
+    transition-delay: 0.2s;
+  }
+  .device,
+  .doc {
+    top: 50px;
+  }
+}
+
+/* Tablets and small laptops: two columns of cards, panels fill what is left of the screen,
+   and the devices are sized to their panel. */
+@media (min-width: 768px) and (max-width: 1279px) {
+  .pin {
+    display: flex;
+    flex-direction: column;
+    padding: clamp(104px, 12vh, 132px) 32px 0;
+  }
+  .stack {
+    font-size: clamp(48px, 6vw, 72px);
+    line-height: 1.12;
+  }
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px 40px;
+    margin-top: clamp(32px, 4.5vh, 56px);
+  }
+  .panels {
+    flex: 1 1 0;
+    height: auto;
+    min-height: 240px;
+    margin-top: 32px;
+    border-radius: 16px 16px 0 0;
+  }
+  .panel {
+    --dw: min(200px, 78cqw);
+    container-type: size;
+  }
+  .panelLabel {
+    top: clamp(20px, 5cqh, 44px);
+    font-size: clamp(16px, 2vw, 22px);
+    line-height: 1.2;
+  }
+  .device,
+  .doc {
+    top: clamp(64px, 16cqh, 150px);
+  }
+}
+
+/* 1280–1439: four cards in a row clipped their titles to "…"; smaller thumbs give the text room. */
+@media (min-width: 1280px) and (max-width: 1439px) {
+  .cards {
+    gap: 32px;
+  }
+  .thumb {
+    flex-basis: 72px;
+    height: 58px;
+  }
+}
+
+/* Below desktop the devices and the brief scale from one width, --dw. */
+@media (max-width: 1279px) {
   .device {
-    top: 44px;
-    width: 76px;
-    height: 152px;
-    border-radius: 14px;
-    padding: 3px;
+    width: var(--dw);
+    height: calc(var(--dw) * 2);
+    border-radius: calc(var(--dw) * 0.16);
+    padding: calc(var(--dw) * 0.0375);
   }
   .screen {
-    border-radius: 11px;
+    border-radius: calc(var(--dw) * 0.125);
   }
   .notch {
-    top: 6px;
-    width: 22px;
-    height: 6px;
-    margin-left: -11px;
+    top: calc(var(--dw) * 0.066);
+    width: calc(var(--dw) * 0.3);
+    height: calc(var(--dw) * 0.092);
+    margin-left: calc(var(--dw) * -0.15);
   }
   .doc {
-    top: 48px;
-    width: 74px;
-    height: 100px;
-    padding: 8px 7px;
-    border-radius: 5px;
+    width: var(--dw);
+    height: calc(var(--dw) * 1.27);
+    padding: calc(var(--dw) * 0.093) calc(var(--dw) * 0.085);
+    border-radius: calc(var(--dw) * 0.042);
   }
   .docTitle {
-    font-size: 6px;
-    margin-bottom: 4px;
+    font-size: calc(var(--dw) * 0.055);
+    margin-bottom: calc(var(--dw) * 0.05);
   }
   .ln {
-    height: 3px;
-    margin: 4px 0;
+    height: calc(var(--dw) * 0.025);
+    margin: calc(var(--dw) * 0.034) 0;
   }
   .sig {
-    font-size: 9px;
-    margin-top: 6px;
+    font-size: calc(var(--dw) * 0.093);
+    margin-top: calc(var(--dw) * 0.076);
   }
 }
 @media (max-height: 760px) and (min-width: 768px) {
@@ -306,5 +381,9 @@
 @media (prefers-reduced-motion: reduce) {
   .packet {
     animation: none;
+  }
+  .panel,
+  .panelLabel {
+    transition: none;
   }
 }

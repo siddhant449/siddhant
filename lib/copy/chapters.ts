@@ -61,10 +61,6 @@ export const engineeringChapter = {
   statement: "Production systems for clients in healthcare, commerce and finance: AI, backends and realtime, built to hold up.",
   practice:
     "Tested before it ships and watched once it runs. Client names stay under NDA; the architecture and the numbers don’t.", // owner to confirm ("watched" stands for the health checks, uptime and monitoring)
-  buttons: [
-    { label: "See the systems", href: "#systems" },
-    { label: "Request a walkthrough", href: "#contact" }, // owner to confirm
-  ],
   systemsTitle: engineering.title,
   systems: engineering.projects,
   nda: engineering.stamp,

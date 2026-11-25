@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { engineering } from "@/lib/content";
-import { commerceCopy, systemKinds, systemsCopy, titleLines } from "@/lib/copy/systems";
+import { systemKinds, systemsCopy, titleLines } from "@/lib/copy/systems";
 import { FigureSlot } from "./figure-slot";
 import s from "./systems.module.css";
 import { Tick } from "./tick";
@@ -51,7 +51,6 @@ export function Systems() {
               <div className={s.foot}>
                 <div className={s.lab}>
                   {systemsCopy.factsLabel}
-                  {kind === "commerce" ? <span className={s.credit}>{commerceCopy.credit}</span> : null}
                 </div>
                 <div className={s.ing}>
                   <dl className={s.ingCol}>

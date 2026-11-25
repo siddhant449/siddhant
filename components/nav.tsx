@@ -1,13 +1,13 @@
 "use client";
 
 import { useLenis } from "lenis/react";
-import { AnimatePresence, m } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import { nav, site } from "@/lib/content";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { hero, nav, site } from "@/lib/content";
+import { onReady } from "./loader";
+import s from "./nav.module.css";
 import { LocalTime } from "./ui/local-time";
-import { EASE_INOUT, EASE_OUT } from "./ui/reveal";
 
 /** The nav entry whose section crosses the middle of the viewport, if any. */
 function useActiveSection(enabled: boolean) {
@@ -41,10 +41,9 @@ function useActiveSection(enabled: boolean) {
 }
 
 /** True while the page's last screen (the pinned footer) is being revealed: the footer has its own top links. */
-function useAtFooter(enabled: boolean) {
+function useAtFooter() {
   const [at, setAt] = useState(false);
   useEffect(() => {
-    if (!enabled) return;
     let raf = 0;
     const compute = () => {
       raf = 0;
@@ -62,8 +61,63 @@ function useAtFooter(enabled: boolean) {
       window.removeEventListener("scroll", schedule);
       window.removeEventListener("resize", schedule);
     };
-  }, [enabled]);
-  return enabled && at;
+  }, []);
+  return at;
+}
+
+/** Relative luminance of a computed colour string, or null when it is transparent. */
+function luminance(color: string) {
+  const m = color.match(/[\d.]+/g);
+  if (!m || m.length < 3) return null;
+  if (m.length >= 4 && Number(m[3]) < 0.5) return null;
+  const [r, g, b] = m.slice(0, 3).map(Number);
+  return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+}
+
+/**
+ * Tone of the page under the chips ("ink" | "paper"). Most sections paint with the page's
+ * --bg (set from html[data-theme] by ThemeWatcher) while pinned screens paint their own, so the
+ * first opaque background beneath the header row is read directly; html[data-theme] is the fallback.
+ */
+function useToneUnder(header: React.RefObject<HTMLElement | null>) {
+  const [tone, setTone] = useState<"ink" | "paper">("ink");
+  useEffect(() => {
+    let raf = 0;
+    let settle = 0;
+    const compute = () => {
+      raf = 0;
+      const el = header.current;
+      if (!el) return;
+      const y = parseFloat(getComputedStyle(el).paddingTop) + 22;
+      let lum: number | null = null;
+      for (const hit of document.elementsFromPoint(window.innerWidth * 0.5, y)) {
+        if (el.contains(hit)) continue;
+        lum = luminance(getComputedStyle(hit).backgroundColor);
+        if (lum !== null) break;
+      }
+      const next = lum !== null ? (lum > 0.5 ? "paper" : "ink") : document.documentElement.dataset.theme === "paper" ? "paper" : "ink";
+      setTone(next);
+    };
+    const schedule = () => {
+      if (!raf) raf = requestAnimationFrame(compute);
+      // The page eases between themes over 350ms; read again once it has settled.
+      window.clearTimeout(settle);
+      settle = window.setTimeout(() => requestAnimationFrame(compute), 420);
+    };
+    schedule();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    const mo = new MutationObserver(schedule);
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => {
+      cancelAnimationFrame(raf);
+      window.clearTimeout(settle);
+      mo.disconnect();
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+    };
+  }, [header]);
+  return tone;
 }
 
 /** On the home page a plain anchor (smooth-scrolled by Lenis); elsewhere a link home. */
@@ -71,163 +125,178 @@ function SectionLink({ onHome, href, ...props }: React.ComponentProps<"a"> & { o
   return onHome ? <a href={href} {...props} /> : <Link href={`/${href}`} {...props} />;
 }
 
+const available = hero.meta.find((m) => "dot" in m && m.dot)?.strong ?? "Available for projects";
+
 export function Nav() {
   const onHome = usePathname() === "/";
   const active = useActiveSection(onHome);
-  const atFooter = useAtFooter(true);
+  const atFooter = useAtFooter();
   const lenis = useLenis();
-  const list = useRef<HTMLDivElement>(null);
-  const [pill, setPill] = useState<{ x: number; w: number } | null>(null);
-  const [open, setOpen] = useState(false);
+  const header = useRef<HTMLElement>(null);
   const menuButton = useRef<HTMLButtonElement>(null);
+  const menu = useRef<HTMLElement>(null);
+  const tone = useToneUnder(header);
+  const [openState, setOpen] = useState(false);
+  // The header leaves at the pinned footer; a menu left open there closes with it.
+  const open = openState && !atFooter;
+  const [entered, setEntered] = useState(false);
 
-  // Slide the indicator to the active link (measured, no layout animation).
-  useEffect(() => {
-    const measure = () => {
-      const el = active ? list.current?.querySelector<HTMLElement>(`[data-section="${active}"]`) : null;
-      setPill(el ? { x: el.offsetLeft, w: el.offsetWidth } : null);
-    };
-    measure();
-    window.addEventListener("resize", measure);
-    document.fonts?.ready.then(measure);
-    return () => window.removeEventListener("resize", measure);
-  }, [active]);
+  // Chips rise out of the row once the entry curtain lifts.
+  useEffect(() => onReady(() => requestAnimationFrame(() => setEntered(true))), []);
 
+  const close = useCallback((refocus: boolean) => {
+    setOpen(false);
+    if (refocus) menuButton.current?.focus();
+  }, []);
+
+  // Lenis (and native touch scroll) stop while the menu is open.
   useEffect(() => {
     if (!lenis) return;
     if (open) lenis.stop();
     else lenis.start();
   }, [open, lenis]);
-
   useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setOpen(false);
-        menuButton.current?.focus();
-      }
+    if (!open || !window.matchMedia("(max-width: 812px)").matches) return;
+    const root = document.documentElement;
+    const prev = root.style.overflow;
+    root.style.overflow = "hidden";
+    return () => {
+      root.style.overflow = prev;
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
+  // Focus moves into the menu; Escape or focus leaving the header closes it.
+  useEffect(() => {
+    if (!open) return;
+    const first = menu.current?.querySelector<HTMLElement>("a");
+    const t = window.setTimeout(() => first?.focus({ preventScroll: true }), 60);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") close(true);
+    };
+    const onFocus = (e: FocusEvent) => {
+      if (header.current && e.target instanceof Node && !header.current.contains(e.target)) close(false);
+    };
+    window.addEventListener("keydown", onKey);
+    document.addEventListener("focusin", onFocus);
+    return () => {
+      window.clearTimeout(t);
+      window.removeEventListener("keydown", onKey);
+      document.removeEventListener("focusin", onFocus);
+    };
+  }, [open, close]);
+
+  // On the home page, menu links close the menu and hand the anchor to Lenis once it runs again.
+  const go = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    setOpen(false);
+    if (!onHome || !lenis) return;
+    e.preventDefault();
+    lenis.start();
+    lenis.scrollTo(href);
+    history.replaceState(null, "", href);
+  };
+
+  const hidden = atFooter && !open;
+  const cls = [s.header, entered ? s.in : "", open ? s.open : "", hidden ? s.away : ""].join(" ");
+
   return (
-    <>
-      {/* `translate` is separate from the intro's `transform`, so the two don't fight. */}
-      <header
-        inert={atFooter && !open}
-        className="intro-up fixed inset-x-0 top-0 z-50 flex h-[76px] items-center justify-between px-gutter transition-[translate] duration-500 ease-out-expo"
-        style={{ "--d": "0.1s", translate: atFooter && !open ? "0 -110%" : "0 0" } as React.CSSProperties}
-      >
+    <header ref={header} className={cls} data-on={tone} inert={hidden}>
+      <div className={s.backdrop} onClick={() => close(false)} aria-hidden="true" />
+      <div className={s.row}>
         {onHome ? (
-          <a href="#top" className="relative z-10 text-[15px] font-medium tracking-[-0.02em]" aria-label={`${site.name}, back to top`}>
+          <a href="#top" className={`${s.chip} ${s.logo}`} aria-label={`${site.name}, back to top`}>
             {site.name}
           </a>
         ) : (
-          <Link href="/" className="relative z-10 text-[15px] font-medium tracking-[-0.02em]" aria-label={`${site.name}, home`}>
+          <Link href="/" className={`${s.chip} ${s.logo}`} aria-label={`${site.name}, home`}>
             {site.name}
           </Link>
         )}
-
-        <nav
-          aria-label="Sections"
-          className="absolute left-1/2 top-1/2 hidden h-10 -translate-x-1/2 -translate-y-1/2 rounded-full border border-fg/12 bg-bg/60 p-[3px] backdrop-blur-xl md:block"
-        >
-          <div ref={list} className="relative flex h-full items-center">
-            <m.span
-              aria-hidden
-              className="absolute inset-y-0 left-0 rounded-full bg-fg"
-              initial={false}
-              animate={pill ? { x: pill.x, width: pill.w, opacity: 1 } : { opacity: 0 }}
-              transition={{ duration: 0.42, ease: EASE_OUT }}
-            />
-            {nav.map((item) => {
-              const id = item.href.slice(1);
-              const on = active === id;
-              return (
-                <SectionLink
-                  key={item.href}
-                  onHome={onHome}
-                  href={item.href}
-                  data-section={id}
-                  aria-current={on ? "location" : undefined}
-                  className={`relative flex h-full items-center rounded-full px-[15px] text-[14px] font-medium transition-colors duration-300 ${
-                    on ? "text-bg" : "text-fg/62 hover:text-fg"
-                  }`}
-                >
-                  {item.label}
-                </SectionLink>
-              );
-            })}
-          </div>
-        </nav>
-
-        <div className="relative z-10 flex items-center gap-5">
-          <p className="t-label mute hidden lg:block">
-            <LocalTime className="text-fg" /> IST
-          </p>
-          <SectionLink onHome={onHome} href="#contact" className="btn btn-solid hidden md:inline-flex">
-            Start a project
+        <div className={s.right}>
+          <span className={`${s.chip} ${s.small} ${s.status}`} role="img" aria-label={available} title={available}>
+            <i />
+          </span>
+          <SectionLink onHome={onHome} href="#contact" className={`${s.chip} ${s.small} ${s.talk}`}>
+            <span className={s.lead} aria-hidden="true" />
+            <span className={s.talkText}>Start a project</span>
+            <span className={s.tail} aria-hidden="true" />
           </SectionLink>
           <button
             ref={menuButton}
             type="button"
+            className={`${s.chip} ${s.small} ${s.menuBtn}`}
             onClick={() => setOpen((o) => !o)}
             aria-expanded={open}
-            aria-controls="mobile-menu"
-            className="btn btn-line bg-bg/60 backdrop-blur-xl md:hidden"
+            aria-controls="site-menu"
+            aria-label={open ? "Close menu" : "Menu"}
           >
-            {open ? "Close" : "Menu"}
+            <span className={s.menuIn}>
+              <span className={s.menuTx}>Menu</span>
+              <span className={s.menuClose} aria-hidden="true">
+                Close
+              </span>
+              <span className={s.dots} aria-hidden="true">
+                <i />
+                <i />
+              </span>
+            </span>
           </button>
         </div>
-      </header>
+      </div>
 
-      <AnimatePresence>
-        {open && (
-          <m.div
-            id="mobile-menu"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Menu"
-            initial={{ clipPath: "inset(0% 0% 100% 0%)" }}
-            animate={{ clipPath: "inset(0% 0% 0% 0%)" }}
-            exit={{ clipPath: "inset(0% 0% 100% 0%)" }}
-            transition={{ duration: 0.7, ease: EASE_INOUT }}
-            className="fixed inset-0 z-40 flex flex-col justify-between bg-ink px-gutter pb-8 pt-28 text-paper md:hidden"
-          >
-            <ul>
-              {[...nav, { label: "Contact", href: "#contact" } as const].map((item, i) => (
-                <li key={item.href} className="overflow-hidden border-b border-paper/12">
-                  <m.span
-                    className="block"
-                    initial={{ y: "100%" }}
-                    animate={{ y: "0%" }}
-                    transition={{ duration: 0.8, ease: EASE_OUT, delay: 0.2 + i * 0.05 }}
-                  >
-                    <SectionLink
-                      onHome={onHome}
-                      href={item.href}
-                      onClick={() => setOpen(false)}
-                      className="flex items-baseline justify-between py-3"
-                      autoFocus={i === 0}
-                    >
-                      <span className="t-h1">{item.label}</span>
-                    </SectionLink>
-                  </m.span>
-                </li>
-              ))}
-            </ul>
-            <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, duration: 0.6 }} className="space-y-3 t-small">
-              <a href={`mailto:${site.email}`} className="block break-all">
-                {site.email}
-              </a>
-              <p className="t-label mute">
-                {site.location} · <LocalTime /> IST
-              </p>
-            </m.div>
-          </m.div>
-        )}
-      </AnimatePresence>
-    </>
+      <nav ref={menu} id="site-menu" className={s.menu} aria-label="Sections" inert={!open}>
+        <div className={`${s.card} ${s.links}`}>
+          {nav.map((item) => {
+            const id = item.href.slice(1);
+            const on = active === id;
+            return (
+              <SectionLink
+                key={item.href}
+                onHome={onHome}
+                href={item.href}
+                onClick={(e) => go(e, item.href)}
+                aria-current={on ? "location" : undefined}
+                className={`${s.link} ${on ? s.active : ""}`}
+              >
+                <span className={s.linkBg} aria-hidden="true" />
+                <span className={s.linkInner}>
+                  <span className={s.linkT}>{item.label}</span>
+                  <span className={s.linkC} aria-hidden="true">
+                    {item.label}
+                  </span>
+                </span>
+                <span className={s.mark} aria-hidden="true" />
+              </SectionLink>
+            );
+          })}
+        </div>
+        <div className={`${s.card} ${s.avail}`}>
+          <h3>{available}</h3>
+          <p className={s.field}>
+            <span>{site.location.split(",")[0]}</span>
+            <b>
+              <LocalTime /> IST
+            </b>
+          </p>
+        </div>
+        <SectionLink onHome={onHome} href="#contact" onClick={(e) => go(e, "#contact")} className={`${s.card} ${s.talkCard}`}>
+          <span>Start a project</span>
+          <i aria-hidden="true" />
+        </SectionLink>
+        <a href={`mailto:${site.email}`} className={`${s.card} ${s.mail}`} onClick={() => setOpen(false)}>
+          <span className={s.mailRow}>
+            <svg viewBox="0 0 38 38" aria-hidden="true">
+              <circle cx="19" cy="19" r="17.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+              <circle cx="19" cy="19" r="6" fill="var(--signal)" />
+            </svg>
+            <span className={s.mailTx}>
+              <span>Email</span>
+              <span aria-hidden="true">Email</span>
+            </span>
+            <i className={s.g1} aria-hidden="true" />
+            <i className={s.g2} aria-hidden="true" />
+          </span>
+        </a>
+      </nav>
+    </header>
   );
 }

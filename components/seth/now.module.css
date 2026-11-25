@@ -7,8 +7,12 @@
   z-index: 2;
   display: flex;
   flex-direction: column;
-  gap: max(18px, 1.667vw);
-  width: max(280px, 23.125vw);
+  gap: max(10px, 0.833vw);
+  /* No card: an ink halo behind the letters keeps them readable over the dot field. */
+  text-shadow:
+    0 0 2px var(--ink),
+    0 0 10px var(--ink),
+    0 0 18px var(--ink);
 }
 .label {
   margin: 0;
@@ -16,17 +20,18 @@
   font-weight: 500;
   font-size: max(11px, 0.833vw);
   line-height: 1.333;
-  color: rgb(246 239 237 / 0.55);
+  color: rgb(246 239 237 / 0.7);
 }
+/* Compact single row on desktop: two small covers side by side, clear of the headline and buttons. */
 .list {
   display: flex;
-  flex-direction: column;
-  gap: max(16px, 1.528vw);
+  flex-direction: row;
+  gap: max(20px, 1.944vw);
 }
 .item {
   display: grid;
-  grid-template-columns: max(76px, 7.222vw) 1fr;
-  column-gap: max(20px, 1.944vw);
+  grid-template-columns: max(46px, 3.75vw) minmax(0, max(150px, 12.5vw));
+  column-gap: max(12px, 1.042vw);
   align-items: center;
   color: var(--paper);
   text-decoration: none;
@@ -103,7 +108,7 @@
 .meta {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 3px;
   min-width: 0;
 }
 .kicker {
@@ -112,12 +117,12 @@
   gap: 10px;
   font-family: var(--font-mono);
   font-weight: 500;
-  font-size: max(11px, 0.833vw);
+  font-size: max(10px, 0.764vw);
   line-height: 1.333;
-  min-height: 22px;
+  min-height: 16px;
 }
 .title {
-  font-size: max(17px, 1.528vw);
+  font-size: max(15px, 1.111vw);
   line-height: 1.15;
   letter-spacing: -0.02em;
   /* Up to two lines, so a full book or track title reads. */
@@ -135,7 +140,7 @@
   background-size: 100% 1px;
 }
 .by {
-  font-size: max(13px, 1.042vw);
+  font-size: max(12px, 0.903vw);
   line-height: 1.3;
   color: rgb(246 239 237 / 0.86);
   overflow: hidden;
@@ -187,6 +192,13 @@
   }
 }
 
+/* Narrow desktops and tablets: the two titles would run into the city label, so the widget
+   sits above the bottom row. */
+@media (min-width: 721px) and (max-width: 1279px) {
+  .now {
+    bottom: calc(0.833vw + 3 * max(14px, 1.389vw) + 14px);
+  }
+}
 @media (max-width: 720px) {
   .now {
     left: 3.3vw;
@@ -202,7 +214,7 @@
     gap: 14px;
   }
   .item {
-    grid-template-columns: 48px 1fr;
+    grid-template-columns: 48px minmax(0, 1fr);
     column-gap: 12px;
   }
   .title {

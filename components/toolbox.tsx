@@ -150,11 +150,32 @@ function Cell({ tool }: { tool: (typeof toolbox.tools)[number] }) {
     size();
     const ro = new ResizeObserver(size);
     ro.observe(el);
-    el.addEventListener("pointerenter", enter);
-    el.addEventListener("pointerleave", leave);
+
+    // Touch screens have no hover: a cell catches as it scrolls through the middle band of the
+    // screen and burns out as it leaves, so a band of embers
+    // travels through the grid while you scroll.
+    let band: IntersectionObserver | null = null;
+    if (window.matchMedia("(hover: none)").matches) {
+      band = new IntersectionObserver(
+        ([e]) => {
+          const r = e.boundingClientRect;
+          const above = r.top + r.height / 2 < (e.rootBounds?.top ?? 0) + (e.rootBounds?.height ?? 0) / 2;
+          // Lit from the edge nearest the band, and burnt out from the edge that leaves it first.
+          origin = { x: cols / 2, y: above ? rows : 0 };
+          target = e.isIntersecting ? 1 : 0;
+          run();
+        },
+        { rootMargin: "-36% 0px -36% 0px" },
+      );
+      band.observe(el);
+    } else {
+      el.addEventListener("pointerenter", enter);
+      el.addEventListener("pointerleave", leave);
+    }
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
+      band?.disconnect();
       el.removeEventListener("pointerenter", enter);
       el.removeEventListener("pointerleave", leave);
     };
@@ -185,7 +206,7 @@ function Cell({ tool }: { tool: (typeof toolbox.tools)[number] }) {
 export function Toolbox() {
   return (
     <section id="toolbox" data-nav="toolbox" data-theme="ink" aria-labelledby="toolbox-title" className="px-gutter py-[var(--section)]">
-      <Opener label={toolbox.label} meta="Hover any tool" />
+      <Opener label={toolbox.label} />
       <div className="mt-12 grid gap-x-6 gap-y-6 md:grid-cols-12 md:items-end">
         <Rise id="toolbox-title" lines={[toolbox.title]} className="t-h1 md:col-span-6" />
         <Fade as="p" className="t-lead mute max-w-[46ch] md:col-span-5 md:col-start-8">

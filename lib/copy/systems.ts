@@ -17,6 +17,17 @@ export const systemsCopy = {
   caseStudy: "Read the case study",
   /** Word index after which each title breaks onto a second line (0 = no break). */
   titleBreak: [2, 2, 2, 0],
+  /** Under 1200px each figure becomes a deck of panels; the panel switcher's label. */
+  deckLabel: "Figure panels",
+  show: "Show",
+} as const;
+
+/** Panel names for the compact (deck) figures, in panel order. */
+export const deckPanels = {
+  clinical: ["Message path", "Automated tests"],
+  commerce: ["Visual search", "Catalogue"],
+  risk: ["News", "Features", "Risk ensemble", "Mirror feeds"],
+  shizuku: ["Camera rig", "Page", "Pipelines"],
 } as const;
 
 /** Look up a diagram node's sub-label in content.ts, so figure captions never restate numbers by hand. */
@@ -63,6 +74,7 @@ export const clinicalCopy = {
   rls: "RLS",
   retry: "Retry 1",
   replayed: "Replayed",
+  empty: "Empty",
 } as const;
 
 export const commerceCopy = {
@@ -77,7 +89,6 @@ export const commerceCopy = {
   queryWords: "Query · words",
   wordsQuery: "ivory dress, puffed sleeves",
   nearest: "Nearest results",
-  credit: "Garment photographs: The Metropolitan Museum of Art, Open Access (CC0). Tags shown are the museum’s own metadata.",
 } as const;
 
 export const riskCopy = {
@@ -120,57 +131,19 @@ export const shizukuCopy = {
 /* Third-party assets                                                   */
 /* ------------------------------------------------------------------ */
 
-/** Met Open Access garments, dithered to the Ember palette. Tags are the museum's metadata. */
+/**
+ * The catalogue: hand-made pixel garments (sprites in components/systems/sprites-garments.ts),
+ * tagged the way the vision model would tag them. The words query matches the first.
+ */
 export const garments = [
-  { id: 159482, src: "/systems/met-159482.webp", tags: ["dress", "cotton", "1886–88"] },
-  { id: 159244, src: "/systems/met-159244.webp", tags: ["dress", "wool, silk", "ca. 1855"] },
-  { id: 157943, src: "/systems/met-157943.webp", tags: ["dress", "silk", "ca. 1885"] },
-  { id: 159222, src: "/systems/met-159222.webp", tags: ["dress", "cotton", "ca. 1890"] },
-  { id: 80769, src: "/systems/met-80769.webp", tags: ["dress", "cotton", "ca. 1840"] },
-  { id: 82122, src: "/systems/met-82122.webp", tags: ["dress", "silk", "ca. 1820"] },
+  { id: "puff-dress", name: "Ivory dress with puffed sleeves", tags: ["dress", "ivory", "puff sleeve"] },
+  { id: "coat", name: "Long stone coat", tags: ["coat", "stone", "double-breasted"] },
+  { id: "dress", name: "Red slip dress", tags: ["dress", "red", "a-line"] },
+  { id: "shirt", name: "White shirt", tags: ["shirt", "white", "button-up"] },
+  { id: "jacket", name: "Charcoal jacket", tags: ["jacket", "charcoal", "cropped"] },
+  { id: "skirt", name: "Rust pleated skirt", tags: ["skirt", "rust", "pleated"] },
+  { id: "trousers", name: "Grey wide-leg trousers", tags: ["trousers", "grey", "wide-leg"] },
 ] as const;
 
-export const credits = [
-  {
-    file: "public/systems/met-159482.webp",
-    title: "Dress, 1886–88 (2009.300.900)",
-    source: "https://www.metmuseum.org/art/collection/search/159482",
-    licence: "CC0 1.0 (The Met Open Access)",
-    credit: "Brooklyn Museum Costume Collection at The Metropolitan Museum of Art, Gift of the Brooklyn Museum, 2009; Gift of Amelia Beard Hollenback, 1966",
-  },
-  {
-    file: "public/systems/met-159244.webp",
-    title: "Dress, ca. 1855 (2009.300.686a, b)",
-    source: "https://www.metmuseum.org/art/collection/search/159244",
-    licence: "CC0 1.0 (The Met Open Access)",
-    credit: "Brooklyn Museum Costume Collection at The Metropolitan Museum of Art, Gift of the Brooklyn Museum, 2009; Gift of Miss F. P. Weiss, 1948",
-  },
-  {
-    file: "public/systems/met-157943.webp",
-    title: "Dress, ca. 1885 (2009.300.3049a, b)",
-    source: "https://www.metmuseum.org/art/collection/search/157943",
-    licence: "CC0 1.0 (The Met Open Access)",
-    credit: "Brooklyn Museum Costume Collection at The Metropolitan Museum of Art, Gift of the Brooklyn Museum, 2009; Gift of Kate Macon Hoffmaster, 1946",
-  },
-  {
-    file: "public/systems/met-159222.webp",
-    title: "Dress, ca. 1890 (2009.300.666)",
-    source: "https://www.metmuseum.org/art/collection/search/159222",
-    licence: "CC0 1.0 (The Met Open Access)",
-    credit: "Brooklyn Museum Costume Collection at The Metropolitan Museum of Art, Gift of the Brooklyn Museum, 2009; Gift of Marion Jardine, 1941",
-  },
-  {
-    file: "public/systems/met-80769.webp",
-    title: "Dress, ca. 1840 (1993.32)",
-    source: "https://www.metmuseum.org/art/collection/search/80769",
-    licence: "CC0 1.0 (The Met Open Access)",
-    credit: "Gift of Richard Martin and Harold Koda, in honor of Cora Ginsburg, 1993",
-  },
-  {
-    file: "public/systems/met-82122.webp",
-    title: "Dress, ca. 1820 (1971.242.1a–e)",
-    source: "https://www.metmuseum.org/art/collection/search/82122",
-    licence: "CC0 1.0 (The Met Open Access)",
-    credit: "Purchase, Irene Lewisohn Bequest, 1971",
-  },
-] as const;
+/** Third-party assets used by the systems figures: none (all figure art is hand-made pixel art). */
+export const credits: readonly { file: string; title: string; source: string; licence: string; credit: string }[] = [];

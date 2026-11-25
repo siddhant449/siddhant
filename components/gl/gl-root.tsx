@@ -18,6 +18,10 @@ export function GLRoot() {
     let disposed = false;
     let stop: (() => void) | undefined;
     const start = async () => {
+      // Touch screens scroll on the compositor thread, so a fixed WebGL canvas redraws a frame
+      // behind and the bending boards tear away from their titles on a fast flick. There the
+      // boards keep their DOM version, which scrolls in perfect sync.
+      if (window.matchMedia("(hover: none) and (pointer: coarse)").matches) return;
       const probe = document.createElement("canvas");
       if (!probe.getContext("webgl2") && !probe.getContext("webgl")) return;
       const { Stage } = await import("@/lib/gl/stage");

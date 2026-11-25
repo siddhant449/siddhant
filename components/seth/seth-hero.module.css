@@ -88,21 +88,19 @@
   transition-delay: 0.4s;
 }
 
-/* sprite slot: the pixel phone pops (rise, overshoot, settle, grey -> colour) */
+/* sprite slot: the molten ember pops in (rise, overshoot, settle, grey -> colour) */
 .sprite {
   position: absolute;
   left: 50%;
-  top: 21.2vw;
+  top: 19.6vw;
   z-index: 2;
-  width: 10.4vw;
-  margin-left: -5.2vw;
+  width: 18vw;
+  margin-left: -9vw;
   opacity: 0;
 }
-.sprite canvas {
-  display: block;
+.ember {
   width: 100%;
-  height: auto;
-  image-rendering: pixelated;
+  aspect-ratio: 1;
 }
 .on .sprite {
   animation: pop 0.62s cubic-bezier(0.16, 1, 0.3, 1) 1.3s forwards;
@@ -123,22 +121,6 @@
     transform: none;
     filter: none;
   }
-}
-.cap {
-  display: block;
-  margin: 0.7vw -6vw 0;
-  text-align: center;
-  white-space: nowrap;
-  font-weight: 700;
-  font-size: 0.97vw;
-  letter-spacing: -0.03em;
-  text-transform: uppercase;
-  color: var(--stone);
-  opacity: 0;
-  transition: opacity 0.4s;
-}
-.ready .cap {
-  opacity: 1;
 }
 
 /* speech bubble = the call to action (reference: "HI THERE!", drawn then typed) */
@@ -247,13 +229,9 @@
     top: calc(76px + var(--l1h, 64px));
   }
   .sprite {
-    top: 420px;
-    width: 72px;
-    margin-left: -36px;
-  }
-  .cap {
-    font-size: 12px;
-    margin-top: 6px;
+    top: 390px;
+    width: 190px;
+    margin-left: -95px;
   }
   .bubble {
     top: 330px;
@@ -303,5 +281,56 @@
   }
   .colon {
     animation: none;
+  }
+}
+
+/* tablet held upright: the phone's stacked composition, spaced to the taller screen */
+@media (min-width: 721px) and (max-width: 1023px) and (orientation: portrait) {
+  .lbl {
+    font-size: clamp(18px, 2.6vw, 24px);
+  }
+  .word {
+    top: 12svh;
+    left: 0;
+    right: 0;
+    text-align: center;
+    line-height: 0.8;
+    transform: translateY(80px);
+  }
+  .w2 {
+    top: calc(12svh + var(--l1h, 100px));
+  }
+  .bubble {
+    top: 39svh;
+  }
+  .bubbleText {
+    font-size: clamp(28px, 4.2vw, 38px);
+    padding: 16px 28px 30px;
+  }
+  .bubbleTyped {
+    left: 28px;
+    top: 16px;
+  }
+  .sprite {
+    top: 46svh;
+    width: 34vw;
+    margin-left: -17vw;
+  }
+  .foot {
+    top: auto;
+    left: 0;
+    right: 0;
+    text-align: center;
+  }
+  .footL {
+    top: 78svh;
+  }
+  .footR {
+    top: calc(78svh + 68px);
+  }
+  .footC {
+    top: calc(78svh + 146px);
+    transform: none;
+    font-size: 16px;
   }
 }

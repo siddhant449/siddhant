@@ -1,103 +1,66 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useRef } from "react";
-import { servicesCopy } from "@/lib/copy/pitch";
+import { onReady } from "@/components/loader";
+import { whyCopy } from "@/lib/copy/pitch";
 import s from "./services.module.css";
 
+const tones = { signal: s.signal, stone: s.stone, deep: s.deep, ink: s.ink } as const;
+
 /**
- * Services, after basement.studio/services: a grey label over a rule, then
- * a large statement. The statement fills word by word as it crosses the
- * viewport (between 88% and 40% of the height); the outcome words go brightest.
+ * Why hire me, after area17.com/culture (the values): a grey title over a black
+ * statement, then each reason as a word in a pill, a black title and a grey line.
+ * As a reason enters the viewport its title and line rise 10px and fade in
+ * (0.3s cubic-bezier(.61,1,.88,1), +0.2s and +0.3s); the pill is already there.
+ * The reference stacks its values beside sticky media; here they sit two by two
+ * so the section stays about one screen tall.
  */
 export function Services() {
   const root = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const el = root.current;
-    if (!el) return;
-    const items = [...el.querySelectorAll<HTMLElement>("[data-item]")];
-    const bodies = items.map((it) => ({
-      p: it.querySelector<HTMLElement>("[data-fill]")!,
-      w: [...it.querySelectorAll<HTMLElement>("[data-w]")],
-      last: -1,
-    }));
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
+    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    el.setAttribute("data-armed", "");
     const io = new IntersectionObserver(
-      (es) => es.forEach((e) => e.isIntersecting && (e.target as HTMLElement).setAttribute("data-in", "")),
-      { threshold: 0.15 },
+      (es) =>
+        es.forEach((e) => {
+          if (!e.isIntersecting) return;
+          e.target.setAttribute("data-in", "");
+          io.unobserve(e.target);
+        }),
+      { rootMargin: "0px 0px -10% 0px" },
     );
-    items.forEach((it) => io.observe(it));
-
-    let raf = 0;
-    const update = () => {
-      raf = 0;
-      const H = window.innerHeight;
-      for (const b of bodies) {
-        const r = b.p.getBoundingClientRect();
-        if (r.bottom < -H || r.top > H * 2) continue;
-        const pr = reduced ? 1 : Math.max(0, Math.min(1, (H * 0.88 - r.top) / (H * 0.48)));
-        const n = Math.round(pr * b.w.length);
-        if (n === b.last) continue;
-        b.last = n;
-        b.w.forEach((w, i) => (i < n ? w.setAttribute("data-on", "") : w.removeAttribute("data-on")));
-      }
-    };
-    const schedule = () => {
-      if (!raf) raf = requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
+    const off = onReady(() => el.querySelectorAll("[data-reveal]").forEach((n) => io.observe(n)));
     return () => {
+      off();
       io.disconnect();
-      cancelAnimationFrame(raf);
-      window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
     };
   }, []);
 
   return (
-    <section ref={root} id="services" data-nav="services" data-theme="ink" aria-labelledby="services-title" className={s.section}>
-      <div className={s.top}>
-        <h2 id="services-title" className={s.title}>
-          {servicesCopy.title}
+    <section ref={root} id="why" data-nav="why" data-theme="paper" aria-labelledby="why-title" className={s.section}>
+      <header>
+        <h2 id="why-title" className={`${s.h1} ${s.tertiary}`}>
+          {whyCopy.title}
         </h2>
-        <div className={s.image}>
-          <Image src={servicesCopy.image.src} alt={servicesCopy.image.alt} fill sizes="(max-width: 767px) 100vw, 25vw" />
-        </div>
-        <p className={s.intro}>{servicesCopy.intro}</p>
-      </div>
+        <p className={s.h1}>{whyCopy.statement}</p>
+      </header>
 
-      <div className={s.grid}>
-        {servicesCopy.items.map((item) => {
-          const words = item.body.split(/\s+/);
-          return (
-            <article key={item.name} data-item className={s.item}>
-              <h3 className={s.label}>
-                <span className={s.group}>{item.group}</span>
-                {item.name}
-              </h3>
-              <div aria-hidden className={s.rule} />
-              <p data-fill className={s.body}>
-                {words.map((w, i) => (
-                  <span key={i}>
-                    <span data-w className={`${s.w} ${i < item.lead ? s.hl : ""}`}>
-                      {w}
-                    </span>
-                    {i < words.length - 1 ? " " : null}
-                  </span>
-                ))}
-              </p>
-              <ul className={s.list} aria-label={`${item.name}: typical deliverables`}>
-                {item.deliverables.map((d) => (
-                  <li key={d}>{d}</li>
-                ))}
-              </ul>
-            </article>
-          );
-        })}
+      <ul className={s.reasons}>
+        {whyCopy.reasons.map((r) => (
+          <li key={r.title} data-reveal className={s.reason}>
+            <span className={`${s.pill} ${tones[r.tone]}`}>{r.tag}</span>
+            <h3 className={`${s.h2} ${s.title} ${s.anim}`}>{r.title}</h3>
+            <p className={`${s.h2} ${s.secondary} ${s.anim}`}>{r.body}</p>
+          </li>
+        ))}
+      </ul>
+
+      <div data-reveal className={s.close}>
+        <a href={whyCopy.cta.href} className={`btn ${s.cta} ${s.anim}`}>
+          {whyCopy.cta.label}
+        </a>
       </div>
     </section>
   );

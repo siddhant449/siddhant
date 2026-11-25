@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { factNumber, nodeSub, projectAt, riskCopy as copy } from "@/lib/copy/systems";
+import { deckPanels, factNumber, nodeSub, projectAt, riskCopy as copy } from "@/lib/copy/systems";
+import { Deck } from "./deck";
 import s from "./systems.module.css";
-import { fit, rng, useEvery, useLoop, type FigureProps } from "./use-figure";
+import { fit, rng, useEvery, useLoop, useWidth, type FigureProps } from "./use-figure";
 
 /*
   Linear "AI and automations" geometry: four 400×560 windows on a still
@@ -26,9 +27,9 @@ const Icon = () => (
   </svg>
 );
 
-function Win({ x, name, tag, children }: { x: number; name: string; tag: string; children: React.ReactNode }) {
+function Win({ x, name, tag, deck, children }: { x?: number; name: string; tag: string; deck?: boolean; children: React.ReactNode }) {
   return (
-    <div className={s.win} style={{ left: x }}>
+    <div className={deck ? `${s.win} ${s.dWin}` : s.win} style={deck ? undefined : { left: x }}>
       <div className={s.winHead}>
         <Icon />
         {name}
@@ -39,7 +40,7 @@ function Win({ x, name, tag, children }: { x: number; name: string; tag: string;
   );
 }
 
-export default function FigureRisk({ active, reduced }: FigureProps) {
+export default function FigureRisk({ active, reduced, deck, label }: FigureProps) {
   const project = projectAt(2);
   const cells = factNumber(project, "Engineered features") || 146;
   const uptime = project.facts.find((f) => f.label.startsWith("Uptime"))?.value ?? "";
@@ -64,6 +65,10 @@ export default function FigureRisk({ active, reduced }: FigureProps) {
   const heatCv = useRef<HTMLCanvasElement>(null);
   const upCv = useRef<HTMLCanvasElement>(null);
   const scoreEl = useRef<HTMLDivElement>(null);
+  const heatBox = useRef<HTMLDivElement>(null);
+  const bodyW = useWidth(heatBox, !!deck);
+  // Canvas width: the window body (368 on the stage, the panel's own in the deck).
+  const BW = deck ? bodyW || 368 : 368;
 
   const drawHeat = () => {
     const el = heatCv.current;
@@ -73,8 +78,8 @@ export default function FigureRisk({ active, reduced }: FigureProps) {
       heat.current = new Float32Array(cells).map(() => hr());
       heatV.current = new Float32Array(cells).map(() => hr() * 2 - 1);
     }
-    const Wd = 368;
-    const Hd = 380;
+    const Wd = BW;
+    const Hd = deck ? Math.ceil(cells / 11) * (Wd / 11) * 0.8 : 380;
     const c = fit(el, Wd, Hd);
     if (!c) return;
     c.clearRect(0, 0, Wd, Hd);
@@ -92,10 +97,10 @@ export default function FigureRisk({ active, reduced }: FigureProps) {
   const drawUp = () => {
     const el = upCv.current;
     if (!el) return;
-    const c = fit(el, 368, 54);
+    const c = fit(el, BW, 54);
     if (!c) return;
-    c.clearRect(0, 0, 368, 54);
-    const P = 368 / 90;
+    c.clearRect(0, 0, BW, 54);
+    const P = BW / 90;
     c.fillStyle = "rgba(196,183,180,.7)";
     for (let i = 0; i < 90; i++) c.fillRect(i * P, 8, P - 1.8, 38);
   };
@@ -110,7 +115,7 @@ export default function FigureRisk({ active, reduced }: FigureProps) {
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [BW]);
 
   useLoop(active && !reduced, (_t, dt) => {
     const h = heat.current;
@@ -129,86 +134,128 @@ export default function FigureRisk({ active, reduced }: FigureProps) {
     if (scoreEl.current) scoreEl.current.textContent = score.current.toFixed(2);
   });
 
+  const newsBody = (
+    <>
+      <div className={s.sim} style={{ marginBottom: 12 }}>
+        {copy.newsNote} · {nodeSub(project, "sentiment")}
+      </div>
+      {news.map((n) => (
+        <div key={n.id} className={s.news}>
+          <div>
+            <div className={s.newsA}>
+              {copy.article} {n.id.toLocaleString("en-US")}
+            </div>
+            <div className={s.newsB}>
+              {copy.source} {n.src} · {n.desk}
+            </div>
+          </div>
+          <div className={`${s.score} ${n.score < 0 ? s.neg : ""}`}>
+            {n.score >= 0 ? "+" : ""}
+            {n.score.toFixed(2)}
+          </div>
+        </div>
+      ))}
+    </>
+  );
+  const featBody = (
+    <>
+      <div ref={heatBox}>
+        <canvas ref={heatCv} aria-hidden />
+      </div>
+      <div className={s.kv} style={{ marginTop: 14 }}>
+        <span>{copy.featureStore}</span>
+        <b>
+          {cells} {copy.live}
+        </b>
+      </div>
+      <div className={s.sim}>{copy.valuesSimulated}</div>
+    </>
+  );
+  const ensBody = (
+    <>
+      <div className={s.sim}>{copy.scoreNote}</div>
+      <div ref={scoreEl} className={s.big}>
+        0.37
+      </div>
+      <div className={s.kv}>
+        <span>{copy.explainedWith}</span>
+        <b>{nodeSub(project, "explain")}</b>
+      </div>
+      <div className={s.shap}>
+        {copy.shapFeatures.map((f, i) => (
+          <div key={f} className={s.shapRow}>
+            <span className={s.mono} style={{ fontSize: 11.5 }}>
+              {f}
+            </span>
+            <i className={shap[i] < 0 ? s.shapNeg : ""} style={{ transform: `scaleX(${Math.abs(shap[i])})` }} />
+            <span>
+              {shap[i] >= 0 ? "+" : ""}
+              {shap[i].toFixed(2)}
+            </span>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+  const mirrorBody = (
+    <>
+      <div className={s.kv}>
+        <span>{copy.uptime}</span>
+        <b>{uptime}</b>
+      </div>
+      <canvas ref={upCv} aria-hidden />
+      <div style={{ marginTop: 18 }} />
+      <div className={s.kv}>
+        <span>{copy.primary}</span>
+        <b>{copy.closed}</b>
+      </div>
+      <div className={s.kv}>
+        <span>{copy.mirrorFeed}</span>
+        <b>{copy.standby}</b>
+      </div>
+      <div className={s.kv}>
+        <span>{copy.retrain}</span>
+        <b>{nodeSub(project, "retrain")}</b>
+      </div>
+      <div className={s.sim} style={{ marginTop: 10 }}>
+        {copy.strip}
+      </div>
+    </>
+  );
+
+  if (deck) {
+    return (
+      <Deck names={deckPanels.risk} label={label ?? ""}>
+        <Win deck name={copy.news} tag={nodeSub(project, "news")}>
+          {newsBody}
+        </Win>
+        <Win deck name={copy.features} tag={nodeSub(project, "features")}>
+          {featBody}
+        </Win>
+        <Win deck name={copy.ensemble} tag={nodeSub(project, "ensemble")}>
+          {ensBody}
+        </Win>
+        <Win deck name={copy.mirror} tag={nodeSub(project, "mirror")}>
+          {mirrorBody}
+        </Win>
+      </Deck>
+    );
+  }
+
   return (
     <div className={s.c3Stage}>
       <div style={{ position: "absolute", left: -151, top: 0 }}>
         <Win x={0} name={copy.news} tag={nodeSub(project, "news")}>
-          <div className={s.sim} style={{ marginBottom: 12 }}>
-            {copy.newsNote} · {nodeSub(project, "sentiment")}
-          </div>
-          {news.map((n) => (
-            <div key={n.id} className={s.news}>
-              <div>
-                <div className={s.newsA}>
-                  {copy.article} {n.id.toLocaleString("en-US")}
-                </div>
-                <div className={s.newsB}>
-                  {copy.source} {n.src} · {n.desk}
-                </div>
-              </div>
-              <div className={`${s.score} ${n.score < 0 ? s.neg : ""}`}>
-                {n.score >= 0 ? "+" : ""}
-                {n.score.toFixed(2)}
-              </div>
-            </div>
-          ))}
+          {newsBody}
         </Win>
         <Win x={412} name={copy.features} tag={nodeSub(project, "features")}>
-          <canvas ref={heatCv} aria-hidden />
-          <div className={s.kv} style={{ marginTop: 14 }}>
-            <span>{copy.featureStore}</span>
-            <b>
-              {cells} {copy.live}
-            </b>
-          </div>
-          <div className={s.sim}>{copy.valuesSimulated}</div>
+          {featBody}
         </Win>
         <Win x={824} name={copy.ensemble} tag={nodeSub(project, "ensemble")}>
-          <div className={s.sim}>{copy.scoreNote}</div>
-          <div ref={scoreEl} className={s.big}>
-            0.37
-          </div>
-          <div className={s.kv}>
-            <span>{copy.explainedWith}</span>
-            <b>{nodeSub(project, "explain")}</b>
-          </div>
-          <div className={s.shap}>
-            {copy.shapFeatures.map((f, i) => (
-              <div key={f} className={s.shapRow}>
-                <span className={s.mono} style={{ fontSize: 11.5 }}>
-                  {f}
-                </span>
-                <i className={shap[i] < 0 ? s.shapNeg : ""} style={{ transform: `scaleX(${Math.abs(shap[i])})` }} />
-                <span>
-                  {shap[i] >= 0 ? "+" : ""}
-                  {shap[i].toFixed(2)}
-                </span>
-              </div>
-            ))}
-          </div>
+          {ensBody}
         </Win>
         <Win x={1236} name={copy.mirror} tag={nodeSub(project, "mirror")}>
-          <div className={s.kv}>
-            <span>{copy.uptime}</span>
-            <b>{uptime}</b>
-          </div>
-          <canvas ref={upCv} aria-hidden />
-          <div style={{ marginTop: 18 }} />
-          <div className={s.kv}>
-            <span>{copy.primary}</span>
-            <b>{copy.closed}</b>
-          </div>
-          <div className={s.kv}>
-            <span>{copy.mirrorFeed}</span>
-            <b>{copy.standby}</b>
-          </div>
-          <div className={s.kv}>
-            <span>{copy.retrain}</span>
-            <b>{nodeSub(project, "retrain")}</b>
-          </div>
-          <div className={s.sim} style={{ marginTop: 10 }}>
-            {copy.strip}
-          </div>
+          {mirrorBody}
         </Win>
       </div>
     </div>

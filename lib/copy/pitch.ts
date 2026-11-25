@@ -1,5 +1,5 @@
 /**
- * Copy for the client-pitch sections: at a glance, services, process,
+ * Copy for the client-pitch sections: at a glance, why hire me, process,
  * ways to work, questions and the mid-page call to action.
  *
  * Facts come from lib/content.ts. Nothing here states a price, a duration,
@@ -79,54 +79,49 @@ export const glance = {
 } as const;
 
 /* ------------------------------------------------------------------ */
-/* Services (after basement.studio/services)                            */
+/* Why hire me (after area17.com/culture, the values)                     */
 /* ------------------------------------------------------------------ */
 
-export type Service = {
-  group: "Design" | "Engineering";
-  name: string;
-  /** The first `lead` words are the outcome and read brighter. */
-  lead: number;
+export type Reason = {
+  /** one word in the pill above the reason */
+  tag: string;
+  /** pill ground, from the Ember palette */
+  tone: "signal" | "stone" | "deep" | "ink";
+  title: string;
   body: string;
-  deliverables: string[];
 };
 
-export const servicesCopy = {
-  title: "Services",
-  intro:
-    "I design websites for manufacturers, brands and agencies, and engineer production systems for healthcare, commerce and finance. I work at both ends of a product: the page a customer sees and the system that answers it.",
-  image: { src: "/pitch/rock-ember.webp", alt: "Dark fissured rock, toned in ember red." },
-  items: [
+export const whyCopy = {
+  title: "Why hire me", // owner to confirm
+  statement: "I write, design and build the work myself, then look after it once it’s live.", // owner to confirm
+  reasons: [
     {
-      group: "Design",
-      name: "Marketing websites",
-      lead: 9,
-      body: "A site a buyer trusts before they pick up the phone. I write, design and build it, so the proof your buyers look for is on the first screen and the enquiry is one step away.",
-      deliverables: ["Positioning and copy", "Page structure", "Design", "Next.js build", "Launch and handover"],
+      tag: "Design and code", // owner to confirm
+      tone: "signal",
+      title: "Designer and engineer in one", // owner to confirm
+      body: "The person who designs it builds it, so nothing gets lost between design and code.", // owner to confirm
     },
     {
-      group: "Design",
-      name: "Storefronts and brand sites",
-      lead: 9,
-      body: "Pages that sell with calm, not countdown timers. Ingredients, reviews, materials and test results sit next to the product, where shoppers and specifiers actually check them.",
-      deliverables: ["Product and collection pages", "Proof and reviews", "Responsive build", "Performance and SEO basics"],
+      tag: "Reliability", // owner to confirm
+      tone: "stone",
+      title: "Built to hold up", // owner to confirm
+      body: "Tested before it ships, monitored once it runs.", // owner to confirm
     },
     {
-      group: "Engineering",
-      name: "Backends and realtime",
-      lead: 9,
-      body: "Software for systems that can’t go down. Multi-tenant data that never crosses tenants, messages that arrive once and in order, and tests that keep it that way.",
-      deliverables: ["API and data model", "Realtime and queues", "Automated tests", "Cloud deployment", "Audit and access control"],
+      tag: "Clarity", // owner to confirm
+      tone: "deep",
+      title: "Clear communication", // owner to confirm
+      body: "A written brief, a staging link to follow along, written updates.", // owner to confirm
     },
     {
-      group: "Engineering",
-      name: "AI features",
-      lead: 7,
-      body: "AI that explains its own answers. Search that reads photos, recommendations with stated reasons and risk scores a non-specialist can follow, served fast enough to use.",
-      deliverables: ["Search and retrieval", "Recommendations", "ML pipelines and retraining", "Explanations", "Monitoring"],
+      tag: "Ownership", // owner to confirm
+      tone: "ink",
+      title: "Yours to keep", // owner to confirm
+      body: "You own the code, the content and the accounts.", // owner to confirm
     },
-  ] satisfies Service[],
-} as const;
+  ] satisfies Reason[],
+  cta: { label: "Start a project", href: "#contact" }, // owner to confirm
+};
 
 /* ------------------------------------------------------------------ */
 /* How a project runs (after Significa's hero stack)                     */
@@ -135,10 +130,10 @@ export const servicesCopy = {
 export const processCopy = {
   label: "How a project runs",
   steps: [
-    { word: "Listen.", panel: "Listen", title: "A call, then a written brief.", note: "You get scope, approach and cost on one page." },
-    { word: "Shape.", panel: "Shape", title: "Words and structure first, then design.", note: "You see real pages before the build starts." },
-    { word: "Build.", panel: "Build", title: "Built in the open, tested as it grows.", note: "You get a staging link and written updates." },
-    { word: "Launch.", panel: "Launch", title: "Launch, handover, then looking after it.", note: "You own the code, content and accounts." },
+    { word: "Listen.", panel: "Listen", title: "A call, then a written brief.", note: "You get scope, approach and cost on one page.", thumb: { src: "/pitch/process-listen.webp", alt: "Hands writing notes in a notebook beside a coffee cup and a phone." } },
+    { word: "Shape.", panel: "Shape", title: "Words and structure first, then design.", note: "You see real pages before the build starts.", thumb: { src: "/pitch/process-shape.webp", alt: "Wireframe sketches and a sticky note in an open notebook." } },
+    { word: "Build.", panel: "Build", title: "Built in the open, tested as it grows.", note: "You get a staging link and written updates.", thumb: { src: "/pitch/process-build.webp", alt: "Hands typing on a laptop with code on the screen." } },
+    { word: "Launch.", panel: "Launch", title: "Launch, handover, then looking after it.", note: "You own the code, content and accounts.", thumb: { src: "/pitch/process-launch.webp", alt: "A finished website open on a laptop on a wooden desk." } },
   ],
   brief: { title: "Brief: Truvolt website", signed: "Agreed." },
   shape: { src: "/work/skinrock/mobile.webp", alt: "Skinrock website on a phone." },
@@ -317,15 +312,36 @@ export const ctaCopy = {
 
 export const credits = [
   {
-    asset: "Dark Rock texture (height map and diffuse), used for the molten card, the avatar disc and the services image",
-    files: ["/pitch/rock-ember.webp"],
-    source: "https://polyhaven.com/a/dark_rock",
-    licence: "CC0 1.0 (Poly Haven)",
-    credit: "Poly Haven",
+    asset: "How a project runs, Listen thumbnail (cropped, warm-graded)",
+    files: ["/pitch/process-listen.webp"],
+    source: "https://stocksnap.io/photo/writing-letter-BGGYUZB7LO",
+    licence: "CC0 1.0 (StockSnap)",
+    credit: "Kristin Hardwick",
+  },
+  {
+    asset: "How a project runs, Shape thumbnail (cropped, warm-graded)",
+    files: ["/pitch/process-shape.webp"],
+    source: "https://stocksnap.io/photo/office-work-91WZ32J28K",
+    licence: "CC0 1.0 (StockSnap)",
+    credit: "Jeffrey Betts",
+  },
+  {
+    asset: "How a project runs, Build thumbnail (cropped, warm-graded)",
+    files: ["/pitch/process-build.webp"],
+    source: "https://stocksnap.io/photo/coding-business-DZ1EFM9PIK",
+    licence: "CC0 1.0 (StockSnap)",
+    credit: "Marc Chouinard",
+  },
+  {
+    asset: "How a project runs, Launch thumbnail (cropped, warm-graded)",
+    files: ["/pitch/process-launch.webp"],
+    source: "https://stocksnap.io/photo/laptop-mac-OR7D4PANCK",
+    licence: "CC0 1.0 (StockSnap)",
+    credit: "Matthew Henry",
   },
 ] as const;
 
-/* Layout references, for the record: rejouice.com, basement.studio/services,
+/* Layout references, for the record: rejouice.com, area17.com/culture,
    significa.co, rejouice.com/services, ramotion.com/faq, dennissnellenberg.com. */
 
 /* ------------------------------------------------------------------ */

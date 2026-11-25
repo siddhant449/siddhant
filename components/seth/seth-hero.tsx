@@ -7,10 +7,12 @@ import { sethHero, sethLinks } from "@/lib/copy/seth";
 import c from "./cursor.module.css";
 import { attachDotField } from "./dot-field";
 import { SethClock } from "./parts";
-import { PixelPhone } from "./pixel-phone";
+import { Ember } from "@/components/kit";
 import s from "./seth-hero.module.css";
 
 const useIso = typeof window === "undefined" ? useEffect : useLayoutEffect;
+/** Keep in step with the tablet media query in seth-hero.module.css. */
+const STACKED = "(min-width: 721px) and (max-width: 1023px) and (orientation: portrait)";
 
 /** Rects for a pixel speech bubble of W × H sprite pixels (rounded 2-step corners, tail lower left). */
 function bubbleRects(W: number, H: number) {
@@ -55,6 +57,7 @@ export function SethHero() {
   const w1 = useRef<HTMLSpanElement>(null);
   const w2 = useRef<HTMLSpanElement>(null);
   const bubble = useRef<HTMLAnchorElement>(null);
+  const ember = useRef<HTMLDivElement>(null);
   const [on, setOn] = useState(false);
   const [typed, setTyped] = useState(0);
   const [showBubble, setShowBubble] = useState(false);
@@ -87,19 +90,36 @@ export function SethHero() {
     const fit = () => {
       const a = w1.current, b = w2.current;
       if (!a || !b) return;
-      const W = window.innerWidth, phone = W <= 720;
+      const W = window.innerWidth;
+      // Stacked layout (words over the bubble and ember): phones, and tablets held upright.
+      const tablet = W > 720 && window.matchMedia(STACKED).matches;
+      const phone = W <= 720 || tablet;
       a.style.fontSize = b.style.fontSize = "100px";
       const width = (el: HTMLElement) => {
         const r = document.createRange();
         r.selectNodeContents(el);
         return r.getBoundingClientRect().width;
       };
-      const each = phone ? W * 0.86 : (W - 2 * 0.01667 * W - 0.155 * W) / 2;
+      const each = phone ? W * (tablet ? 0.78 : 0.86) : (W - 2 * 0.01667 * W - 0.155 * W) / 2;
       const fs = (100 * each) / Math.max(width(a), width(b));
       a.style.fontSize = b.style.fontSize = `${fs}px`;
       document.documentElement.style.setProperty("--l1h", `${fs * 0.8}px`);
       const top = phone ? "" : `${W * 0.2243 + (W * 0.1228 - fs * 1.2) / 2}px`;
       a.style.top = b.style.top = top;
+      // Centre the ember in the gap between the two words (offset* ignores the intro transforms),
+      // sized so the object reads larger than the lettering.
+      const em = ember.current;
+      if (em && !phone && em.offsetParent === a.offsetParent) {
+        const size = Math.max(fs * 2.6, W * 0.2);
+        const cx = (a.offsetLeft + a.offsetWidth + b.offsetLeft) / 2;
+        const cy = a.offsetTop + a.offsetHeight / 2;
+        em.style.width = `${size}px`;
+        em.style.left = `${cx - size / 2}px`;
+        em.style.top = `${cy - size / 2}px`;
+        em.style.marginLeft = "0px";
+      } else if (em) {
+        em.style.width = em.style.left = em.style.top = em.style.marginLeft = "";
+      }
       const bb = bubble.current?.getBoundingClientRect();
       if (bb) {
         const px = Math.max(3, Math.round(bb.width / 80));
@@ -185,8 +205,9 @@ export function SethHero() {
             </span>
           </a>
 
-          <div className={s.sprite}>
-            <PixelPhone screens={sethHero.screens} label={sethHero.phoneLabel} capClass={s.cap} run={on} />
+          {/* The molten ember (kit) in the slot where Seth's pixel character stands. */}
+          <div ref={ember} className={s.sprite} aria-hidden>
+            <Ember className={s.ember} />
           </div>
 
           <p className={`${s.foot} ${s.footL} ${s.lbl}`}>

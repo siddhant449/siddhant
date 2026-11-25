@@ -52,8 +52,9 @@ export function About() {
         {about.title}
       </h2>
 
-      <div ref={ref} className="mt-12 grid auto-rows-[minmax(132px,auto)] grid-cols-2 gap-2 md:grid-cols-12 md:gap-3">
-        <Cell progress={scrollYProgress} from={[-120, 60]} order={0} className="col-span-2 row-span-2 flex flex-col justify-between bg-ink text-paper md:col-span-6">
+      {/* Tablets (md) use a 6-column bento so the experience list gets a full row; lg is the 12-column desktop. */}
+      <div ref={ref} className="mt-12 grid auto-rows-[minmax(132px,auto)] grid-cols-2 gap-2 md:grid-cols-6 md:gap-3 lg:grid-cols-12">
+        <Cell progress={scrollYProgress} from={[-120, 60]} order={0} className="col-span-2 row-span-2 flex flex-col justify-between bg-ink text-paper md:col-span-6 md:row-span-1 lg:row-span-2">
           <p className="t-label mute">Designer &amp; fullstack AI engineer</p>
           <p className="mt-10 text-[clamp(3.4rem,8vw,8.6rem)] font-light leading-[0.9] tracking-[-0.05em]">
             Siddhant
@@ -81,7 +82,7 @@ export function About() {
           <p className="t-small mute mt-1">production systems</p>
         </Cell>
 
-        <Cell progress={scrollYProgress} from={[-80, 140]} order={4} className="col-span-2 flex flex-col justify-between bg-[#fbf8f6] ring-1 ring-ink/12 md:col-span-4 md:row-span-2">
+        <Cell progress={scrollYProgress} from={[-80, 140]} order={4} className="col-span-2 flex flex-col justify-between bg-[#fbf8f6] ring-1 ring-ink/12 md:col-span-6 lg:col-span-4 lg:row-span-2">
           <p className="t-label mute">Experience</p>
           <ol className="mt-6">
             {about.experience.map((e) => (
@@ -96,7 +97,7 @@ export function About() {
           </ol>
         </Cell>
 
-        <Cell progress={scrollYProgress} from={[100, -100]} order={5} className="col-span-2 flex flex-col justify-between bg-signal text-paper md:col-span-4">
+        <Cell progress={scrollYProgress} from={[100, -100]} order={5} className="col-span-2 flex flex-col justify-between bg-signal text-paper md:col-span-3 lg:col-span-4">
           <p className="t-label">Based in</p>
           <div className="mt-8">
             <p className="t-h2">{site.location}</p>
@@ -106,7 +107,7 @@ export function About() {
           </div>
         </Cell>
 
-        <Cell progress={scrollYProgress} from={[-160, -60]} order={6} className="col-span-2 flex flex-col justify-between bg-ink text-paper md:col-span-4">
+        <Cell progress={scrollYProgress} from={[-160, -60]} order={6} className="col-span-2 flex flex-col justify-between bg-ink text-paper md:col-span-3 lg:col-span-4">
           <p className="t-label mute">Résumé</p>
           <div className="mt-8">
             <p className="t-h3">The full story, on one page.</p>

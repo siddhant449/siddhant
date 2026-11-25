@@ -5,57 +5,14 @@
   line-height: 1.1;
   letter-spacing: -0.015em;
 }
-.btn {
-  display: inline-flex;
-  align-items: center;
-  height: 54px;
-  padding: 0 24px;
-  border-radius: 8px;
-  font-size: 16px;
-  letter-spacing: 0.004em;
-  background: color-mix(in srgb, var(--paper) 10%, transparent);
-  color: var(--paper);
-  backdrop-filter: blur(8px);
-  transition:
-    color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.btn:hover {
-  background: var(--paper);
-  color: var(--ink);
-}
 .cons {
   padding: 232px 16px 0;
 }
 .cons .big {
   max-width: 1158px;
 }
-.buttons {
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-top: 47px;
-}
-.buttons .btn {
-  background: color-mix(in srgb, var(--fg) 10%, transparent);
-  color: var(--fg);
-}
-.buttons .btn:hover {
-  background: var(--fg);
-  color: var(--bg);
-}
 @media (max-width: 760px) {
     .cons {
     padding-top: 120px;
-  }
-  .buttons {
-    gap: 10px;
-    margin-top: 28px;
-  }
-  .btn {
-    height: 44px;
-    padding: 0 16px;
-    font-size: 14px;
   }
 }

@@ -39,6 +39,7 @@ export function Capabilities() {
       acc: el.querySelector<HTMLElement>("[data-acc]")!,
       content: el.querySelector<HTMLElement>("[data-content]")!,
       head: el.querySelector<HTMLElement>("[data-head]")!,
+      space: el.querySelector<HTMLElement>("[data-figspace]")!,
       shown: -1,
     }));
     const figs: FigureHandle[] = parts.map((p, i) =>
@@ -60,6 +61,14 @@ export function Capabilities() {
       parts.forEach((p) => {
         const pad = parseFloat(getComputedStyle(p.el).paddingTop);
         p.el.style.setProperty("--oh", `${pad * 2 + p.head.offsetHeight + p.content.offsetHeight}px`);
+        // Phones: pin the figure to the space reserved under the tags (not the card's bottom),
+        // so while a card is half open the figure is clipped from below and never covers the text.
+        if (window.innerWidth <= 760) {
+          p.media.style.top = `${p.space.offsetTop}px`;
+          p.media.style.bottom = "auto";
+        } else {
+          p.media.style.top = p.media.style.bottom = "";
+        }
         p.shown = -1;
       });
     };
@@ -143,8 +152,12 @@ export function Capabilities() {
             <div data-acc className={s.acc}>
               <div data-content className={s.content}>
                 <p className={s.text}>{c.text}</p>
-                <p className={s.tags}>{c.tags.join(" · ")}</p>
-                <div className={s.figSpace} />
+                <ul className={s.tags} aria-label={`${c.title} tools`}>
+                  {c.tags.map((t) => (
+                    <li key={t}>{t}</li>
+                  ))}
+                </ul>
+                <div data-figspace className={s.figSpace} />
               </div>
             </div>
           </li>

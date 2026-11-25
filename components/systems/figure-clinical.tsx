@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { clinicalCopy as copy, factNumber, projectAt, systemsCopy } from "@/lib/copy/systems";
+import { clinicalCopy as copy, deckPanels, factNumber, projectAt, systemsCopy } from "@/lib/copy/systems";
+import { Card, Deck } from "./deck";
 import s from "./systems.module.css";
-import { fit, rng, useEvery, useLoop, type FigureProps } from "./use-figure";
+import { fit, rng, useEvery, useLoop, useWidth, type FigureProps } from "./use-figure";
 
 /*
   Linear "Intake" geometry: a board of the message path behind, a floating
@@ -38,7 +39,7 @@ function seedBoard(): { board: Board; seq: number } {
   return { board, seq };
 }
 
-export default function FigureClinical({ active, reduced }: FigureProps) {
+export default function FigureClinical({ active, reduced, deck, label }: FigureProps) {
   const total = factNumber(projectAt(0), "Automated tests") || 1313;
   const [state, setState] = useState(seedBoard);
   const step = useRef(0);
@@ -70,10 +71,13 @@ export default function FigureClinical({ active, reduced }: FigureProps) {
   const cv = useRef<HTMLCanvasElement>(null);
   const pass = useRef<HTMLElement>(null);
   const bar = useRef<HTMLElement>(null);
-  const C = 41;
+  const gridBox = useRef<HTMLDivElement>(null);
+  const gridW = useWidth(gridBox, !!deck);
   const P = 10.5;
   const S = 7;
-  const W = C * P;
+  // The deck fits as many columns as its panel allows; the stage keeps Linear's 41.
+  const C = deck ? Math.max(16, Math.floor((gridW + P - S) / P)) : 41;
+  const W = deck ? C * P - (P - S) : C * P;
   const H = Math.ceil(total / C) * P;
   const rank = useRef<Float32Array | null>(null);
   const run = useRef(0);
@@ -107,7 +111,7 @@ export default function FigureClinical({ active, reduced }: FigureProps) {
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reduced]);
+  }, [reduced, C]);
 
   useLoop(active && !reduced, (_t, dt) => {
     run.current += dt / 7.5;
@@ -116,6 +120,74 @@ export default function FigureClinical({ active, reduced }: FigureProps) {
   });
 
   const { board } = state;
+
+  const testsIcon = (
+    <svg className={s.ico} viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden>
+      <rect x="2" y="2" width="6" height="6" rx="1.5" />
+      <rect x="10" y="2" width="6" height="6" rx="1.5" />
+      <rect x="2" y="10" width="6" height="6" rx="1.5" />
+      <rect x="10" y="10" width="6" height="6" rx="1.5" />
+    </svg>
+  );
+
+  if (deck) {
+    return (
+      <Deck names={deckPanels.clinical} label={label ?? ""}>
+        <Card title={deckPanels.clinical[0]} note={systemsCopy.simulated} flush>
+          {copy.columns.map((name, i) => {
+            const m = board[i][0];
+            return (
+              <div key={name} className={s.lane}>
+                <div className={s.laneHead}>
+                  {icons[i]}
+                  <span>{name}</span>
+                  <span className={s.count}>{board[i].length}</span>
+                </div>
+                {m ? (
+                  <div key={m.seq} className={`${s.msg} ${s.dMsg} ${m.dlq ? s.msgDlq : ""}`}>
+                    <div className={s.msgId}>
+                      <span>MSG-{m.seq}</span>
+                      <span>seq {m.seq}</span>
+                    </div>
+                    <div className={s.msgTitle}>{m.topic}</div>
+                    <div className={s.msgRow}>
+                      <span className={s.chip}>
+                        <i className={s.dot} />
+                        {copy.tenant} {m.tenant}
+                      </span>
+                      <span className={s.chip}>{copy.rls}</span>
+                      {m.note ? (
+                        <span className={s.chip}>
+                          <i className={`${s.dot} ${s.dotHot}`} />
+                          {m.note === "retry" ? copy.retry : copy.replayed}
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+                ) : (
+                  <div className={s.laneEmpty}>{copy.empty}</div>
+                )}
+              </div>
+            );
+          })}
+        </Card>
+        <Card title={copy.testsTitle} sub={copy.testsSub} note={copy.testsRun} icon={testsIcon}>
+          <div ref={gridBox}>
+            <canvas ref={cv} style={{ margin: "0 auto" }} />
+          </div>
+          <div className={s.dTestsFoot}>
+            <div className={s.testsBig}>
+              <b ref={pass}>0</b> of {total.toLocaleString("en-US")} {copy.passing}
+            </div>
+            <div className={s.bar}>
+              <i ref={bar} style={{ transform: "scaleX(0)" }} />
+            </div>
+          </div>
+        </Card>
+      </Deck>
+    );
+  }
+
   return (
     <>
       <div className={`${s.frame} ${s.c1Frame}`}>
@@ -161,12 +233,7 @@ export default function FigureClinical({ active, reduced }: FigureProps) {
       <div className={`${s.box} ${s.tests}`}>
         <div className={s.grain} style={{ opacity: 0.9 }} />
         <div className={s.boxHead}>
-          <svg className={s.ico} viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden>
-            <rect x="2" y="2" width="6" height="6" rx="1.5" />
-            <rect x="10" y="2" width="6" height="6" rx="1.5" />
-            <rect x="2" y="10" width="6" height="6" rx="1.5" />
-            <rect x="10" y="10" width="6" height="6" rx="1.5" />
-          </svg>
+          {testsIcon}
           <span className={s.boxName}>{copy.testsTitle}</span>
           <span className={s.boxSub}>{copy.testsSub}</span>
           <span className={s.sim} style={{ marginLeft: "auto" }}>

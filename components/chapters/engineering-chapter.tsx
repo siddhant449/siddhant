@@ -15,15 +15,6 @@ export function EngineeringChapter({ children }: { children?: ReactNode }) {
       <Capabilities />
       <div className={s.cons}>
         <p className={s.big}>{E.practice}</p>
-        <ul className={s.buttons}>
-          {E.buttons.map((b) => (
-            <li key={b.label}>
-              <a className={s.btn} href={b.href}>
-                {b.label}
-              </a>
-            </li>
-          ))}
-        </ul>
       </div>
       <div id="systems">{children}</div>
     </section>

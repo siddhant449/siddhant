@@ -3,7 +3,7 @@
  * Layout, type scale and motion are rebuilt from sethlukin.com; the words are Siddhant's.
  * Facts come from lib/content.ts. Lines marked "owner to confirm" are drafts.
  */
-import { contact, design, site } from "@/lib/content";
+import { contact, site } from "@/lib/content";
 
 const subject = (s: string) => `mailto:${site.email}?subject=${encodeURIComponent(s)}`;
 
@@ -28,15 +28,6 @@ export const sethHero = {
   right: ["Engineered for systems", "that can’t go down."] as const,
   bubble: contact.start, // "Start a project"
   place: "Ahmedabad, IN",
-  /** Real mobile screens shown in the pixel phone, in order. */
-  screens: [
-    { src: "/work/truvolt-mobile.webp", name: "Truvolt" },
-    { src: "/work/skinrock/mobile.webp", name: "Skinrock" },
-    { src: "/work/seoulceuticals/mobile.webp", name: "SeoulCeuticals" },
-    { src: "/work/prefdigihub/mobile.webp", name: "Pref Digi Hub" },
-    { src: "/work/agency-mobile.webp", name: "Agency concept" },
-  ],
-  phoneLabel: `Siddhant’s live websites on a phone: ${design.projects.map((p) => p.name).join(", ")}`,
 };
 
 /* ------------------------------------------------------------------ */
@@ -75,12 +66,12 @@ export const sethFooter = {
 
 export const credits = [
   {
-    file: "/seth/lava.jpg",
-    title: "Pahoehoe toe",
-    use: "Material for the molten swimmers in the footer's dot field",
-    source: "https://commons.wikimedia.org/wiki/File:Pahoehoe_toe.jpg",
-    licence: "Public domain (USGS)",
-    credit: "Hawaiian Volcano Observatory, U.S. Geological Survey",
+    file: "/seth/hands.webp",
+    title: "Michelangelo, The Creation of Adam, c. 1512 (detail of the hands)",
+    use: "The two hands drawn as the footer's dot field (cut out from the plaster, on black)",
+    source: "https://commons.wikimedia.org/wiki/File:Creation_of_Adam_(Michelangelo)_Detail.jpg",
+    licence: "Public domain",
+    credit: "Michelangelo Buonarroti, Sistine Chapel ceiling, via Wikimedia Commons",
   },
   {
     file: "/kit/tex-stone-duo.webp",

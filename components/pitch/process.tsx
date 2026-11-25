@@ -5,41 +5,6 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { processCopy as c } from "@/lib/copy/pitch";
 import s from "./process.module.css";
 
-function BriefThumb() {
-  return (
-    <svg viewBox="0 0 96 77" aria-hidden>
-      <rect width="96" height="77" fill="#ece4e1" />
-      <g transform="rotate(-4 48 41)">
-        <rect x="22" y="10" width="52" height="62" rx="3" fill="#fffaf8" />
-        <g fill="#dcd0cc">
-          <rect x="28" y="18" width="30" height="3" rx="1.5" />
-          <rect x="28" y="26" width="40" height="2.5" rx="1.2" />
-          <rect x="28" y="32" width="36" height="2.5" rx="1.2" fill="#ffb3a3" />
-          <rect x="28" y="38" width="38" height="2.5" rx="1.2" />
-          <rect x="28" y="44" width="26" height="2.5" rx="1.2" />
-        </g>
-      </g>
-    </svg>
-  );
-}
-
-function SystemThumb() {
-  return (
-    <svg viewBox="0 0 96 77" aria-hidden>
-      <rect width="96" height="77" fill="#1b1513" />
-      <path d="M20 26H48M48 26H76M48 26V54M48 54H76" fill="none" stroke="#c4b7b4" strokeOpacity=".5" />
-      <g fill="#1b1513" stroke="#c4b7b4">
-        <rect x="10" y="20" width="20" height="12" rx="2" />
-        <rect x="38" y="20" width="20" height="12" rx="2" />
-        <rect x="66" y="20" width="20" height="12" rx="2" />
-        <rect x="38" y="48" width="20" height="12" rx="2" />
-        <rect x="66" y="48" width="20" height="12" rx="2" />
-      </g>
-      <circle cx="48" cy="40" r="2.6" fill="#ff3a1a" />
-    </svg>
-  );
-}
-
 /** The clinical messaging system, drawn top to bottom, with one message travelling through it. */
 function SystemFigure() {
   const ys = [30, 110, 190, 270, 350, 420];
@@ -104,6 +69,8 @@ export function Process() {
   }, []);
 
   const on = (i: number) => (i <= step ? "" : undefined);
+  // Phones widen the current step's panel (see process.module.css).
+  const cur = (i: number) => (i === step ? "" : undefined);
 
   return (
     <section ref={root} id="process" data-theme="paper" aria-labelledby="process-title" className={`${s.section} ${ready ? s.ready : ""}`}>
@@ -123,10 +90,7 @@ export function Process() {
           {c.steps.map((x, i) => (
             <li key={x.word} className={s.card} data-on={i === step ? "" : undefined} aria-current={i === step ? "step" : undefined}>
               <div className={s.thumb}>
-                {i === 0 ? <BriefThumb /> : null}
-                {i === 1 ? <Image src="/work/skinrock/cover.webp" alt="" fill sizes="96px" /> : null}
-                {i === 2 ? <SystemThumb /> : null}
-                {i === 3 ? <Image src="/work/truvolt-hero.webp" alt="" fill sizes="96px" /> : null}
+                <Image src={x.thumb.src} alt={x.thumb.alt} fill sizes="(max-width: 767px) 76px, 96px" />
               </div>
               <div>
                 <p className={s.cardTitle}>{x.title}</p>
@@ -137,7 +101,7 @@ export function Process() {
         </ol>
 
         <div className={s.panels} aria-hidden>
-          <div className={s.panel} data-on={on(0)}>
+          <div className={s.panel} data-on={on(0)} data-cur={cur(0)}>
             <span className={s.panelLabel}>{c.steps[0].panel}</span>
             <div className={s.doc}>
               <p className={s.docTitle}>{c.brief.title}</p>
@@ -147,16 +111,16 @@ export function Process() {
               <p className={`${s.sig} t-it`}>{c.brief.signed}</p>
             </div>
           </div>
-          <div className={s.panel} data-on={on(1)}>
+          <div className={s.panel} data-on={on(1)} data-cur={cur(1)}>
             <span className={s.panelLabel}>{c.steps[1].panel}</span>
             <div className={s.device}>
               <span className={s.notch} />
               <div className={s.screen}>
-                <Image src={c.shape.src} alt={c.shape.alt} width={780} height={1688} sizes="(max-width: 767px) 80px, 240px" />
+                <Image src={c.shape.src} alt={c.shape.alt} width={780} height={1688} sizes="(max-width: 767px) 140px, 240px" />
               </div>
             </div>
           </div>
-          <div className={s.panel} data-on={on(2)}>
+          <div className={s.panel} data-on={on(2)} data-cur={cur(2)}>
             <span className={s.panelLabel}>{c.steps[2].panel}</span>
             <div className={s.device}>
               <span className={s.notch} />
@@ -165,12 +129,12 @@ export function Process() {
               </div>
             </div>
           </div>
-          <div className={s.panel} data-on={on(3)}>
+          <div className={s.panel} data-on={on(3)} data-cur={cur(3)}>
             <span className={s.panelLabel}>{c.steps[3].panel}</span>
             <div className={s.device}>
               <span className={s.notch} />
               <div className={s.screen}>
-                <Image src={c.launch.src} alt={c.launch.alt} width={780} height={1688} sizes="(max-width: 767px) 80px, 240px" />
+                <Image src={c.launch.src} alt={c.launch.alt} width={780} height={1688} sizes="(max-width: 767px) 140px, 240px" />
               </div>
             </div>
           </div>

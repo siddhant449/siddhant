@@ -1,13 +1,50 @@
 "use client";
 
-import { useEffect, useRef, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 export type FigureProps = {
   /** True only while this figure is on screen; everything else stays paused. */
   active: boolean;
   /** prefers-reduced-motion: draw one still frame and never loop. */
   reduced: boolean;
+  /**
+   * Under 1200px the figure is laid out as a deck of panels at real size
+   * (no scaled stage), so text stays legible on tablets and phones.
+   */
+  deck?: boolean;
+  /** Accessible description of the figure (used by the deck, which owns its role="img"). */
+  label?: string;
 };
+
+const wideQuery = "(min-width: 700px)";
+function subscribeWide(cb: () => void) {
+  const mq = window.matchMedia(wideQuery);
+  mq.addEventListener("change", cb);
+  return () => mq.removeEventListener("change", cb);
+}
+/** Tablet and small laptop (700–1199px): the deck lays its panels out in two columns instead of a swipe track. */
+export function useWide() {
+  return useSyncExternalStore(
+    subscribeWide,
+    () => window.matchMedia(wideQuery).matches,
+    () => false,
+  );
+}
+
+/** Content width of an element, tracked with a ResizeObserver (0 until measured). */
+export function useWidth(ref: React.RefObject<HTMLElement | null>, on = true) {
+  const [w, setW] = useState(0);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !on) return;
+    const measure = () => setW(Math.floor(el.clientWidth));
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [ref, on]);
+  return w;
+}
 
 const reducedQuery = "(prefers-reduced-motion: reduce)";
 function subscribeReduced(cb: () => void) {

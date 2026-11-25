@@ -3,7 +3,7 @@
 import { m, useScroll, useTransform, type MotionValue } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { caseStudyOf, design, type LiveProject } from "@/lib/content";
 import { Board } from "./board";
 import { Fade, Opener, Rise } from "./ui/reveal";
@@ -16,28 +16,31 @@ function Project({ project }: { project: LiveProject }) {
   const study = caseStudyOf(project.slug);
   const href = study ? `/work/${project.slug}` : project.url;
   return (
-    <article data-tone={project.tone} aria-labelledby={`site-${project.slug}`} className="board-row grid gap-x-6 gap-y-5 md:grid-cols-12">
-      <Fade className="md:col-span-3 md:pt-1 md:text-right">
-        <h3 id={`site-${project.slug}`} className="t-h3">
-          {project.name}
-        </h3>
-        <p className="t-h3 mute">{project.sector}</p>
-        <p className="t-label mute mt-4">
-          {project.place}
-        </p>
-        <p className="t-label mt-4 flex gap-5 md:justify-end">
-          {study ? (
-            <Link href={href} className="link">
-              Case study
-            </Link>
-          ) : null}
-          <a href={project.url} target="_blank" rel="noreferrer" className="link">
-            Live site
-            <span className="sr-only">(opens in a new tab)</span>
-          </a>
-        </p>
+    <article data-tone={project.tone} aria-labelledby={`site-${project.slug}`} className="board-row grid gap-x-6 gap-y-5 lg:grid-cols-12">
+      {/* Below lg the details sit above the board; a 3-of-12 column there wraps every label. */}
+      <Fade className="md:flex md:items-end md:justify-between md:gap-6 lg:col-span-3 lg:block lg:pt-1 lg:text-right">
+        <div>
+          <h3 id={`site-${project.slug}`} className="t-h3">
+            {project.name}
+          </h3>
+          <p className="t-h3 mute">{project.sector}</p>
+        </div>
+        <div className="md:text-right">
+          <p className="t-label mute mt-4">{project.place}</p>
+          <p className="t-label mt-4 flex gap-5 md:justify-end">
+            {study ? (
+              <Link href={href} className="link">
+                Case study
+              </Link>
+            ) : null}
+            <a href={project.url} target="_blank" rel="noreferrer" className="link">
+              Live site
+              <span className="sr-only">(opens in a new tab)</span>
+            </a>
+          </p>
+        </div>
       </Fade>
-      <Link href={href} aria-label={`${project.name}: ${study ? "case study" : "live site"}`} className="block md:col-span-9">
+      <Link href={href} aria-label={`${project.name}: ${study ? "case study" : "live site"}`} className="block lg:col-span-9">
         <Board project={project} />
       </Link>
     </article>
@@ -115,6 +118,14 @@ function Column({ items, y }: { items: Tile[]; y: MotionValue<string> }) {
   );
 }
 
+const PHONE = "(max-width: 767px)";
+const isPhone = () => window.matchMedia(PHONE).matches;
+const subscribePhone = (cb: () => void) => {
+  const mq = window.matchMedia(PHONE);
+  mq.addEventListener("change", cb);
+  return () => mq.removeEventListener("change", cb);
+};
+
 function Gallery() {
   const box = useRef<HTMLDivElement>(null);
   const cols = useRef<HTMLDivElement>(null);
@@ -139,7 +150,9 @@ function Gallery() {
     return () => ro.disconnect();
   }, []);
 
-  const byCol = [0, 1, 2].map((c) => tiles.filter((_, i) => i % 3 === c));
+  // Phones show two columns: deal the screens into two so none are left out.
+  const count = useSyncExternalStore(subscribePhone, isPhone, () => false) ? 2 : 3;
+  const byCol = [0, 1, 2].map((c) => tiles.filter((_, i) => i % count === c));
 
   return (
     <div className="mt-[var(--section)]">
@@ -156,9 +169,11 @@ function Gallery() {
         <div ref={cols} className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6">
           <Column items={byCol[0]} y={up} />
           <Column items={byCol[1]} y={down} />
-          <div className="hidden md:block">
-            <Column items={byCol[2]} y={upSlow} />
-          </div>
+          {count === 3 ? (
+            <div className="hidden md:block">
+              <Column items={byCol[2]} y={upSlow} />
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

@@ -4,7 +4,7 @@ import { m, useScroll, useTransform } from "motion/react";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { sethFooter, sethLinks } from "@/lib/copy/seth";
 import c from "./cursor.module.css";
-import { attachDotField } from "./dot-field";
+import { attachDotField, type HandsLayout } from "./dot-field";
 import { PixelDoc, PixelMail, SethClock, SethYear, useCopyEmail } from "./parts";
 import s from "./seth-footer.module.css";
 
@@ -14,15 +14,18 @@ const useIso = typeof window === "undefined" ? useEffect : useLayoutEffect;
  * The site footer, rebuilt from sethlukin.com's footer.
  *
  * Measured: the footer is fixed under the page and uncovered by the final 100vh of scroll; over that
- * range line one travels 190px left, line two 190px right, and the buttons rise 95px. Two molten
- * swimmers (the shared dot field, textured by a USGS lava photograph) drift through it and come to
- * the pointer. Wiring: no ancestor may have a transform, or `position: fixed` breaks.
+ * range line one travels 190px left, line two 190px right, and the buttons rise 95px. Behind it the
+ * shared dot field draws the two hands from Michelangelo's Creation of Adam across the full width,
+ * slightly tilted, as dim red dots that brighten toward the fingertip gap at the centre. Wiring: no ancestor may have a transform, or `position: fixed` breaks.
  */
 export function SethFooterView({ now }: { now?: ReactNode }) {
   const wrap = useRef<HTMLDivElement>(null);
   const ft = useRef<HTMLElement>(null);
   const l1 = useRef<HTMLSpanElement>(null);
   const l2 = useRef<HTMLSpanElement>(null);
+  const head = useRef<HTMLHeadingElement>(null);
+  const btns = useRef<HTMLDivElement>(null);
+  const relayout = useRef<() => void>(() => {});
   const top = useCopyEmail();
   const pill = useCopyEmail();
   const [vw, setVw] = useState(1440);
@@ -36,7 +39,17 @@ export function SethFooterView({ now }: { now?: ReactNode }) {
   useEffect(() => {
     const el = ft.current, w = wrap.current;
     if (!el || !w) return;
-    const { detach, setPointer } = attachDotField(el, "swimmers", () => {}, w);
+    // rest positions (offsets ignore the scroll transforms), in footer px
+    // the fingertip gap sits at the centre, in the band between the headline and the buttons
+    // (offsets ignore the scroll transforms); the arms run in from both edges
+    const layout = (W: number, H: number): HandsLayout => {
+      const h = head.current, b = l2.current, bt = btns.current;
+      const band = h && b && bt ? (h.offsetTop + b.offsetTop + b.offsetHeight + bt.offsetTop) / 2 : H / 2;
+      const y = Math.min(H * 0.58, Math.max(H * 0.42, band));
+      return { x: W / 2, y, s: W / (W <= 720 ? 620 : 1150), tilt: -0.13 };
+    };
+    const { detach, setPointer, relayout: re } = attachDotField(el, "hands", () => {}, w, layout);
+    relayout.current = re;
     const move = (e: PointerEvent) => setPointer(e.clientX, e.clientY, true);
     const leave = (e: PointerEvent) => setPointer(e.clientX, e.clientY, false);
     el.addEventListener("pointermove", move, { passive: true });
@@ -46,6 +59,7 @@ export function SethFooterView({ now }: { now?: ReactNode }) {
       el.removeEventListener("pointermove", move);
       el.removeEventListener("pointerdown", move);
       el.removeEventListener("pointerleave", leave);
+      relayout.current = () => {};
       detach();
     };
   }, []);
@@ -69,6 +83,7 @@ export function SethFooterView({ now }: { now?: ReactNode }) {
         el.style.fontSize = `${Math.min(fs * 1.4, (fs * W * f) / width(el))}px`;
       }
       wrap.current?.style.setProperty("--l1h", `${a.getBoundingClientRect().height}px`);
+      relayout.current();
     };
     fit();
     document.fonts?.ready.then(fit);
@@ -98,7 +113,7 @@ export function SethFooterView({ now }: { now?: ReactNode }) {
             ))}
           </nav>
 
-          <h2 id="contact-title" className={s.head}>
+          <h2 ref={head} id="contact-title" className={s.head}>
             <m.span ref={l1} className={`${s.line} ${s.l1}`} style={{ x: x1 }}>
               {sethFooter.lines[0]}
             </m.span>
@@ -107,7 +122,7 @@ export function SethFooterView({ now }: { now?: ReactNode }) {
             </m.span>
           </h2>
 
-          <m.div className={s.btns} style={{ y }}>
+          <m.div ref={btns} className={s.btns} style={{ y }}>
             <a className={s.pill} href={sethLinks.project}>
               <PixelDoc />
               <span>{sethFooter.start}</span>

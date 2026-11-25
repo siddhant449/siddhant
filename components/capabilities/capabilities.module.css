@@ -123,18 +123,26 @@
   max-width: calc(56 * var(--u));
 }
 .tags {
+  list-style: none;
   margin-top: calc(2.35 * var(--u));
-  display: inline-block;
-  padding: 0.55em 1em;
-  border-radius: 99px;
-  border: 1px solid currentColor;
+  /* room for the 1px chip borders so a clipping parent never cuts them */
+  padding: 1px 0 2px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
   font-family: var(--font-geist-mono), ui-monospace, monospace;
   font-weight: 500;
   font-size: 11px;
-  line-height: 1.5;
+  line-height: 1;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  opacity: 0.7;
+}
+.tags li {
+  padding: 0.6em 0.95em;
+  border-radius: 99px;
+  border: 1px solid color-mix(in srgb, currentColor 45%, transparent);
+  white-space: nowrap;
+  opacity: 0.8;
 }
 .figSpace {
   display: none;
@@ -172,13 +180,13 @@
   .tags {
     font-size: 10px;
     letter-spacing: 0.04em;
+    gap: 5px;
   }
   .media {
-    top: auto;
-    bottom: 0;
+    /* top is set in JS to the figure space under the tags */
     left: 0;
     width: 100%;
-    height: 224px;
+    height: 212px;
   }
   .plate {
     -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 60%);
@@ -193,6 +201,55 @@
   .figSpace {
     display: block;
     height: 212px;
+  }
+}
+
+/* Tablets and small laptops: the desktop scale (100vw / 160) leaves 10–13px body copy here, so the
+   list spans the gutters, type keeps readable floors, and the figure takes the right half of the
+   row with the copy held to the left half. */
+@media (min-width: 761px) and (max-width: 1279px) {
+  .intro,
+  .list {
+    width: calc(100vw - 64px);
+  }
+  .intro {
+    grid-template-columns: minmax(160px, 22%) 1fr;
+    padding-bottom: clamp(48px, 7vw, 80px);
+  }
+  .statement {
+    font-size: clamp(22px, 2.7vw, 28px);
+    max-width: 30em;
+  }
+  .list {
+    gap: 8px;
+  }
+  .row {
+    border-radius: 16px;
+    padding: clamp(28px, 4.2vw, 48px);
+  }
+  .title {
+    font-size: clamp(30px, 4vw, 44px);
+  }
+  .content {
+    padding-top: clamp(16px, 2.4vw, 26px);
+  }
+  .text {
+    font-size: clamp(16px, 1.75vw, 18px);
+    letter-spacing: 0.01em;
+    max-width: 46%;
+  }
+  .tags {
+    margin-top: 18px;
+    max-width: 46%;
+  }
+  .media {
+    top: 0;
+    width: 52%;
+    height: 100%;
+  }
+  .canvas {
+    top: 0;
+    width: 100%;
   }
 }
 

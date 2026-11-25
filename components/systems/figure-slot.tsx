@@ -17,13 +17,10 @@ const figures: Record<SystemKind, React.ComponentType<FigureProps>> = {
 
 /** Linear's illustration heights for each chapter, in design pixels at 1333 wide. */
 const heights: Record<SystemKind, number> = { clinical: 626, commerce: 633, risk: 632, shizuku: 592 };
-/** On phones the stage is shown at 0.62 and cropped from this x (Linear's mobile crops). */
-const phoneCrop: Record<SystemKind, number> = { clinical: 250, commerce: 700, risk: 255, shizuku: 440 };
 
 const DESIGN_W = 1333;
-const PHONE = 820;
-const PHONE_SCALE = 0.62;
-const PHONE_H = 312;
+/** Below this the scaled stage gets too small to read: the figure becomes a deck of real-size panels. */
+const deckQuery = "(max-width: 1199px)";
 
 export function FigureSlot({ kind, label }: { kind: SystemKind; label: string }) {
   const box = useRef<HTMLDivElement>(null);
@@ -31,7 +28,8 @@ export function FigureSlot({ kind, label }: { kind: SystemKind; label: string })
   const [seen, setSeen] = useState(false);
   const [ready, setReady] = useState(false);
   const active = seen && ready;
-  const [fitState, setFit] = useState({ scale: 1, x: 0, h: heights[kind] });
+  const [scale, setScale] = useState(1);
+  const [deck, setDeck] = useState(false);
   const reduced = useReducedMotion();
   const Figure = figures[kind];
 
@@ -57,31 +55,41 @@ export function FigureSlot({ kind, label }: { kind: SystemKind; label: string })
     };
   }, []);
 
-  // Scale the 1333px stage to the column; phones get a fixed crop.
+  // A deck under 1200px; above, the 1333px stage scaled to the column.
   useEffect(() => {
     const el = box.current;
     if (!el) return;
+    const mq = window.matchMedia(deckQuery);
     const measure = () => {
-      if (window.innerWidth <= PHONE) {
-        setFit({ scale: PHONE_SCALE, x: -phoneCrop[kind] * PHONE_SCALE, h: PHONE_H });
-      } else {
-        const sc = Math.min(1, el.clientWidth / DESIGN_W);
-        setFit({ scale: sc, x: 0, h: Math.round(heights[kind] * sc) });
-      }
+      setDeck(mq.matches);
+      setScale(Math.min(1, el.clientWidth / DESIGN_W));
     };
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
-    return () => ro.disconnect();
-  }, [kind]);
+    mq.addEventListener("change", measure);
+    return () => {
+      ro.disconnect();
+      mq.removeEventListener("change", measure);
+    };
+  }, []);
+
+  if (deck) {
+    return (
+      <div ref={box} className={s.ill} data-deck="">
+        {mounted ? (
+          <Figure active={active} reduced={reduced} deck label={label} />
+        ) : (
+          <div className={s.placeholder} aria-hidden />
+        )}
+      </div>
+    );
+  }
 
   return (
-    <div ref={box} className={s.ill} style={{ height: fitState.h }} role="img" aria-label={label}>
+    <div ref={box} className={s.ill} style={{ height: Math.round(heights[kind] * scale) }} role="img" aria-label={label}>
       {mounted ? (
-        <div
-          className={s.stage}
-          style={{ height: heights[kind], transform: `translateX(${fitState.x}px) scale(${fitState.scale})` }}
-        >
+        <div className={s.stage} style={{ height: heights[kind], transform: `scale(${scale})` }}>
           <Figure active={active} reduced={reduced} />
         </div>
       ) : (

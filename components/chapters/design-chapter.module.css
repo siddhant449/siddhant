@@ -1,0 +1,256 @@
+/* 14islands.com home, measured at 1440: 54px margins (3.75vw), label at the
+   centre column, a 180/144 two-row title, a 16:9 media card (r 5px), a 100/100
+   statement, a 12px uppercase paragraph at the centre column, then a two-column
+   grid of 3:2 thumbnails with 26.67px captions. */
+.wrap {
+  padding-inline: max(15px, 3.75vw);
+}
+.hero {
+  position: relative;
+  height: max(640px, 90svh);
+}
+.label {
+  position: absolute;
+  left: 50%;
+  top: 29.6%;
+  width: 256px;
+}
+.soft {
+  color: color-mix(in srgb, var(--fg) 40%, transparent);
+}
+.h1 {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 67px;
+  font-weight: 400;
+  font-size: clamp(60px, 12.5vw, 180px);
+  line-height: 0.8;
+  letter-spacing: -0.05em;
+}
+.row {
+  display: block;
+  position: relative;
+  height: 0.8em;
+}
+.amp {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.r2 {
+  position: absolute;
+  left: 39.3%;
+  top: 0;
+}
+.media {
+  position: relative;
+  aspect-ratio: 1317 / 741;
+  border-radius: 5px;
+  overflow: hidden;
+  background: var(--ink);
+}
+.reelImg {
+  opacity: 0;
+  transform: scale(1.04);
+  transition:
+    opacity 1.2s linear,
+    transform 6s linear;
+}
+.reelImg[data-on] {
+  opacity: 1;
+  transform: scale(1);
+}
+.intro {
+  padding-top: clamp(64px, 6.94vw, 100px);
+}
+.h2 {
+  font-weight: 400;
+  font-size: clamp(35px, 6.94vw, 100px);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  min-height: 2em;
+}
+.l1,
+.l2 {
+  display: block;
+  white-space: nowrap;
+}
+.para {
+  margin-top: 136px;
+  margin-left: 50%;
+  width: min(322px, 50%);
+}
+.paraText {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+.paraLink {
+  display: inline-block;
+  margin-top: 36px;
+  font-size: 16px;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 1px;
+  transition: color 0.3s;
+}
+.paraLink:hover {
+  color: var(--signal);
+}
+.grid {
+  margin-top: 160px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 11px;
+  row-gap: 25px;
+  padding-bottom: clamp(72px, 9.7vw, 140px);
+}
+.card {
+  display: block;
+}
+.scene {
+  position: relative;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  background: var(--paper-2);
+}
+.bg {
+  transition: transform 1.4s var(--ease-out);
+}
+.card:hover .bg {
+  transform: scale(1.04);
+}
+.caption {
+  margin-top: 24px;
+  font-weight: 400;
+  font-size: clamp(17px, 1.85vw, 26.67px);
+  line-height: 1.3;
+  letter-spacing: -0.04em;
+}
+
+/* Device frames built for the work */
+.monitor {
+  position: absolute;
+  left: 50%;
+  top: 13%;
+  width: 58%;
+  transform: translateX(-50%);
+  transition: transform 1.4s var(--ease-out);
+}
+.card:hover .monitor {
+  transform: translateX(-50%) translateY(-1.5%);
+}
+.screen {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border: 5px solid var(--ink);
+  border-bottom-width: 14px;
+  border-radius: 7px;
+  overflow: hidden;
+  background: var(--ink);
+  box-shadow: 0 30px 50px -20px rgba(15, 11, 10, 0.55);
+}
+.neck {
+  width: 11%;
+  height: clamp(18px, 3vw, 44px);
+  margin: 0 auto;
+  background: linear-gradient(90deg, #2a201d, #4a3d39 50%, #2a201d);
+  clip-path: polygon(18% 0, 82% 0, 100% 100%, 0 100%);
+}
+.foot {
+  width: 34%;
+  height: 9px;
+  margin: 0 auto;
+  border-radius: 3px 3px 6px 6px;
+  background: linear-gradient(#4a3d39, #1b1513);
+  box-shadow: 0 14px 18px -6px rgba(15, 11, 10, 0.6);
+}
+.tablet {
+  position: absolute;
+  left: 50%;
+  top: 18%;
+  width: 64%;
+  aspect-ratio: 16 / 10.6;
+  transform: translateX(-50%) rotate(-7deg);
+  border: 11px solid #0b0807;
+  border-radius: 22px;
+  overflow: hidden;
+  background: var(--ink);
+  box-shadow:
+    0 2px 0 1px #3a2f2b,
+    24px 40px 60px -14px rgba(0, 0, 0, 0.75);
+  transition: transform 1.4s var(--ease-out);
+}
+.card:hover .tablet {
+  transform: translateX(-50%) rotate(-5deg) translateY(-2%);
+}
+
+/* Letter reveal (14islands, logged per frame): opacity ~0.75s ease-out,
+   transform from scaleY(.92) rotate(2deg) skewX(-2deg) settles quickly,
+   38ms stagger, second line 190ms after the first. Hidden only once armed by JS. */
+.armed .ch {
+  opacity: 0;
+  transform-origin: 0 0;
+  transform: scaleY(0.92) rotate(2deg) skewX(-2deg) translateZ(0);
+}
+.ch {
+  display: inline-block;
+  white-space: pre;
+  transition:
+    opacity 0.75s cubic-bezier(0.25, 0.6, 0.4, 1),
+    transform 0.45s var(--ease-out);
+}
+.armed .ch[data-in] {
+  opacity: 1;
+  transform: none;
+}
+.armed .ch[data-out] {
+  opacity: 0;
+  transform: none;
+  transition: opacity 0.25s linear;
+}
+
+@media (max-width: 760px) {
+  .hero {
+    height: 640px;
+  }
+  .label {
+    left: 27.4%;
+    top: 23%;
+    width: auto;
+    right: 0;
+  }
+  .h1 {
+    bottom: 34px;
+    line-height: 1;
+  }
+  .row {
+    height: 1em;
+  }
+  .media {
+    margin-inline: calc(-1 * max(15px, 3.75vw));
+    border-radius: 0;
+  }
+  .intro {
+    padding-top: 96px;
+  }
+  .l1,
+  .l2 {
+    white-space: normal;
+  }
+  .para {
+    margin-top: 72px;
+    margin-left: 27.4%;
+    width: auto;
+  }
+  .grid {
+    margin-top: 64px;
+    grid-template-columns: 1fr;
+    row-gap: 22px;
+  }
+  .caption {
+    margin-top: 12px;
+  }
+}

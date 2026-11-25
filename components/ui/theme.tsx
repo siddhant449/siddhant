@@ -15,7 +15,7 @@ export function ThemeWatcher() {
     let raf = 0;
     const compute = () => {
       raf = 0;
-      const mid = window.innerHeight * 0.55;
+      const mid = window.innerHeight * 0.5;
       let theme = "ink";
       for (const el of document.querySelectorAll<HTMLElement>("[data-theme]")) {
         if (el === root) continue;

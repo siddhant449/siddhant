@@ -1,8 +1,8 @@
 "use client";
 
-import { m, useReducedMotion, useScroll, useTransform, type MotionValue } from "motion/react";
+import { m, useScroll, useTransform, type MotionValue } from "motion/react";
 import { useRef } from "react";
-import { about, design, engineering, site } from "@/lib/content";
+import { about, site } from "@/lib/content";
 import { LocalTime } from "./ui/local-time";
 import { Opener } from "./ui/reveal";
 
@@ -23,7 +23,6 @@ function Cell({
   from: [number, number];
   order: number;
 }) {
-  const reduce = useReducedMotion();
   const a = 0.05 + order * 0.07;
   const b = Math.min(1, a + 0.45);
   const x = useTransform(progress, [a, b], [from[0], 0]);
@@ -33,8 +32,9 @@ function Cell({
   const radius = useTransform(progress, [a, b], [2, 16]);
   return (
     <m.div
-      style={reduce ? undefined : { x, y, scale, opacity, borderRadius: radius }}
-      className={`relative overflow-hidden rounded-2xl p-[clamp(16px,1.8vw,28px)] ${className}`}
+      // Same markup on server and client; reduced motion is handled in CSS so hydration matches.
+      style={{ x, y, scale, opacity, borderRadius: radius }}
+      className={`relative overflow-hidden rounded-2xl p-[clamp(16px,1.8vw,28px)] motion-reduce:!translate-none motion-reduce:!transform-none motion-reduce:!rounded-2xl motion-reduce:!opacity-100 ${className}`}
     >
       {children}
     </m.div>
@@ -47,7 +47,7 @@ export function About() {
 
   return (
     <section id="about" data-nav="about" data-theme="paper" aria-labelledby="about-title" className="px-gutter py-[var(--section)]">
-      <Opener index={about.index} label={about.label} meta={site.location} />
+      <Opener label={about.label} meta={site.location} />
       <h2 id="about-title" className="sr-only">
         {about.title}
       </h2>
@@ -71,13 +71,13 @@ export function About() {
 
         <Cell progress={scrollYProgress} from={[60, 120]} order={2} className="bg-ink text-paper md:col-span-3">
           <p className="t-label mute">Design</p>
-          <p className="mt-6 text-[clamp(3rem,5vw,5.5rem)] font-light leading-none tracking-[-0.05em] tabular-nums">{String(design.projects.length).padStart(2, "0")}</p>
+          <p className="mt-6 text-[clamp(3rem,5vw,5.5rem)] font-light leading-none tracking-[-0.05em]">Five</p>
           <p className="t-small mute mt-1">live websites</p>
         </Cell>
 
         <Cell progress={scrollYProgress} from={[180, 80]} order={3} className="bg-[#fbf8f6] ring-1 ring-ink/12 md:col-span-3">
           <p className="t-label mute">Engineering</p>
-          <p className="mt-6 text-[clamp(3rem,5vw,5.5rem)] font-light leading-none tracking-[-0.05em] tabular-nums">{String(engineering.projects.length).padStart(2, "0")}</p>
+          <p className="mt-6 text-[clamp(3rem,5vw,5.5rem)] font-light leading-none tracking-[-0.05em]">Four</p>
           <p className="t-small mute mt-1">production systems</p>
         </Cell>
 
@@ -111,7 +111,7 @@ export function About() {
           <div className="mt-8">
             <p className="t-h3">The full story, on one page.</p>
             <a href={site.links.resume} target="_blank" rel="noreferrer" className="btn mt-5 bg-paper text-ink">
-              {about.resume} <span className="nudge nudge-up">↗</span>
+              {about.resume}
               <span className="sr-only">(opens in a new tab)</span>
             </a>
           </div>

@@ -185,7 +185,7 @@ function Cell({ tool }: { tool: (typeof toolbox.tools)[number] }) {
 export function Toolbox() {
   return (
     <section id="toolbox" data-nav="toolbox" data-theme="ink" aria-labelledby="toolbox-title" className="px-gutter py-[var(--section)]">
-      <Opener index={toolbox.index} label={toolbox.label} meta={`${toolbox.tools.length} tools · hover one`} />
+      <Opener label={toolbox.label} meta="Hover any tool" />
       <div className="mt-12 grid gap-x-6 gap-y-6 md:grid-cols-12 md:items-end">
         <Rise id="toolbox-title" lines={[toolbox.title]} className="t-h1 md:col-span-6" />
         <Fade as="p" className="t-lead mute max-w-[46ch] md:col-span-5 md:col-start-8">

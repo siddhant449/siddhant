@@ -12,7 +12,7 @@ import { Fade, Opener, Rise } from "./ui/reveal";
 /* Boards                                                               */
 /* ------------------------------------------------------------------ */
 
-function Project({ project, index }: { project: LiveProject; index: number }) {
+function Project({ project }: { project: LiveProject }) {
   const study = caseStudyOf(project.slug);
   const href = study ? `/work/${project.slug}` : project.url;
   return (
@@ -23,16 +23,16 @@ function Project({ project, index }: { project: LiveProject; index: number }) {
         </h3>
         <p className="t-h3 mute">{project.sector}</p>
         <p className="t-label mute mt-4">
-          {String(index + 1).padStart(2, "0")} · {project.place}
+          {project.place}
         </p>
         <p className="t-label mt-4 flex gap-5 md:justify-end">
           {study ? (
             <Link href={href} className="link">
-              Case study <span className="nudge">→</span>
+              Case study
             </Link>
           ) : null}
           <a href={project.url} target="_blank" rel="noreferrer" className="link">
-            Live <span className="nudge nudge-up">↗</span>
+            Live site
             <span className="sr-only">(opens in a new tab)</span>
           </a>
         </p>
@@ -146,7 +146,7 @@ function Gallery() {
       <div className="grid gap-x-6 gap-y-4 md:grid-cols-12 md:items-end">
         <Rise as="h3" lines={[design.gallery.title]} className="t-h2 md:col-span-6" />
         <Fade as="p" className="t-small mute max-w-[44ch] md:col-span-5 md:col-start-8 md:justify-self-end md:text-right">
-          {design.gallery.note} <span className="t-label">({tiles.length} screens)</span>
+          {design.gallery.note}
         </Fade>
       </div>
       <div
@@ -172,7 +172,7 @@ export function DesignWork() {
   useBoardTint(section);
   return (
     <section ref={section} id="design" data-nav="design" data-theme="ink" aria-labelledby="design-title" className="px-gutter pb-[var(--section)] pt-[var(--section)]">
-      <Opener index={design.index} label={design.label} meta={design.meta} />
+      <Opener label={design.label} meta={design.meta} />
       <div className="mt-12 grid gap-x-6 gap-y-6 md:grid-cols-12 md:items-end">
         <Rise id="design-title" lines={[design.title]} className="t-h1 md:col-span-6" />
         <Fade as="p" className="t-lead mute max-w-[46ch] md:col-span-5 md:col-start-8">
@@ -180,8 +180,8 @@ export function DesignWork() {
         </Fade>
       </div>
       <div className="mt-[clamp(56px,7vw,104px)] space-y-[clamp(56px,7vw,96px)]">
-        {design.projects.map((p, i) => (
-          <Project key={p.slug} project={p} index={i} />
+        {design.projects.map((p) => (
+          <Project key={p.slug} project={p} />
         ))}
       </div>
       <Gallery />

@@ -1,0 +1,230 @@
+/* Listening & Reading, measured on melon.studio's footer at 1440 (vw = px / 14.4), placed in the
+   Seth footer's free lower-left corner. */
+.now {
+  position: absolute;
+  left: 1.667vw;
+  bottom: 0.833vw;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: max(18px, 1.667vw);
+  width: max(280px, 23.125vw);
+}
+.label {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: max(11px, 0.833vw);
+  line-height: 1.333;
+  color: rgb(246 239 237 / 0.55);
+}
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: max(16px, 1.528vw);
+}
+.item {
+  display: grid;
+  grid-template-columns: max(76px, 7.222vw) 1fr;
+  column-gap: max(20px, 1.944vw);
+  align-items: center;
+  color: var(--paper);
+  text-decoration: none;
+}
+.cover {
+  position: relative;
+  display: block;
+  aspect-ratio: 104 / 139;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--ink-2);
+  box-shadow: 0 0 0 rgb(0 0 0 / 0);
+  transition:
+    transform 0.6s cubic-bezier(0.11, 0.06, 0.18, 1),
+    box-shadow 0.6s cubic-bezier(0.11, 0.06, 0.18, 1);
+}
+.cover img {
+  object-fit: cover;
+}
+.item:hover .cover,
+.item:focus-visible .cover {
+  transform: translateY(-4px) rotate(-1.5deg);
+  box-shadow: 0 14px 30px -12px rgb(0 0 0 / 0.7);
+}
+.item:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 4px;
+}
+
+/* CSS book in Ember colours when there is no cover */
+.book {
+  border-radius: 2px 4px 4px 2px;
+  background: var(--paper);
+  color: var(--ink);
+}
+.book::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 7%;
+  background: linear-gradient(90deg, rgb(110 13 5 / 0.35), transparent);
+}
+.bookAuthor {
+  position: absolute;
+  left: 12.5%;
+  right: 8%;
+  top: 7%;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: max(6px, 0.52vw);
+  line-height: 1.2;
+  color: rgb(15 11 10 / 0.7);
+}
+.bookTitle {
+  position: absolute;
+  left: 12.5%;
+  right: 8%;
+  bottom: 9%;
+  font-weight: 400;
+  font-size: max(11px, 1.042vw);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.bookDot {
+  position: absolute;
+  left: 12.5%;
+  top: 40%;
+  width: 22%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--signal);
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.kicker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: max(11px, 0.833vw);
+  line-height: 1.333;
+  min-height: 22px;
+}
+.title {
+  font-size: max(17px, 1.528vw);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  /* Up to two lines, so a full book or track title reads. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+.title span {
+  background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+  transition: background-size 0.42s var(--ease-out);
+}
+.item:hover .title span {
+  background-size: 100% 1px;
+}
+.by {
+  font-size: max(13px, 1.042vw);
+  line-height: 1.3;
+  color: rgb(246 239 237 / 0.86);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* equaliser: four 2px bars, CSS only, still under reduced motion */
+.eq {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  width: 14px;
+  height: 11px;
+}
+.eq i {
+  display: block;
+  width: 2px;
+  height: 100%;
+  background: var(--signal);
+  transform-origin: bottom;
+  animation: eq 1s ease-in-out infinite alternate;
+}
+.eq i:nth-child(1) {
+  transform: scaleY(0.36);
+  animation-duration: 0.9s;
+}
+.eq i:nth-child(2) {
+  transform: scaleY(0.82);
+  animation-duration: 1.15s;
+  animation-delay: -0.4s;
+}
+.eq i:nth-child(3) {
+  transform: scaleY(0.64);
+  animation-duration: 0.8s;
+  animation-delay: -0.2s;
+}
+.eq i:nth-child(4) {
+  transform: scaleY(0.27);
+  animation-duration: 1.3s;
+  animation-delay: -0.6s;
+}
+@keyframes eq {
+  0% {
+    transform: scaleY(0.25);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+@media (max-width: 720px) {
+  .now {
+    left: 3.3vw;
+    right: 3.3vw;
+    bottom: auto;
+    top: calc(50% + 172px);
+    width: auto;
+    gap: 12px;
+  }
+  .list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .item {
+    grid-template-columns: 48px 1fr;
+    column-gap: 12px;
+  }
+  .title {
+    font-size: 15px;
+  }
+  .by {
+    font-size: 13px;
+  }
+  .kicker {
+    min-height: 16px;
+  }
+}
+@media (max-width: 720px) and (max-height: 800px) {
+  .now {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .eq i {
+    animation: none;
+  }
+  .cover {
+    transition: none;
+  }
+}

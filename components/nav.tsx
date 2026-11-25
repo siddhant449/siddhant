@@ -40,7 +40,31 @@ function useActiveSection(enabled: boolean) {
   return enabled ? active : null;
 }
 
-const pad = (n: number) => String(n).padStart(2, "0");
+/** True while the page's last screen (the pinned footer) is being revealed: the footer has its own top links. */
+function useAtFooter(enabled: boolean) {
+  const [at, setAt] = useState(false);
+  useEffect(() => {
+    if (!enabled) return;
+    let raf = 0;
+    const compute = () => {
+      raf = 0;
+      const left = document.documentElement.scrollHeight - (window.scrollY + window.innerHeight);
+      setAt(left < window.innerHeight * 0.55);
+    };
+    const schedule = () => {
+      if (!raf) raf = requestAnimationFrame(compute);
+    };
+    compute();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+    };
+  }, [enabled]);
+  return enabled && at;
+}
 
 /** On the home page a plain anchor (smooth-scrolled by Lenis); elsewhere a link home. */
 function SectionLink({ onHome, href, ...props }: React.ComponentProps<"a"> & { onHome: boolean; href: string }) {
@@ -50,6 +74,7 @@ function SectionLink({ onHome, href, ...props }: React.ComponentProps<"a"> & { o
 export function Nav() {
   const onHome = usePathname() === "/";
   const active = useActiveSection(onHome);
+  const atFooter = useAtFooter(true);
   const lenis = useLenis();
   const list = useRef<HTMLDivElement>(null);
   const [pill, setPill] = useState<{ x: number; w: number } | null>(null);
@@ -88,7 +113,12 @@ export function Nav() {
 
   return (
     <>
-      <header className="intro-up fixed inset-x-0 top-0 z-50 flex h-[76px] items-center justify-between px-gutter" style={{ "--d": "0.1s" } as React.CSSProperties}>
+      {/* `translate` is separate from the intro's `transform`, so the two don't fight. */}
+      <header
+        inert={atFooter && !open}
+        className="intro-up fixed inset-x-0 top-0 z-50 flex h-[76px] items-center justify-between px-gutter transition-[translate] duration-500 ease-out-expo"
+        style={{ "--d": "0.1s", translate: atFooter && !open ? "0 -110%" : "0 0" } as React.CSSProperties}
+      >
         {onHome ? (
           <a href="#top" className="relative z-10 text-[15px] font-medium tracking-[-0.02em]" aria-label={`${site.name}, back to top`}>
             {site.name}
@@ -126,9 +156,6 @@ export function Nav() {
                   }`}
                 >
                   {item.label}
-                  {"count" in item ? (
-                    <sup className="ml-0.5 font-mono text-[9px] font-medium tracking-normal">{pad(item.count)}</sup>
-                  ) : null}
                 </SectionLink>
               );
             })}
@@ -185,7 +212,6 @@ export function Nav() {
                       autoFocus={i === 0}
                     >
                       <span className="t-h1">{item.label}</span>
-                      {"count" in item ? <span className="t-label mute">{pad(item.count)}</span> : null}
                     </SectionLink>
                   </m.span>
                 </li>

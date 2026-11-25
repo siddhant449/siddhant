@@ -1,0 +1,310 @@
+/* After Significa's hero: 72/80.64 bold stack, upcoming words in grey,
+   words enter with 0.5s cubic-bezier(.2,1,.2,1). Here it is pinned and
+   driven by scroll: each quarter of the run lights the next step. */
+.section {
+  position: relative;
+  height: 340vh;
+  background: var(--paper);
+  color: var(--ink);
+}
+.pin {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  padding: 156px 48px 0;
+}
+.stack {
+  font-size: 72px;
+  line-height: 80.64px;
+  letter-spacing: -0.36px;
+  font-weight: 700;
+}
+.word {
+  display: inline-block;
+  color: #9b8f8b;
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    color 0.5s cubic-bezier(0.2, 1, 0.2, 1),
+    transform 0.5s cubic-bezier(0.2, 1, 0.2, 1),
+    opacity 0.5s cubic-bezier(0.2, 1, 0.2, 1);
+  transition-delay: calc(var(--i) * 0.06s), calc(var(--i) * 0.06s), calc(var(--i) * 0.06s);
+}
+.ready .word {
+  opacity: 1;
+  transform: none;
+}
+.word[data-on] {
+  color: var(--ink);
+  transition-delay: 0s;
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 46px;
+  margin-top: 94px;
+  list-style: none;
+}
+.card {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  opacity: 0.4;
+  transition: opacity 0.5s cubic-bezier(0.2, 1, 0.2, 1);
+  will-change: opacity;
+}
+.card[data-on] {
+  opacity: 1;
+}
+.thumb {
+  position: relative;
+  flex: 0 0 96px;
+  height: 77px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--paper-2);
+}
+.thumb img {
+  object-fit: cover;
+  object-position: top;
+}
+.thumb svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.cardTitle {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 18px;
+  line-height: 22px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+.cardNote {
+  margin-top: 6px;
+  font-size: 15px;
+  line-height: 20px;
+  color: #7d726f;
+}
+.panels {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 40px;
+  border-radius: 16px;
+  overflow: hidden;
+  height: 520px;
+}
+.panel {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+}
+.panel:nth-child(1) {
+  background: var(--paper-2);
+}
+.panel:nth-child(2) {
+  background: var(--stone);
+}
+.panel:nth-child(3) {
+  background: var(--signal);
+  color: var(--paper);
+}
+.panel:nth-child(4) {
+  background: var(--deep);
+  color: var(--paper);
+}
+.panelLabel {
+  position: absolute;
+  top: 44px;
+  inset-inline: 0;
+  text-align: center;
+  font-size: 22px;
+  line-height: 26px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+.device {
+  position: absolute;
+  top: 150px;
+  width: 240px;
+  height: 480px;
+  border-radius: 38px;
+  background: var(--ink);
+  padding: 9px;
+  box-shadow: 0 30px 60px -20px rgb(15 11 10 / 0.45);
+  transform: translateY(90px);
+  transition: transform 0.9s cubic-bezier(0.2, 1, 0.2, 1);
+}
+.panel[data-on] .device {
+  transform: none;
+}
+.screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 30px;
+  overflow: hidden;
+  background: var(--paper);
+}
+.screen img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.notch {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  width: 74px;
+  height: 22px;
+  margin-left: -37px;
+  border-radius: 12px;
+  background: var(--ink);
+  z-index: 3;
+}
+.doc {
+  position: absolute;
+  top: 150px;
+  width: 236px;
+  height: 300px;
+  background: #fffaf8;
+  color: var(--ink);
+  border-radius: 10px;
+  box-shadow: 0 30px 60px -24px rgb(15 11 10 / 0.35);
+  padding: 22px 20px;
+  transform: translateY(90px) rotate(-3deg);
+  transition: transform 0.9s cubic-bezier(0.2, 1, 0.2, 1);
+}
+.panel[data-on] .doc {
+  transform: rotate(-3deg);
+}
+.docTitle {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.ln {
+  height: 6px;
+  border-radius: 3px;
+  background: #e4dad6;
+  margin: 8px 0;
+}
+.lnHot {
+  background: rgb(255 58 26 / 0.28);
+}
+.sig {
+  margin-top: 18px;
+  font-size: 22px;
+  color: var(--deep);
+}
+.sys {
+  width: 100%;
+  height: 100%;
+  background: var(--ink-2);
+}
+.packet {
+  animation: packet 2.6s linear infinite;
+}
+@keyframes packet {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(346px);
+  }
+}
+
+@media (max-width: 767px) {
+  .section {
+    height: 360vh;
+  }
+  .pin {
+    padding: 96px 19.5px 0;
+  }
+  .stack {
+    font-size: 36px;
+    line-height: 40.32px;
+  }
+  .cards {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+    margin-top: 34px;
+  }
+  .thumb {
+    flex-basis: 76px;
+    height: 61px;
+  }
+  .cardTitle {
+    font-size: 16px;
+    line-height: 20px;
+  }
+  .cardNote {
+    font-size: 13px;
+    line-height: 17px;
+  }
+  .panels {
+    height: 300px;
+    margin-top: 26px;
+    border-radius: 12px;
+  }
+  .panelLabel {
+    top: 14px;
+    font-size: 12px;
+    line-height: 14px;
+  }
+  .device {
+    top: 44px;
+    width: 76px;
+    height: 152px;
+    border-radius: 14px;
+    padding: 3px;
+  }
+  .screen {
+    border-radius: 11px;
+  }
+  .notch {
+    top: 6px;
+    width: 22px;
+    height: 6px;
+    margin-left: -11px;
+  }
+  .doc {
+    top: 48px;
+    width: 74px;
+    height: 100px;
+    padding: 8px 7px;
+    border-radius: 5px;
+  }
+  .docTitle {
+    font-size: 6px;
+    margin-bottom: 4px;
+  }
+  .ln {
+    height: 3px;
+    margin: 4px 0;
+  }
+  .sig {
+    font-size: 9px;
+    margin-top: 6px;
+  }
+}
+@media (max-height: 760px) and (min-width: 768px) {
+  .pin {
+    padding-top: 110px;
+  }
+  .cards {
+    margin-top: 56px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .packet {
+    animation: none;
+  }
+}

@@ -1,0 +1,307 @@
+/* Seth Lukin hero, rebuilt from sethlukin.com at 1440×900 (vw values are measured px / 14.4). */
+
+/* The pin: 200svh tall with -100svh margin, so the next section rises over the second half. */
+.pin {
+  position: relative;
+  height: 200svh;
+  margin-bottom: -100svh;
+}
+.watch {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 100svh;
+  pointer-events: none;
+}
+.hero {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  min-height: 600px;
+  overflow: hidden;
+  background: var(--ink);
+  color: var(--paper);
+}
+.stage {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 50%;
+  will-change: transform;
+  /* static fallback / pre-WebGL: a faint dot grid */
+  background-image: radial-gradient(circle at center, rgb(196 183 180 / 0.08) 1.6px, transparent 2px);
+  background-size: 6.5px 6.5px;
+}
+.stage > canvas {
+  opacity: 0;
+  transition: opacity 0.9s var(--ease-out);
+}
+.on .stage > canvas {
+  opacity: 1;
+}
+.dim {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: var(--ink);
+  pointer-events: none;
+}
+
+/* type role: PP Neue Montreal Bold -> Geist 700 / 800 */
+.lbl {
+  font-weight: 700;
+  font-size: 1.389vw;
+  line-height: 1.2;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+}
+
+/* words: rise 152px (10.56vw) and go grey -> paper in ~.45s; the second follows .4s later */
+.word {
+  position: absolute;
+  top: 22.43vw;
+  z-index: 2;
+  font-weight: 800;
+  font-size: 8.2vw;
+  line-height: 1.2;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #8a8180;
+  opacity: 0;
+  transform: translateY(10.56vw);
+  transition:
+    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    color 0.5s linear,
+    opacity 0.2s linear;
+}
+.w1 {
+  left: 1.667vw;
+}
+.w2 {
+  right: 1.667vw;
+}
+.on .word {
+  opacity: 1;
+  transform: none;
+  color: var(--paper);
+}
+.on .w2 {
+  transition-delay: 0.4s;
+}
+
+/* sprite slot: the pixel phone pops (rise, overshoot, settle, grey -> colour) */
+.sprite {
+  position: absolute;
+  left: 50%;
+  top: 21.2vw;
+  z-index: 2;
+  width: 10.4vw;
+  margin-left: -5.2vw;
+  opacity: 0;
+}
+.sprite canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
+.on .sprite {
+  animation: pop 0.62s cubic-bezier(0.16, 1, 0.3, 1) 1.3s forwards;
+}
+@keyframes pop {
+  0% {
+    opacity: 0;
+    transform: translateY(4vw);
+    filter: grayscale(1) brightness(0.6);
+  }
+  35% {
+    opacity: 1;
+    transform: translateY(-1.1vw);
+    filter: none;
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+.cap {
+  display: block;
+  margin: 0.7vw -6vw 0;
+  text-align: center;
+  white-space: nowrap;
+  font-weight: 700;
+  font-size: 0.97vw;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  color: var(--stone);
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.ready .cap {
+  opacity: 1;
+}
+
+/* speech bubble = the call to action (reference: "HI THERE!", drawn then typed) */
+.bubble {
+  position: absolute;
+  left: 50%;
+  top: 11.4vw;
+  z-index: 4;
+  display: block;
+  transform: translateX(-50%);
+  text-decoration: none;
+  color: var(--paper);
+  opacity: 0;
+}
+.bubble svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.bubble .fill {
+  fill: var(--ink);
+  transition: fill 0.3s var(--ease-out);
+}
+.bubble .line {
+  fill: var(--paper);
+}
+.bubble:hover .fill,
+.bubble:focus-visible .fill {
+  fill: var(--signal);
+}
+.bubble:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 6px;
+}
+.bubbleText {
+  position: relative;
+  display: block;
+  padding: 1.5vw 2.3vw 2.4vw;
+  font-weight: 800;
+  font-size: 2.811vw;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.bubbleGhost {
+  visibility: hidden;
+}
+.bubbleTyped {
+  position: absolute;
+  left: 2.3vw;
+  top: 1.5vw;
+}
+.show {
+  opacity: 1;
+}
+
+.foot {
+  position: absolute;
+  top: 57.57vw;
+  z-index: 2;
+}
+.footL {
+  left: 1.667vw;
+}
+.footR {
+  left: 78.47vw;
+}
+.footC {
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  white-space: nowrap;
+  color: var(--stone);
+  opacity: 0;
+  transition: opacity 0.6s var(--ease-out) 1.2s;
+}
+.on .footC {
+  opacity: 1;
+}
+.colon {
+  animation: blink 1s steps(1) infinite;
+}
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* phone: the reference stacks the two words at the top, bubble and sprite mid, labels centred */
+@media (max-width: 720px) {
+  .lbl {
+    font-size: 18px;
+  }
+  .word {
+    top: 76px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    line-height: 0.8;
+    transform: translateY(60px);
+  }
+  .w2 {
+    top: calc(76px + var(--l1h, 64px));
+  }
+  .sprite {
+    top: 420px;
+    width: 72px;
+    margin-left: -36px;
+  }
+  .cap {
+    font-size: 12px;
+    margin-top: 6px;
+  }
+  .bubble {
+    top: 330px;
+  }
+  .bubbleText {
+    font-size: 24px;
+    padding: 12px 20px 22px;
+  }
+  .bubbleTyped {
+    left: 20px;
+    top: 12px;
+  }
+  .foot {
+    top: auto;
+    left: 0;
+    right: 0;
+    text-align: center;
+  }
+  .footL {
+    top: 614px;
+  }
+  .footR {
+    top: 673px;
+  }
+  .footC {
+    top: 740px;
+    transform: none;
+    font-size: 14px;
+  }
+}
+@media (max-width: 720px) and (max-height: 780px) {
+  .footC {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .word,
+  .sprite,
+  .footC,
+  .stage > canvas {
+    transition: none !important;
+    animation: none !important;
+  }
+  .sprite {
+    opacity: 1;
+  }
+  .colon {
+    animation: none;
+  }
+}

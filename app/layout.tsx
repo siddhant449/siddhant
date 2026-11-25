@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Newsreader } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { ThemeWatcher } from "@/components/ui/theme";
 import { GLRoot } from "@/components/gl/gl-root";
+import { Loader } from "@/components/loader";
 import { site } from "@/lib/content";
 import "./globals.css";
 
@@ -82,7 +83,7 @@ const jsonLd = {
   sameAs: [site.links.linkedin, site.links.github],
 };
 
-// The hero assembles itself on first paint; on a repeat visit in the same tab it runs faster.
+// First visit in a tab shows the entry curtain; repeat visits skip it and run entrances faster.
 const introScript = `try{if(sessionStorage.getItem("sk-seen")==="1")document.documentElement.dataset.seen="";sessionStorage.setItem("sk-seen","1")}catch(e){}`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -93,6 +94,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       </head>
       <body>
+        <Loader />
         <Providers>
           <GLRoot />
           {children}

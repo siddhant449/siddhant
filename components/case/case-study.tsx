@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { engineering, type CaseStudy } from "@/lib/content";
+import { BackLink } from "../back-link";
 import { Board } from "../board";
 import { Diagram } from "../diagram";
 import { MoreWork } from "../more-work";
@@ -15,8 +16,11 @@ function Header({ study }: { study: CaseStudy }) {
   const isDesign = study.group === "design";
   return (
     <header data-theme="ink" className="px-gutter pb-[clamp(48px,6vw,88px)] pt-[clamp(112px,16vh,150px)]">
+      <div className="intro-up mb-10" style={d(0.05)}>
+        <BackLink fallback={isDesign ? "/#design" : "/#engineering"} label={isDesign ? "Back to design work" : "Back to engineering"} />
+      </div>
       <div className="intro-up" style={d(0.1)}>
-        <Opener index={isDesign ? "01" : "02"} label={isDesign ? "Design" : "Engineering"} meta={study.kind} />
+        <Opener label={isDesign ? "Design" : "Engineering"} meta={study.kind} />
       </div>
       <h1 className="t-display mt-[clamp(32px,6vh,72px)]">
         <span className="intro-mask">
@@ -40,7 +44,7 @@ function Header({ study }: { study: CaseStudy }) {
           </dl>
           {study.live ? (
             <a href={study.live.url} target="_blank" rel="noreferrer" className="btn btn-solid mt-7">
-              Visit the live site <span className="nudge nudge-up">↗</span>
+              Visit the live site
               <span className="sr-only">(opens in a new tab)</span>
             </a>
           ) : (
@@ -90,7 +94,7 @@ function Cover({ study }: { study: CaseStudy }) {
 function Brief({ study }: { study: CaseStudy }) {
   return (
     <section aria-labelledby="brief-title" className="px-gutter pt-[var(--section)]">
-      <Opener index="A" label="The brief" />
+      <Opener label="The brief" />
       <div className="mt-10 grid gap-x-6 gap-y-6 md:grid-cols-12">
         <h2 id="brief-title" className="sr-only">
           The brief
@@ -104,15 +108,14 @@ function Brief({ study }: { study: CaseStudy }) {
 function Approach({ study }: { study: CaseStudy }) {
   return (
     <section aria-labelledby="approach-title" className="px-gutter pt-[var(--section)]">
-      <Opener index="B" label="What I did" meta={`${study.approach.length} moves`} />
+      <Opener label="What I did" />
       <h2 id="approach-title" className="sr-only">
         What I did
       </h2>
       <ol className="mt-4">
-        {study.approach.map((step, i) => (
+        {study.approach.map((step) => (
           <Fade as="li" key={step.title} className="grid gap-x-6 gap-y-2 border-b border-fg/12 py-[clamp(22px,2.6vw,36px)] md:grid-cols-12">
-            <p className="t-label mute tabular-nums md:col-span-1">{String(i + 1).padStart(2, "0")}</p>
-            <h3 className="t-h3 md:col-span-4">{step.title}</h3>
+            <h3 className="t-h3 md:col-span-5">{step.title}</h3>
             <p className="t-small mute max-w-[60ch] md:col-span-7">{step.body}</p>
           </Fade>
         ))}
@@ -125,7 +128,7 @@ function Inside({ study }: { study: CaseStudy }) {
   const withImages = study.inside.some((b) => b.image);
   return (
     <section aria-labelledby="inside-title" className="px-gutter pt-[var(--section)]">
-      <Opener index="C" label="A closer look" />
+      <Opener label="A closer look" />
       <h2 id="inside-title" className="sr-only">
         A closer look
       </h2>
@@ -141,8 +144,7 @@ function Inside({ study }: { study: CaseStudy }) {
                 </Unveil>
               ) : null}
               <Fade delay={0.1} className={`md:col-span-4 ${i % 2 ? "md:order-1 md:col-start-1" : ""}`}>
-                <p className="t-label mute tabular-nums">{String(i + 1).padStart(2, "0")}</p>
-                <h3 className="t-h3 mt-3">{block.title}</h3>
+                <h3 className="t-h3">{block.title}</h3>
                 <p className="t-small mute mt-3 max-w-[40ch]">{block.body}</p>
               </Fade>
             </article>
@@ -176,7 +178,7 @@ function Facts({ study }: { study: CaseStudy }) {
   if (!study.live) return null;
   return (
     <section data-theme="paper" aria-labelledby="facts-title" className="mt-[var(--section)] px-gutter py-[var(--section)]">
-      <Opener index="D" label={study.factsTitle} />
+      <Opener label={study.factsTitle} />
       <h2 id="facts-title" className="sr-only">
         {study.factsTitle}
       </h2>
@@ -204,7 +206,7 @@ function Next({ next }: { next: CaseStudy }) {
           as="span"
           lines={[
             <span key="t" className="inline-flex items-baseline gap-[0.25em]">
-              {next.title} <span className="nudge t-it text-signal">→</span>
+              {next.title}
             </span>,
           ]}
           className="t-display mt-4 block"

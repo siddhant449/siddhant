@@ -32,10 +32,11 @@
   --bg: var(--ink);
   --fg: var(--paper);
   --surface: var(--ink-2);
+  /* Instrument's section switch, measured: 350ms ease-in-out. */
   transition:
-    --bg 1.1s var(--ease-inout),
-    --fg 1.1s var(--ease-inout),
-    --surface 1.1s var(--ease-inout);
+    --bg 0.35s ease-in-out,
+    --fg 0.35s ease-in-out,
+    --surface 0.35s ease-in-out;
 }
 
 :root[data-theme="paper"] {
@@ -218,7 +219,8 @@
     background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
     transition: background-size 0.42s var(--ease-out);
   }
-  .link:hover {
+  .link:hover,
+  .group:hover .link {
     background-size: 100% 1px;
   }
 }
@@ -281,6 +283,11 @@ html[data-seen] .intro-draw {
 }
 @keyframes intro-draw {
   to { transform: scaleX(1); }
+}
+
+/* Entrances wait for the entry curtain to start lifting (first visit only). */
+html:not([data-seen]):not([data-loaded]) :is(.intro-mask > span, .intro-up, .intro-draw) {
+  animation-play-state: paused;
 }
 
 /* The molten wordmark's plain-type stand-in shows only if WebGL never starts. */

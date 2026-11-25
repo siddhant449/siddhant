@@ -98,10 +98,10 @@ export function Unveil({ children, className, delay = 0 }: { children: ReactNode
 }
 
 /**
- * The row that opens every section: index and name on the left, a count or
+ * The row that opens every section: its name on the left, a short note or
  * note on the right, over a rule that draws across.
  */
-export function Opener({ index, label, meta, className }: { index: string; label: string; meta?: ReactNode; className?: string }) {
+export function Opener({ label, meta, className }: { index?: string; label: string; meta?: ReactNode; className?: string }) {
   const { ref, show } = useOnce<HTMLDivElement>();
   return (
     <div ref={ref} className={`relative flex items-baseline justify-between gap-6 pb-3.5 ${className ?? ""}`}>
@@ -111,7 +111,7 @@ export function Opener({ index, label, meta, className }: { index: string; label
         animate={{ opacity: show ? 1 : 0 }}
         transition={{ duration: 0.6, ease: EASE_OUT }}
       >
-        [{index}] — {label}
+        {label}
       </m.p>
       {meta ? (
         <m.p

@@ -1,0 +1,388 @@
+/* Ember kit. Timings arrive as custom properties set from lib/kit/motion.ts, so the
+   numbers live in one place. */
+
+/* ---------------------------------------------------------------- line reveal */
+.mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding-bottom: 0.1em;
+  margin-bottom: -0.1em;
+}
+.word {
+  display: inline-block;
+  transform: translate3d(0, 105%, 0);
+}
+.lines[data-in] .word {
+  transform: none;
+  transition: transform var(--kit-dur) var(--kit-ease);
+  transition-delay: calc(var(--kit-delay, 0ms) + var(--i) * var(--kit-stagger));
+}
+
+/* ---------------------------------------------------------------- image reveal */
+.reveal {
+  position: relative;
+  overflow: hidden;
+}
+.revealClip {
+  position: absolute;
+  inset: 0;
+  clip-path: var(--kit-clip-from);
+}
+.revealClip > * {
+  transform: scale(var(--kit-scale-from));
+}
+.reveal[data-in] .revealClip {
+  clip-path: inset(0);
+  transition: clip-path var(--kit-clip-dur) var(--kit-ease);
+}
+.reveal[data-in] .revealClip > * {
+  transform: none;
+  transition: transform var(--kit-scale-dur) var(--kit-ease);
+}
+
+/* ---------------------------------------------------------------- magnetic */
+.magnet {
+  display: inline-block;
+  will-change: transform;
+}
+
+/* ---------------------------------------------------------------- glyph */
+.glyph {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  overflow: visible;
+  flex: none;
+}
+.fixed * {
+  vector-effect: non-scaling-stroke;
+}
+@supports (animation-timeline: view()) {
+  .draw {
+    view-timeline-name: --kit-glyph;
+  }
+  .draw > * {
+    stroke-dasharray: 1;
+    animation: draw linear both;
+    animation-timeline: --kit-glyph;
+    animation-range: entry 20% cover 40%;
+  }
+}
+@keyframes draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ---------------------------------------------------------------- device frames */
+.devices {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(140px, 19%, 270px);
+  gap: clamp(14px, 3vw, 48px);
+  align-items: end;
+}
+.devices[data-solo] {
+  grid-template-columns: minmax(0, 1fr);
+}
+.browser {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #000;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--stone) 22%, transparent),
+    0 40px 80px -30px rgb(0 0 0 / 0.8);
+}
+.bar {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px 0 14px;
+  background: var(--ink);
+  border-bottom: 1px solid color-mix(in srgb, var(--stone) 14%, transparent);
+}
+.live {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--signal);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--signal) 22%, transparent);
+}
+.url {
+  flex: 1;
+  min-width: 0;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  border-radius: 6px;
+  background: var(--ink-2);
+  color: var(--stone);
+  font: 500 11px/1 var(--font-mono);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sector {
+  font-size: 12px;
+  color: color-mix(in srgb, var(--paper) 55%, transparent);
+  white-space: nowrap;
+}
+.viewport {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: var(--paper);
+}
+.page {
+  position: absolute;
+  inset: 0 0 auto 0;
+  will-change: transform;
+}
+.page img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.phone {
+  position: relative;
+  aspect-ratio: 9 / 19.5;
+  border-radius: 17% / 7.85%;
+  padding: 3.2%;
+  background: linear-gradient(150deg, #2a211e, #0b0807 40%, #1b1513);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--stone) 26%, transparent),
+    inset 0 0 0 1.5px #000,
+    0 40px 70px -30px rgb(0 0 0 / 0.85);
+}
+.phone::before,
+.phone::after {
+  content: "";
+  position: absolute;
+  width: 3px;
+  border-radius: 2px;
+  background: #2a211e;
+}
+.phone::before {
+  left: -3px;
+  top: 20%;
+  height: 9%;
+}
+.phone::after {
+  right: -3px;
+  top: 25%;
+  height: 13%;
+}
+.screen {
+  position: relative;
+  height: 100%;
+  border-radius: 14% / 6.6%;
+  overflow: hidden;
+  background: var(--paper);
+}
+.island {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 1.8%;
+  width: 31%;
+  height: 3.4%;
+  translate: -50% 0;
+  border-radius: 999px;
+  background: #000;
+}
+.screen img {
+  object-fit: cover;
+  object-position: top;
+}
+@media (max-width: 860px) {
+  .sector {
+    display: none;
+  }
+  .devices {
+    grid-template-columns: minmax(0, 1fr) 30%;
+  }
+}
+@media (max-width: 520px) {
+  .devices {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .phone {
+    width: 52%;
+    justify-self: center;
+  }
+  .bar {
+    height: 32px;
+  }
+}
+
+/* ---------------------------------------------------------------- work rows */
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+}
+.rows > li {
+  border-bottom: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+}
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 0.7fr);
+  align-items: center;
+  gap: 16px;
+  padding: clamp(28px, 3.4vw, 48px) clamp(0px, 1vw, 16px);
+}
+.rowTitle {
+  margin: 0;
+  font-weight: 400;
+  font-size: clamp(30px, 4vw, 64px);
+  line-height: 1;
+  letter-spacing: -0.035em;
+  transition: transform var(--kit-row-dur) var(--kit-row-ease);
+}
+.row:hover .rowTitle,
+.row:focus-visible .rowTitle {
+  transform: translateX(var(--kit-row-shift));
+}
+.rowMeta {
+  font-size: 15px;
+  color: color-mix(in srgb, currentColor 62%, transparent);
+}
+.rowMeta:last-of-type {
+  text-align: right;
+}
+.thumb {
+  display: none;
+}
+.preview {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 40;
+  width: var(--kit-pv-size);
+  aspect-ratio: 1;
+  margin: calc(var(--kit-pv-size) / -2) 0 0 calc(var(--kit-pv-size) / -2);
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--ink-2);
+  scale: 0;
+  transition: scale var(--kit-pv-close) var(--kit-pv-close-ease);
+}
+.preview[data-open] {
+  scale: 1;
+  transition: scale var(--kit-pv-open) var(--kit-pv-open-ease);
+}
+.strip {
+  position: absolute;
+  inset: 0;
+  transition: transform var(--kit-pv-swap) var(--kit-pv-swap-ease);
+}
+.strip > div {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.strip img {
+  object-fit: cover;
+  object-position: top left;
+}
+.view {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 2;
+  width: 84px;
+  height: 84px;
+  margin: -42px 0 0 -42px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--signal);
+  color: var(--ink);
+  font-size: 14px;
+}
+@media (hover: none), (max-width: 860px) {
+  .preview {
+    display: none;
+  }
+  .row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: 24px 0;
+  }
+  .rowPlace {
+    display: none;
+  }
+  .thumb {
+    display: block;
+    position: relative;
+    grid-column: 1 / -1;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border-radius: 3px;
+  }
+}
+
+/* ---------------------------------------------------------------- ember */
+.ember {
+  position: relative;
+}
+.ember canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.emberStill {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  aspect-ratio: 1;
+  max-width: 100%;
+  max-height: 100%;
+  transition: opacity 600ms var(--ease-out);
+}
+.ember[data-ready] .emberStill {
+  opacity: 0;
+}
+
+/* ---------------------------------------------------------------- system figure */
+.system {
+  display: block;
+  width: 100%;
+  height: clamp(250px, 26vw, 340px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .word {
+    transform: none !important;
+    transition: none !important;
+  }
+  .revealClip {
+    clip-path: none !important;
+  }
+  .revealClip > * {
+    transform: none !important;
+  }
+  .draw > * {
+    animation: none !important;
+    stroke-dasharray: none;
+  }
+  .preview,
+  .strip,
+  .rowTitle {
+    transition: none !important;
+  }
+}

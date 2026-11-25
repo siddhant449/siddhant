@@ -24,9 +24,9 @@ export const site = {
 
 /** Section index in page order. The two kinds of work carry their counts. */
 export const nav = [
-  { label: "Design", href: "#design", count: 5 },
-  { label: "Engineering", href: "#engineering", count: 4 },
-  { label: "Toolbox", href: "#toolbox" },
+  { label: "Design", href: "#design" },
+  { label: "Engineering", href: "#engineering" },
+  { label: "Services", href: "#services" },
   { label: "About", href: "#about" },
 ] as const;
 
@@ -40,15 +40,12 @@ export const hero = {
     { strong: "Siddhant Kotak", soft: "Designer & fullstack AI engineer" },
     { strong: "Ahmedabad, India", soft: "time" },
     { strong: "Available for projects", soft: "Websites and systems", dot: true },
-    { strong: "Scroll", soft: "↓", align: "right" },
   ],
   lead: "I design websites for manufacturers, brands and agencies, and engineer production systems for healthcare, commerce and finance.",
   doors: {
-    design: { index: "01", label: "Design", meta: "05 Websites", title: [{ text: "Websites that earn trust." }] },
+    design: { label: "Design", title: [{ text: "Websites that earn trust." }] },
     engineering: {
-      index: "02",
       label: "Engineering",
-      meta: "04 Systems",
       title: [{ text: "Systems that " }, { text: "hold up.", italic: true }],
     },
   },
@@ -86,7 +83,7 @@ export type LiveProject = {
 export const design = {
   index: "01",
   label: "Design",
-  meta: "05 Websites · designed and built end to end",
+  meta: "Designed and built end to end",
   title: "Websites",
   intro:
     "Five live sites for a transformer maker, a Swiss stone brand, a skincare label and two growth agencies. Each one written, designed and built by me.",
@@ -274,7 +271,7 @@ export type SystemProject = {
 export const engineering = {
   index: "02",
   label: "Engineering",
-  meta: "04 Systems · 3 under NDA",
+  meta: "Three under NDA, one personal",
   title: "Systems",
   intro:
     "Production systems for clients in healthcare, commerce and finance. Their names stay private; the architecture and the numbers don’t.",

@@ -52,7 +52,7 @@ export function MoreWork({ current }: { current: string }) {
 
   return (
     <section data-theme="ink" aria-labelledby="more-title" className="px-gutter py-[var(--section)]">
-      <Opener index="→" label="More work" meta={`${list.length} projects`} />
+      <Opener label="More work" meta="Design and engineering" />
       <h2 id="more-title" className="sr-only">
         More work
       </h2>
@@ -68,14 +68,12 @@ export function MoreWork({ current }: { current: string }) {
         {list.map((r, i) => {
           const inner = (
             <>
-              <span className="t-label mute tabular-nums">{String(i + 1).padStart(2, "0")}</span>
               <span className="t-h3 transition-transform duration-500 ease-out-expo group-hover:translate-x-2">{r.name}</span>
               <span className="t-small mute hidden md:block">{r.sector}</span>
               <span className="t-label mute hidden md:block">{r.kind}</span>
-              <span className="nudge justify-self-end">{r.external ? "↗" : "→"}</span>
             </>
           );
-          const cls = `group grid grid-cols-[40px_1fr_auto] items-baseline gap-x-6 border-t border-fg/12 py-5 transition-opacity duration-300 md:grid-cols-[56px_1.4fr_1fr_140px_32px] ${
+          const cls = `group grid grid-cols-[1fr_auto] items-baseline gap-x-6 border-t border-fg/12 py-5 transition-opacity duration-300 md:grid-cols-[1.4fr_1fr_140px] ${
             active !== null && active !== i ? "opacity-45" : ""
           }`;
           return (

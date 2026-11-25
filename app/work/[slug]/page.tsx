@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { CaseStudyView } from "@/components/case/case-study";
-import { Contact } from "@/components/contact";
+import { SethFooter } from "@/components/seth";
 import { Nav } from "@/components/nav";
 import { caseStudies, caseStudyOf, nextCase } from "@/lib/content";
 
@@ -32,7 +32,7 @@ export default function CaseStudyPage({ params }: PageProps<"/work/[slug]">) {
           <Study params={params} />
         </Suspense>
       </main>
-      <Contact />
+      <SethFooter />
     </>
   );
 }

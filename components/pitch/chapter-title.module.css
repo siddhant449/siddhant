@@ -1,0 +1,90 @@
+/* Chapter title, after Rejouice's engagement panels; values measured from rejouice.com/services. */
+.title {
+  position: relative;
+  padding: 88px 40px 120px;
+  background: var(--paper);
+  color: var(--ink);
+  overflow: hidden;
+}
+.ink {
+  background: var(--ink);
+  color: var(--paper);
+}
+.giant {
+  text-align: center;
+  font-size: 410px;
+  line-height: 453px;
+  letter-spacing: -24.6px;
+  font-weight: 300;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.giant > span {
+  display: inline-block;
+  transform: translateY(100%);
+  transition: transform 1.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.sub {
+  margin-top: 40px;
+  text-align: center;
+  font-size: 40px;
+  line-height: 46px;
+  letter-spacing: -0.8px;
+  font-weight: 300;
+}
+.sub .it {
+  font-size: 44px;
+}
+.line {
+  display: block;
+}
+.wd {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+.wd > span {
+  display: inline-block;
+  transform: translateY(105%);
+  transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(0.35s + var(--i, 0) * 30ms);
+}
+.in .giant > span,
+.in .wd > span {
+  transform: none;
+}
+
+@media (max-width: 1100px) {
+  .giant {
+    font-size: 26vw;
+    line-height: 1.1;
+    letter-spacing: -0.06em;
+  }
+}
+@media (max-width: 767px) {
+  .title {
+    padding: 60px 10px 72px;
+  }
+  .giant {
+    font-size: 27vw;
+    line-height: 1.12;
+    letter-spacing: -0.06em;
+  }
+  .sub {
+    margin-top: 20px;
+    font-size: 24px;
+    line-height: 29px;
+  }
+  .sub .it {
+    font-size: 26px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .giant > span,
+  .wd > span {
+    transform: none;
+    transition: none;
+  }
+}

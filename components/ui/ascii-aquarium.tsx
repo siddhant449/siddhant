@@ -346,6 +346,7 @@ export function AsciiAquarium({
     const qa = new Float32Array(2);
     const qb = new Float32Array(2);
     const flinch = new Float32Array(NF * 2);
+    const centres = new Float32Array((NF + 8) * 2);
 
     /* Portfolio: butterflies. A specimen map rasterised onto the same tile grid as the fish, so they
        share the tiles, flicker and wake. Their path is a function of time alone (the wake replays
@@ -355,18 +356,26 @@ export function AsciiAquarium({
     let bmap: { w: number; h: number; lum: Float32Array; cov: Float32Array } | null = null;
     const bq = new Float32Array(4);
     const bq2 = new Float32Array(4);
-    /* Each butterfly roams the whole scene freely on a path made of several slow sine waves at
-       unrelated frequencies (different for each), so it never repeats, loops back on itself,
-       speeds up and slows down, and the two drift apart rather than cluster. They start in
-       opposite corners (all phases at -1 or +1). Purely a function of time, so the wake can
-       replay it. */
+    /* Butterflies roam the whole scene on opposite sides of a slowly wandering orbit: the shared
+       angle drifts round and back on several unrelated sine waves, each butterfly sits half a turn
+       from the next with its own breathing radius and flutter. So they visit every part of the
+       screen but never meet (they start top-left and bottom-right). Purely a function of time, so
+       the wake can replay it. */
     const bfPos = (t: number, i: number, out: Float32Array) => {
-      const s0 = i % 2 ? Math.PI / 2 : -Math.PI / 2; // start corner: top-left, then bottom-right
-      const f = 1 + i * 0.137;
-      const u = Math.sin(t * 0.061 * f + s0) * 0.55 + Math.sin(t * 0.143 * f + s0) * 0.3 + Math.sin(t * 0.311 * f + s0) * 0.15;
-      const v = Math.sin(t * 0.083 * f + s0) * 0.55 + Math.sin(t * 0.197 * f + s0) * 0.28 + Math.sin(t * 0.389 * f + s0) * 0.17;
-      out[0] = W * (0.5 + u * 0.43);
-      out[1] = H * (0.5 + v * 0.38);
+      // The roaming runs at a slow clock (T); small loops ride on top at their own gentle pace,
+      // so the path curls and wanders (about 150 degrees of turning per 100px) while the speed
+      // stays calm (about 26px a second on a laptop).
+      const T = t * 0.55;
+      const th =
+        -0.75 * Math.PI + T * 0.045 + 1.3 * Math.sin(T * 0.061) + 0.55 * Math.sin(T * 0.137) +
+        (i * 2 * Math.PI) / Math.max(1, NB) + (i ? 0.45 * Math.sin(T * 0.089 + i * 1.7) : 0);
+      const rho = 0.6 + 0.4 * (0.5 + 0.5 * Math.cos(T * 0.157 * (1 + 0.21 * i) + i * 0.9));
+      const m = Math.min(W, H);
+      const ph = t * 0.55 * (1 + 0.13 * i) + 1.6 * Math.sin(t * 0.17 + i) + i * 1.9;
+      const wx = Math.cos(ph) * 0.03 * m + Math.sin(T * 0.47 + i) * 0.03 * W;
+      const wy = Math.sin(2 * ph) * 0.021 * m + Math.sin(T * 0.59 + i * 1.3) * 0.035 * H;
+      out[0] = W / 2 + 0.41 * W * rho * Math.cos(th) + wx;
+      out[1] = H / 2 + 0.37 * H * rho * Math.sin(th) + wy;
     };
     const bfAt = (t: number, i: number, out: Float32Array) => {
       bfPos(t, i, out);
@@ -623,13 +632,43 @@ export function AsciiAquarium({
       const lt = ((tick % ltm) + ltm) % ltm; // seeds the flicker
       const key = tick;
 
-      // Fish flinch: ease every fish toward its pointer offset.
-      if (L.interactive) {
+      // Portfolio: personal space. Each fish's body centre (world units) and the butterflies'
+      // centres; a fish closer than SEP to another creature is steered away, eased through the
+      // same flinch offset the pointer uses, so the tank stays airy instead of bunching up.
+      for (let f = 0; f < NF; f++) {
+        sampleLoop(D.poses[f], 5, keys[f], ft / KEY, pose, 2);
+        centres[f * 2] = pose[0] - 110 * Math.cos(pose[2]);
+        centres[f * 2 + 1] = pose[1] - 110 * Math.sin(pose[2]);
+      }
+      for (let i = 0; i < NB; i++) {
+        bfAt(ft / 30, i, bq);
+        centres[(NF + i) * 2] = (bq[0] - ox) / sc;
+        centres[(NF + i) * 2 + 1] = (bq[1] - oy) / sc;
+      }
+      const SEP = 300;
+      // Fish flinch: ease every fish toward its pointer offset (and away from its neighbours).
+      {
         for (let f = 0; f < NF; f++) {
           sampleLoop(D.poses[f], 5, keys[f], ft / KEY, pose, 2);
           let tx = 0;
           let ty = 0;
-          if (ptr.in) {
+          for (let g2 = 0; g2 < NF + NB; g2++) {
+            if (g2 === f) continue;
+            const dx = centres[f * 2] - centres[g2 * 2];
+            const dy = centres[f * 2 + 1] - centres[g2 * 2 + 1];
+            const d = Math.hypot(dx, dy);
+            if (d >= SEP || d < 0.01) continue;
+            const k = 1 - d / SEP;
+            const push = k * k * 120;
+            tx += (dx / d) * push;
+            ty += (dy / d) * push;
+          }
+          const m = Math.hypot(tx, ty);
+          if (m > 150) {
+            tx *= 150 / m;
+            ty *= 150 / m;
+          }
+          if (ptr.in && L.interactive) {
             const wx = (ptr.x - ox) / sc;
             const wy = (ptr.y - oy) / sc;
             const dx = pose[0] - 60 * Math.cos(pose[2]) - wx;
@@ -637,12 +676,14 @@ export function AsciiAquarium({
             const d = Math.hypot(dx, dy);
             if (d < 160 && d > 0.01) {
               const push = (1 - d / 160) * 46;
-              tx = (dx / d) * push;
-              ty = (dy / d) * push;
+              tx += (dx / d) * push;
+              ty += (dy / d) * push;
             }
           }
-          flinch[f * 2] += (tx - flinch[f * 2]) * 0.12;
-          flinch[f * 2 + 1] += (ty - flinch[f * 2 + 1]) * 0.12;
+          // Slower easing for the spacing than for a pointer startle, so the fish drift apart.
+          const ease = ptr.in ? 0.12 : 0.05;
+          flinch[f * 2] += (tx - flinch[f * 2]) * ease;
+          flinch[f * 2 + 1] += (ty - flinch[f * 2 + 1]) * ease;
         }
       }
 

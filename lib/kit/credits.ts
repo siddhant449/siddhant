@@ -15,7 +15,6 @@ export type Credit = {
 
 export const credits: Credit[] = [
   /* Poly Haven, CC0: no credit required, given as a courtesy */
-  { file: "/kit/tex-stone", title: "Marble Rock 01", alt: "Veined marble surface", source: "https://polyhaven.com/a/marble_rock_01", licence: "CC0 1.0", credit: "Amal Kumar, Poly Haven", width: 1024, height: 1024 },
   { file: "/kit/hdri-studio", title: "Studio Small 09 (HDRI)", alt: "", source: "https://polyhaven.com/a/studio_small_09", licence: "CC0 1.0", credit: "Sergej Majboroda, Poly Haven", width: 256, height: 128 },
 ];
 

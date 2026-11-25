@@ -72,11 +72,20 @@ export const credits = [
     credit: "Michelangelo Buonarroti, Sistine Chapel ceiling, via Wikimedia Commons",
   },
   {
-    file: "/kit/tex-stone-duo.webp",
-    title: "Marble Rock 01",
-    use: "Marble pulled through the hero's dithered field (shared kit asset)",
-    source: "https://polyhaven.com/a/marble_rock_01",
-    licence: "CC0 1.0",
-    credit: "Amal Kumar, Poly Haven",
+    file: "AsciiAquarium (components/ui/ascii-aquarium.tsx)",
+    title: "Ascii Aquarium",
+    use: "The hero background, recoloured to the deep violet palette, with butterflies added",
+    source: "https://studios.lou15.com/agents?ref=21st-code",
+    licence: "21st.dev community component",
+    credit: "Louis Studios",
   },
+  {
+    file: "/seth/butterfly.webp",
+    title: "Papilio neumoegeni Honrath, 1890 (museum specimen)",
+    use: "The butterflies over the hero's ASCII aquarium (cut out, brightness and shape only)",
+    source: "https://commons.wikimedia.org/wiki/File:Papilio_neumoegeni_Honrath,_1890_(GBIF).jpg",
+    licence: "CC0 1.0",
+    credit: "Nicole M. Palffy-Muhoray, via GBIF and Wikimedia Commons",
+  },
+
 ] as const;

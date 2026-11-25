@@ -5,7 +5,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { onReady } from "@/components/loader";
 import { sethHero, sethLinks } from "@/lib/copy/seth";
 import c from "./cursor.module.css";
-import { attachDotField } from "./dot-field";
+import { AsciiAquarium } from "@/components/ui/ascii-aquarium";
 import { Ember } from "@/components/kit";
 import s from "./seth-hero.module.css";
 
@@ -40,7 +40,7 @@ function bubbleRects(W: number, H: number) {
 
 /**
  * The first screen, rebuilt from sethlukin.com's hero: two words split by a pixel sprite, a speech
- * bubble, a dithered liquid-marble field, two labels at the foot.
+ * bubble, the ASCII aquarium (with butterflies) behind, two labels at the foot.
  *
  * Measured motion: after the entry curtain lifts, word one rises 152px and goes grey to white in
  * ~.45s, word two .4s later; the field fades in; the sprite pops (rise, overshoot, settle); the
@@ -67,22 +67,6 @@ export function SethHero() {
   const { scrollY } = useScroll();
   const scale = useTransform(scrollY, (v) => 1 - 0.2 * Math.min(1, Math.max(0, v / (typeof window === "undefined" ? 900 : window.innerHeight))));
   const dim = useTransform(scrollY, (v) => 0.5 * Math.min(1, Math.max(0, v / (typeof window === "undefined" ? 900 : window.innerHeight))));
-
-  // the shared dot field (marble scene) and the pointer that stirs it
-  useEffect(() => {
-    const el = stage.current, w = watch.current;
-    if (!el || !w) return;
-    const { detach, setPointer } = attachDotField(el, "marble", () => {}, w);
-    const move = (e: PointerEvent) => setPointer(e.clientX, e.clientY, true);
-    const leave = (e: PointerEvent) => setPointer(e.clientX, e.clientY, false);
-    el.addEventListener("pointermove", move, { passive: true });
-    el.addEventListener("pointerleave", leave);
-    return () => {
-      el.removeEventListener("pointermove", move);
-      el.removeEventListener("pointerleave", leave);
-      detach();
-    };
-  }, []);
 
   // headline fit: both words share one size (reference: 177px / 170px, ~206px gap for the sprite)
   useIso(() => {
@@ -177,6 +161,26 @@ export function SethHero() {
         className={`${s.hero} ${c.area} ${on ? s.on : ""} ${ready ? s.ready : ""}`}
       >
         <m.div ref={stage} className={s.stage} style={{ scale }}>
+          {/* The ASCII Aquarium (Louis Studios, via 21st.dev) in the deep violet palette, with the
+              butterflies from our specimen drawn in its own tiles above the water. */}
+          <div className={s.sea}>
+            <AsciiAquarium
+              decorative
+              pointerOnWindow
+              watchRef={watch}
+              background="#110f17"
+              gridColor="#181521"
+              colors={["#b7a6ff", "#9d7cff", "#d6d0f5", "#6c5cf0"]}
+              highlight="#f4f1ff"
+              shoalColor="#8e88a6"
+              minnowColor="#b2abcf"
+              driftColor="#6d61c4"
+              wakeColor="#7a7396"
+              bubbleColor="#d8d2ef"
+              butterflies={{ src: "/seth/butterfly.webp", count: 2, colors: ["#c9b8ff", "#a48cff"] }}
+              style={{ minHeight: 0 }}
+            />
+          </div>
           <h1 id="hero-title" className="sr-only">
             {sethHero.title}
           </h1>

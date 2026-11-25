@@ -73,6 +73,9 @@
     background: var(--bg);
     color: var(--fg);
     color-scheme: dark;
+    /* Keep the scrollbar's space when smooth scroll is paused (menu open): the type is sized to the
+       viewport, so losing 15px of width reflowed every section and sent menu jumps to the wrong place. */
+    scrollbar-gutter: stable;
     overflow-x: clip;
     -webkit-text-size-adjust: 100%;
     text-rendering: optimizeLegibility;

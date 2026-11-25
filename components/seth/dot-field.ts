@@ -185,7 +185,8 @@ class Renderer {
     gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
     this.cellTex = gl.createTexture()!;
     this.fbo = gl.createFramebuffer()!;
-    this.load("marble", "/kit/tex-stone-duo.webp");
+    // The marble scene no longer has a host (the hero draws ASCII butterflies), so its texture is
+    // not fetched; the scene falls back to plain noise if it is ever attached again.
     this.load("hands", "/seth/hands.webp");
   }
   prog(fs: string) {

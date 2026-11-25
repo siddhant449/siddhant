@@ -212,7 +212,15 @@ export function Nav() {
     if (!onHome || !lenis) return;
     e.preventDefault();
     lenis.start();
-    lenis.scrollTo(href);
+    // Sections above can grow while the page scrolls past them (the "What I build" cards open as
+    // they pass), which moves the target after the jump has aimed. When a leg lands, glide the rest.
+    const land = (tries: number) => () => {
+      const el = document.querySelector<HTMLElement>(href);
+      if (!el || tries <= 0) return;
+      if (Math.abs(el.getBoundingClientRect().top) > 2) lenis.scrollTo(el, { duration: 0.7, onComplete: land(tries - 1) });
+    };
+    // Aim once the menu has closed and the layout has settled.
+    requestAnimationFrame(() => requestAnimationFrame(() => lenis.scrollTo(href, { onComplete: land(3) })));
     history.replaceState(null, "", href);
   };
 

@@ -77,7 +77,7 @@ export function Ember({
     <div ref={ref} className={`${styles.ember} ${className ?? ""}`} data-ready={ready ? "" : undefined}>
       {/* The hero's LCP element: fetched eagerly at the size it shows (the slot is ~20-32vw, 190px on phones). */}
       <Image
-        src="/kit/ember-still.webp"
+        src="/kit/ember-violet.webp"
         alt=""
         width={560}
         height={560}

@@ -211,6 +211,8 @@ export function Nav() {
     setOpen(false);
     if (!onHome || !lenis) return;
     e.preventDefault();
+    // Handled here only: Lenis's own anchor handling (anchors option) would race this one.
+    e.stopPropagation();
     lenis.start();
     // Sections above can grow while the page scrolls past them (the "What I build" cards open as
     // they pass), which moves the target after the jump has aimed. When a leg lands, glide the rest.
@@ -223,6 +225,33 @@ export function Nav() {
     requestAnimationFrame(() => requestAnimationFrame(() => lenis.scrollTo(href, { onComplete: land(3) })));
     history.replaceState(null, "", href);
   };
+
+  // The logo: back to the very top (the hero is pinned, so a #top anchor never moves the page).
+  const toTop = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    // Lenis's anchor handling would aim at the pinned hero's wrapper (a screen down) instead.
+    e.stopPropagation();
+    setOpen(false);
+    if (lenis) {
+      lenis.start();
+      lenis.scrollTo(0, { duration: 1.2 });
+    } else window.scrollTo({ top: 0, behavior: "smooth" });
+    history.replaceState(null, "", window.location.pathname);
+  };
+
+  // Arriving on the home page with a section in the URL (a link from a case study, or a refresh):
+  // land on it once the page has laid out, and correct as late content settles.
+  useEffect(() => {
+    if (!onHome || !lenis) return;
+    const hash = window.location.hash;
+    if (!hash || hash === "#top") return;
+    const jump = () => {
+      const el = document.querySelector<HTMLElement>(hash);
+      if (el && Math.abs(el.getBoundingClientRect().top) > 2) lenis.scrollTo(el, { immediate: true, force: true });
+    };
+    const timers = [80, 600, 1500].map((ms) => window.setTimeout(jump, ms));
+    return () => timers.forEach((t) => window.clearTimeout(t));
+  }, [onHome, lenis]);
 
   const hidden = (atFooter || (scrollAway && !focusIn)) && !open;
   const tone = useToneUnder(header, hidden);
@@ -242,7 +271,7 @@ export function Nav() {
       <div className={s.backdrop} onClick={() => close(false)} aria-hidden="true" />
       <div className={s.row}>
         {onHome ? (
-          <a href="#top" className={`${s.chip} ${s.logo}`} aria-label={`${site.name}, back to top`}>
+          <a href="#top" onClick={toTop} className={`${s.chip} ${s.logo}`} aria-label={`${site.name}, back to top`}>
             {site.name}
           </a>
         ) : (
@@ -251,7 +280,7 @@ export function Nav() {
           </Link>
         )}
         <div className={s.right}>
-          <SectionLink onHome={onHome} href="#contact" className={`${s.chip} ${s.small} ${s.talk}`}>
+          <SectionLink onHome={onHome} href="#contact" onClick={(e) => go(e, "#contact")} className={`${s.chip} ${s.small} ${s.talk}`}>
             <span className={s.lead} aria-hidden="true" />
             <span className={s.talkText}>Start a project</span>
             <span className={s.tail} aria-hidden="true" />

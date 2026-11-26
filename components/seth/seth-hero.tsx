@@ -78,11 +78,9 @@ export function SethHero() {
       const tablet = W > 720 && window.matchMedia(STACKED).matches;
       const phone = W <= 720 || tablet;
       a.style.fontSize = b.style.fontSize = "100px";
-      const width = (el: HTMLElement) => {
-        const r = document.createRange();
-        r.selectNodeContents(el);
-        return r.getBoundingClientRect().width;
-      };
+      // Layout width, not the on-screen box: after a refresh the page can restore mid-scroll, when
+      // the hero is scaled down, and a scaled measurement made the words too big for the ember.
+      const width = (el: HTMLElement) => el.offsetWidth || el.scrollWidth;
       const each = phone ? W * (tablet ? 0.78 : 0.86) : (W - 2 * 0.01667 * W - 0.155 * W) / 2;
       const fs = (100 * each) / Math.max(width(a), width(b));
       a.style.fontSize = b.style.fontSize = `${fs}px`;
@@ -111,8 +109,14 @@ export function SethHero() {
     };
     fit();
     document.fonts?.ready.then(fit);
+    // Refit if the words' size ever changes underneath (a late font swap, a zoom).
+    const ro = new ResizeObserver(() => fit());
+    if (w1.current) ro.observe(w1.current);
     window.addEventListener("resize", fit);
-    return () => window.removeEventListener("resize", fit);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", fit);
+    };
   }, []);
 
   // intro: starts as the curtain lifts (~.22s in), bubble types at ~70ms a character

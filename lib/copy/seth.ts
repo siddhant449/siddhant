@@ -80,9 +80,17 @@ export const credits = [
     credit: "Louis Studios",
   },
   {
+    file: "/tab/chrysalis-v1.png",
+    title: "Late pupa of Charaxes jasius",
+    use: "The tab icon while the site is in a background tab (cut out, inked violet)",
+    source: "https://commons.wikimedia.org/wiki/File:Late_pupa_of_Charaxes_jasius.jpg",
+    licence: "CC0 1.0",
+    credit: "Sarah Faulwetter, via Wikimedia Commons",
+  },
+  {
     file: "/seth/butterfly.webp",
     title: "Papilio neumoegeni Honrath, 1890 (museum specimen)",
-    use: "The butterflies over the hero's ASCII aquarium (cut out, brightness and shape only)",
+    use: "The butterflies over the hero's ASCII aquarium and the tab icon (cut out, inked violet)",
     source: "https://commons.wikimedia.org/wiki/File:Papilio_neumoegeni_Honrath,_1890_(GBIF).jpg",
     licence: "CC0 1.0",
     credit: "Nicole M. Palffy-Muhoray, via GBIF and Wikimedia Commons",

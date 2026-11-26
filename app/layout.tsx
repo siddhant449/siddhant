@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import { Providers } from "@/components/providers";
 import { ThemeWatcher } from "@/components/ui/theme";
+import { TabIcon } from "@/components/tab-icon";
 import { GLRoot } from "@/components/gl/gl-root";
 import { Loader } from "@/components/loader";
 import { site } from "@/lib/content";
@@ -103,6 +104,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <GLRoot />
           {children}
           <ThemeWatcher />
+          <TabIcon />
         </Providers>
         <div aria-hidden className="grain" />
       </body>

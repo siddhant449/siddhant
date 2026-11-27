@@ -78,9 +78,17 @@ export function SethHero() {
       const tablet = W > 720 && window.matchMedia(STACKED).matches;
       const phone = W <= 720 || tablet;
       a.style.fontSize = b.style.fontSize = "100px";
-      // Layout width, not the on-screen box: after a refresh the page can restore mid-scroll, when
-      // the hero is scaled down, and a scaled measurement made the words too big for the ember.
-      const width = (el: HTMLElement) => el.offsetWidth || el.scrollWidth;
+      // The text's own width, with the stage's scroll scale taken back out: the hero can be scaled
+      // down (a refresh restores mid-scroll), and on phones the word box spans the whole screen,
+      // so neither the raw on-screen size nor the box width is the text.
+      const width = (el: HTMLElement) => {
+        const r = document.createRange();
+        r.selectNodeContents(el);
+        const text = r.getBoundingClientRect().width;
+        const box = el.getBoundingClientRect().width;
+        const scale = el.offsetWidth > 0 && box > 0 ? box / el.offsetWidth : 1;
+        return text / (scale || 1);
+      };
       const each = phone ? W * (tablet ? 0.78 : 0.86) : (W - 2 * 0.01667 * W - 0.155 * W) / 2;
       const fs = (100 * each) / Math.max(width(a), width(b));
       a.style.fontSize = b.style.fontSize = `${fs}px`;

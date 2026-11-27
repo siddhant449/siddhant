@@ -29,6 +29,9 @@ function useActiveSection(enabled: boolean) {
 }
 
 /** True while the page's last screen (the pinned footer) is being revealed: the footer has its own top links. */
+/** easeInOutCubic: a quick, even glide for jumps between sections. */
+const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
+
 function useAtFooter() {
   const [at, setAt] = useState(false);
   useEffect(() => {
@@ -206,25 +209,60 @@ export function Nav() {
     };
   }, [open, close]);
 
-  // On the home page, menu links close the menu and hand the anchor to Lenis once it runs again.
+  // On the home page, menu links close the menu and glide straight to the section: one quick move
+  // (a fixed 1.1s ease), aimed where the section will be once the "What I build" cards above it
+  // have opened (they open as they are passed), so it lands without a second correction.
+  const jump = useCallback(
+    (href: string) => {
+      if (!lenis) return;
+      lenis.start();
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          const el = document.querySelector<HTMLElement>(href);
+          if (!el) return;
+          const list = document.querySelector<HTMLElement>("[data-grow]");
+          const below = list ? list.getBoundingClientRect().bottom <= el.getBoundingClientRect().top + 1 : false;
+          const extra = below ? Number(list?.dataset.grow ?? 0) : 0;
+          const y = el.getBoundingClientRect().top + window.scrollY + extra;
+          lenis.scrollTo(y, {
+            duration: 1.1,
+            easing: easeInOut,
+            // Safety net: if anything still moved, settle instantly rather than gliding again.
+            onComplete: () => {
+              if (Math.abs(el.getBoundingClientRect().top) > 2) lenis.scrollTo(el, { immediate: true, force: true });
+            },
+          });
+        }),
+      );
+      history.replaceState(null, "", href);
+    },
+    [lenis],
+  );
+
   const go = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     setOpen(false);
     if (!onHome || !lenis) return;
     e.preventDefault();
-    // Handled here only: Lenis's own anchor handling (anchors option) would race this one.
     e.stopPropagation();
-    lenis.start();
-    // Sections above can grow while the page scrolls past them (the "What I build" cards open as
-    // they pass), which moves the target after the jump has aimed. When a leg lands, glide the rest.
-    const land = (tries: number) => () => {
-      const el = document.querySelector<HTMLElement>(href);
-      if (!el || tries <= 0) return;
-      if (Math.abs(el.getBoundingClientRect().top) > 2) lenis.scrollTo(el, { duration: 0.7, onComplete: land(tries - 1) });
-    };
-    // Aim once the menu has closed and the layout has settled.
-    requestAnimationFrame(() => requestAnimationFrame(() => lenis.scrollTo(href, { onComplete: land(3) })));
-    history.replaceState(null, "", href);
+    jump(href);
   };
+
+  // Every other in-page link on the home page ("See the websites", the hero's "Start a project",
+  // the skip link…) takes the same quick, exact jump.
+  useEffect(() => {
+    if (!onHome) return;
+    const onClick = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const a = (e.target as Element | null)?.closest?.("a[href^='#']") as HTMLAnchorElement | null;
+      const href = a?.getAttribute("href");
+      if (!a || !href || href === "#" || href === "#top" || header.current?.contains(a)) return;
+      if (!document.querySelector(href)) return;
+      e.preventDefault();
+      jump(href);
+    };
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
+  }, [onHome, jump]);
 
   // The logo: back to the very top (the hero is pinned, so a #top anchor never moves the page).
   const toTop = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -234,7 +272,7 @@ export function Nav() {
     setOpen(false);
     if (lenis) {
       lenis.start();
-      lenis.scrollTo(0, { duration: 1.2 });
+      lenis.scrollTo(0, { duration: 1.1, easing: easeInOut });
     } else window.scrollTo({ top: 0, behavior: "smooth" });
     history.replaceState(null, "", window.location.pathname);
   };

@@ -28,7 +28,8 @@ function SmoothScroll({ children }: { children: React.ReactNode }) {
         autoRaf: false,
         lerp: 0.09,
         wheelMultiplier: 1,
-        anchors: { offset: 0 },
+        // In-page links are handled by the nav (one quick, exact jump); Lenis's own handling is off.
+        anchors: false,
         stopInertiaOnNavigate: true,
       }}
     >

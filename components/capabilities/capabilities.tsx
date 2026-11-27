@@ -60,6 +60,11 @@ export function Capabilities() {
       part.acc.style.height = `${(part.ch * h).toFixed(1)}px`;
       figs[i].setActive(h > 0.02);
       part.shown = p;
+      // How much taller the list will still grow (every card opens once scrolled past). The nav
+      // adds this when it jumps below the list, so a jump lands in one move.
+      let grow = 0;
+      for (const q of parts) grow += q.ch * (1 - (1 - Math.pow(1 - Math.max(0, q.shown), 1.25)));
+      ol.dataset.grow = grow.toFixed(0);
     };
     const measure = () => {
       // all reads first, then the writes
